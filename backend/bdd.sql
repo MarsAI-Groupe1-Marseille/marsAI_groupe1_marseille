@@ -50,8 +50,10 @@ CREATE TABLE NEWSLETTER (
 CREATE TABLE UTILISATEUR (
     id_utilisateur INT AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(150) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
     pseudo VARCHAR(50) NOT NULL,
-    nom_complet VARCHAR(100),
+    nom VARCHAR(100) NOT NULL,
+    prenom VARCHAR(100) NOT NULL,
     bio TEXT,
     site_web VARCHAR(255),
     pays VARCHAR(100),
