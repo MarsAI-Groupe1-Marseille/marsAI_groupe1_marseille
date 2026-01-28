@@ -1,172 +1,156 @@
--- Création de la base de données
-CREATE DATABASE IF NOT EXISTS mars_ai_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE mars_ai_db;
+-- ============================================================
+--  RESET TOTAL & INITIALISATION - MARS AI FESTIVAL
+-- ============================================================
 
--- ==========================================
--- 1. TABLES DE RÉFÉRENCE (Indépendantes)
--- ==========================================
+-- 1. SUPPRESSION ET CRÉATION DE LA BASE
+DROP DATABASE IF EXISTS `mars_ai_db`;
+CREATE DATABASE `mars_ai_db` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+USE `mars_ai_db`;
 
-CREATE TABLE ROLE (
-    id_role INT AUTO_INCREMENT PRIMARY KEY,
-    code VARCHAR(50) NOT NULL UNIQUE, -- Ex: 'ADMIN', 'JURY', 'USER'
-    libelle VARCHAR(100) NOT NULL
-);
+-- 2. CONFIGURATION DE L'ENCODAGE
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
 
-CREATE TABLE STATUT_FILM (
-    id_statut_film INT AUTO_INCREMENT PRIMARY KEY,
-    code VARCHAR(50) NOT NULL UNIQUE, -- Ex: 'PENDING', 'APPROVED'
-    libelle VARCHAR(100) NOT NULL
-);
+-- ============================================================
+--  CRÉATION DES TABLES (MVP 1 - Carnet de Note)
+-- ============================================================
 
-CREATE TABLE OUTIL_IA (
-    id_outil_ia INT AUTO_INCREMENT PRIMARY KEY,
-    nom VARCHAR(100) NOT NULL,
-    site_web VARCHAR(255)
-);
+-- ------------------------------------------------------------
+-- 1. TABLE : USERS
+-- ------------------------------------------------------------
+DROP TABLE IF EXISTS `users`;
+CREATE TABLE `users` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `email` VARCHAR(255) NOT NULL UNIQUE,
+  `password_hash` VARCHAR(255) NULL,
+  `full_name` VARCHAR(255),
+  `avatar_url` VARCHAR(255),
+  `role` ENUM('admin', 'jury', 'moderator') NOT NULL DEFAULT 'jury',
+  `invite_token` VARCHAR(255) NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-CREATE TABLE LIEU (
-    id_lieu INT AUTO_INCREMENT PRIMARY KEY,
-    nom VARCHAR(100) NOT NULL,
-    adresse VARCHAR(255) NOT NULL
-);
+-- ------------------------------------------------------------
+-- 2. TABLE : DIRECTORS
+-- ------------------------------------------------------------
+DROP TABLE IF EXISTS `directors`;
+CREATE TABLE `directors` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `email` VARCHAR(255) NOT NULL,
+  `full_name` VARCHAR(255) NOT NULL,
+  `phone` VARCHAR(50),
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-CREATE TABLE PARTENAIRE (
-    id_partenaire INT AUTO_INCREMENT PRIMARY KEY,
-    nom VARCHAR(100) NOT NULL,
-    site_web VARCHAR(255)
-);
+-- ------------------------------------------------------------
+-- 3. TABLE : JURY_LISTS
+-- ------------------------------------------------------------
+DROP TABLE IF EXISTS `jury_lists`;
+CREATE TABLE `jury_lists` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `name` VARCHAR(255) NOT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-CREATE TABLE NEWSLETTER (
-    id_newsletter INT AUTO_INCREMENT PRIMARY KEY,
-    email VARCHAR(150) NOT NULL UNIQUE,
-    langue VARCHAR(10) DEFAULT 'fr',
-    date_inscription DATETIME DEFAULT CURRENT_TIMESTAMP
-);
+-- ------------------------------------------------------------
+-- 4. TABLE : JURY_MEMBERS
+-- ------------------------------------------------------------
+DROP TABLE IF EXISTS `jury_members`;
+CREATE TABLE `jury_members` (
+  `user_id` INT NOT NULL,
+  `jury_list_id` INT NOT NULL,
+  PRIMARY KEY (`user_id`, `jury_list_id`),
+  CONSTRAINT `fk_member_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_member_list` FOREIGN KEY (`jury_list_id`) REFERENCES `jury_lists` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- ==========================================
--- 2. TABLES PRINCIPALES (Utilisateurs & Events)
--- ==========================================
+-- ------------------------------------------------------------
+-- 5. TABLE : SUBMISSIONS
+-- ------------------------------------------------------------
+DROP TABLE IF EXISTS `submissions`;
+CREATE TABLE `submissions` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `director_id` INT NOT NULL,
+  `title` VARCHAR(255) NOT NULL,
+  `synopsis` TEXT,
+  `poster_url` VARCHAR(255),
+  `duration` INT DEFAULT 0,
+  `youtube_id` VARCHAR(50),
+  `video_status` ENUM('uploading', 'processing', 'ready', 'error') DEFAULT 'uploading',
+  `status` ENUM('submitted', 'approved', 'rejected', 'incomplete') DEFAULT 'submitted',
+  `edit_token` VARCHAR(255),
+  `token_expires_at` DATETIME,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT `fk_submission_director` FOREIGN KEY (`director_id`) REFERENCES `directors` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-CREATE TABLE UTILISATEUR (
-    id_utilisateur INT AUTO_INCREMENT PRIMARY KEY,
-    email VARCHAR(150) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
-    pseudo VARCHAR(50) NOT NULL,
-    nom VARCHAR(100) NOT NULL,
-    prenom VARCHAR(100) NOT NULL,
-    bio TEXT,
-    site_web VARCHAR(255),
-    pays VARCHAR(100),
-    langue VARCHAR(10) DEFAULT 'fr',
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
+-- ------------------------------------------------------------
+-- 6. TABLE : JURY_LIST_SUBMISSIONS
+-- ------------------------------------------------------------
+DROP TABLE IF EXISTS `jury_list_submissions`;
+CREATE TABLE `jury_list_submissions` (
+  `jury_list_id` INT NOT NULL,
+  `submission_id` INT NOT NULL,
+  `added_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`jury_list_id`, `submission_id`),
+  CONSTRAINT `fk_jls_list` FOREIGN KEY (`jury_list_id`) REFERENCES `jury_lists` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_jls_submission` FOREIGN KEY (`submission_id`) REFERENCES `submissions` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-CREATE TABLE EVENEMENT (
-    id_evenement INT AUTO_INCREMENT PRIMARY KEY,
-    titre VARCHAR(150) NOT NULL,
-    description TEXT,
-    date_event DATE NOT NULL,
-    heure_debut TIME,
-    heure_fin TIME,
-    capacite INT,
-    id_lieu INT NOT NULL,
-    FOREIGN KEY (id_lieu) REFERENCES LIEU(id_lieu)
-);
+-- ------------------------------------------------------------
+-- 7. TABLE : MODERATION_TICKETS
+-- ------------------------------------------------------------
+DROP TABLE IF EXISTS `moderation_tickets`;
+CREATE TABLE `moderation_tickets` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `submission_id` INT NOT NULL,
+  `admin_id` INT NOT NULL,
+  `issue_type` VARCHAR(50) NOT NULL,
+  `description` TEXT NOT NULL,
+  `is_resolved` BOOLEAN DEFAULT FALSE,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT `fk_ticket_submission` FOREIGN KEY (`submission_id`) REFERENCES `submissions` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_ticket_admin` FOREIGN KEY (`admin_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- ==========================================
--- 3. TABLES CŒUR DE MÉTIER (Films & Réservations)
--- ==========================================
+-- ------------------------------------------------------------
+-- 8. TABLE : JURY_EVALUATIONS
+-- ------------------------------------------------------------
+DROP TABLE IF EXISTS `jury_evaluations`;
+CREATE TABLE `jury_evaluations` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `submission_id` INT NOT NULL,
+  `user_id` INT NOT NULL,
+  `vote_status` ENUM('LIKE', 'DISLIKE', 'DISCUSS') NOT NULL,
+  `comment` TEXT,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY `unique_vote` (`submission_id`, `user_id`),
+  CONSTRAINT `fk_eval_submission` FOREIGN KEY (`submission_id`) REFERENCES `submissions` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_eval_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-CREATE TABLE FILM (
-    id_film INT AUTO_INCREMENT PRIMARY KEY,
-    titre VARCHAR(200) NOT NULL,
-    description TEXT,
-    pays VARCHAR(100),
-    duree_minutes INT,
-    video_url VARCHAR(255),
-    date_soumission DATETIME DEFAULT CURRENT_TIMESTAMP,
-    id_utilisateur INT NOT NULL, -- Le réalisateur
-    id_statut_film INT NOT NULL,
-    FOREIGN KEY (id_utilisateur) REFERENCES UTILISATEUR(id_utilisateur),
-    FOREIGN KEY (id_statut_film) REFERENCES STATUT_FILM(id_statut_film)
-);
+SET FOREIGN_KEY_CHECKS = 1;
 
-CREATE TABLE RESERVATION_EVENEMENT (
-    id_reservation INT AUTO_INCREMENT PRIMARY KEY,
-    date_reservation DATETIME DEFAULT CURRENT_TIMESTAMP,
-    statut VARCHAR(50) DEFAULT 'CONFIRMED', -- Ex: CONFIRMED, CANCELLED
-    nb_place INT DEFAULT 1,
-    id_utilisateur INT NOT NULL,
-    id_evenement INT NOT NULL,
-    FOREIGN KEY (id_utilisateur) REFERENCES UTILISATEUR(id_utilisateur),
-    FOREIGN KEY (id_evenement) REFERENCES EVENEMENT(id_evenement)
-);
+-- ============================================================
+--  JEU DE DONNÉES DE TEST (SEED)
+-- ============================================================
 
--- ==========================================
--- 4. TABLES DE DÉTAILS & LIAISONS (Avis, IA, Modé)
--- ==========================================
+INSERT INTO `users` (`email`, `full_name`, `role`, `password_hash`) VALUES
+('admin@mars-festival.com', 'Super Admin', 'admin', 'HASH_DU_MOT_DE_PASSE'),
+('jury@mars-festival.com', 'Alice Jury', 'jury', 'HASH_DU_MOT_DE_PASSE');
 
--- Table pour lier un film à un outil IA avec des détails spécifiques
-CREATE TABLE UTILISATION_IA (
-    id_utilisation_ia INT AUTO_INCREMENT PRIMARY KEY,
-    details TEXT, -- Ex: "Utilisé pour la génération des décors"
-    id_film INT NOT NULL,
-    id_outil_ia INT NOT NULL,
-    FOREIGN KEY (id_film) REFERENCES FILM(id_film) ON DELETE CASCADE,
-    FOREIGN KEY (id_outil_ia) REFERENCES OUTIL_IA(id_outil_ia)
-);
+INSERT INTO `jury_lists` (`name`) VALUES ('Compétition IA Générative');
 
-CREATE TABLE AVIS_JURY (
-    id_avis_jury INT AUTO_INCREMENT PRIMARY KEY,
-    score INT CHECK (score BETWEEN 0 AND 10), -- Note sur 10 par exemple
-    commentaire TEXT,
-    date_avis DATETIME DEFAULT CURRENT_TIMESTAMP,
-    id_utilisateur INT NOT NULL, -- Le membre du jury
-    id_film INT NOT NULL, -- Le film noté
-    FOREIGN KEY (id_utilisateur) REFERENCES UTILISATEUR(id_utilisateur),
-    FOREIGN KEY (id_film) REFERENCES FILM(id_film) ON DELETE CASCADE,
-    UNIQUE KEY unique_avis (id_utilisateur, id_film) -- Un jury ne note qu'une fois un film
-);
+INSERT INTO `jury_members` (`user_id`, `jury_list_id`) VALUES (2, 1);
 
-CREATE TABLE MODERATION_FILM (
-    id_moderation INT AUTO_INCREMENT PRIMARY KEY,
-    decision VARCHAR(50), -- Ex: REFUSED, ASK_CHANGES
-    raison TEXT,
-    date_moderation DATETIME DEFAULT CURRENT_TIMESTAMP,
-    id_utilisateur INT NOT NULL, -- Le modérateur
-    id_film INT NOT NULL,
-    FOREIGN KEY (id_utilisateur) REFERENCES UTILISATEUR(id_utilisateur),
-    FOREIGN KEY (id_film) REFERENCES FILM(id_film) ON DELETE CASCADE
-);
+INSERT INTO `directors` (`email`, `full_name`) VALUES ('spielberg@gmail.com', 'Steven Spielberg');
 
--- ==========================================
--- 5. TABLES D'ASSOCIATION (Many-to-Many)
--- ==========================================
+INSERT INTO `submissions` (`director_id`, `title`, `synopsis`, `youtube_id`, `video_status`, `status`, `duration`) 
+VALUES (1, 'Le Retour du Robot', 'Un robot cherche sa maman.', 'dQw4w9WgXcQ', 'ready', 'approved', 180);
 
--- Pour gérer les rôles (Un user peut être Admin ET Jury)
-CREATE TABLE UTILISATEUR_ROLE (
-    id_utilisateur INT,
-    id_role INT,
-    PRIMARY KEY (id_utilisateur, id_role),
-    FOREIGN KEY (id_utilisateur) REFERENCES UTILISATEUR(id_utilisateur) ON DELETE CASCADE,
-    FOREIGN KEY (id_role) REFERENCES ROLE(id_role)
-);
+INSERT INTO `jury_list_submissions` (`jury_list_id`, `submission_id`) VALUES (1, 1);
 
--- Pour les organisateurs d'événements
-CREATE TABLE ORGANISATION_EVENEMENT (
-    id_evenement INT,
-    id_utilisateur INT,
-    PRIMARY KEY (id_evenement, id_utilisateur),
-    FOREIGN KEY (id_evenement) REFERENCES EVENEMENT(id_evenement) ON DELETE CASCADE,
-    FOREIGN KEY (id_utilisateur) REFERENCES UTILISATEUR(id_utilisateur)
-);
-
--- Pour les sponsors
-CREATE TABLE SPONSORING (
-    id_partenaire INT,
-    id_evenement INT,
-    montant DECIMAL(10, 2), -- Optionnel : ajout d'un montant de sponsoring
-    PRIMARY KEY (id_partenaire, id_evenement),
-    FOREIGN KEY (id_partenaire) REFERENCES PARTENAIRE(id_partenaire),
-    FOREIGN KEY (id_evenement) REFERENCES EVENEMENT(id_evenement) ON DELETE CASCADE
-);
+INSERT INTO `jury_evaluations` (`submission_id`, `user_id`, `vote_status`, `comment`) 
+VALUES (1, 2, 'LIKE', 'Superbe lumière, mais la fin est triste.');
