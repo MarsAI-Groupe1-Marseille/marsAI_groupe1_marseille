@@ -1,5 +1,5 @@
 -- ============================================================
--- 🧹 RESET TOTAL & INITIALISATION - MARS AI FESTIVAL
+--  RESET TOTAL & INITIALISATION - MARS AI FESTIVAL
 -- ============================================================
 
 -- 1. SUPPRESSION ET CRÉATION DE LA BASE
@@ -12,7 +12,7 @@ SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- ============================================================
--- 🚀 CRÉATION DES TABLES (MVP 1 - Carnet de Note)
+--  CRÉATION DES TABLES (MVP 1 - Carnet de Note)
 -- ============================================================
 
 -- ------------------------------------------------------------
@@ -134,7 +134,7 @@ CREATE TABLE `jury_evaluations` (
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- ============================================================
--- 🧪 JEU DE DONNÉES DE TEST (SEED)
+--  JEU DE DONNÉES DE TEST (SEED)
 -- ============================================================
 
 INSERT INTO `users` (`email`, `full_name`, `role`, `password_hash`) VALUES
