@@ -12,7 +12,10 @@ const port = process.env.PORT || 3000;
 // ==========================================
 // MIDDLEWARES
 // ==========================================
-app.use(cors());
+app.use(cors({
+    origin: 'http://localhost:5173',
+    credentials: true
+}));
 app.use(express.json());
 
 // ==========================================
@@ -23,12 +26,16 @@ app.get('/', (req, res) => {
     res.send('Serveur Mars AI (via Sequelize) est en ligne !');
 });
 
+app.get('/api/', (req, res) => {
+    res.send('Serveur Mars AI (via Sequelize) est en ligne !');
+});
+
 // Route de test pour vérifier que Sequelize lit bien tes tables
 app.get('/api/test-db', async (req, res) => {
     try {
         // En attendant de créer tes Modèles (User.js, Role.js...), 
         // on fait une requête brute juste pour vérifier la connexion.
-        const [results, metadata] = await sequelize.query("SELECT * FROM ROLE");
+        const [results, metadata] = await sequelize.query("SELECT * FROM users");
         
         res.json({
             message: "Test Sequelize réussi ! Voici les rôles :",
