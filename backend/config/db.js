@@ -24,9 +24,11 @@ const sequelize = new Sequelize(
 // Test immédiat de la connexion (Optionnel mais recommandé pour le debug)
 sequelize.authenticate()
     .then(() => {
+        // eslint-disable-next-line no-console
         console.log('Connexion Sequelize réussie à MySQL !');
     })
     .catch(err => {
+        // eslint-disable-next-line no-console
         console.error('Impossible de se connecter à la base de données :', err);
     });
 

@@ -1,0 +1,23 @@
+# Clés SSH et fichiers sensibles
+# Démarrer l'agent SSH*
+*.pub
+.ssh/
+*.pem
+*.key
+
+# Variables d'environnement
+.env
+.env.local
+.env.*.local
+
+# Dépendances
+node_modules/
+.DS_Store
+
+# Environnement
+.env
+.env.local
+
+# Build
+dist/
+build/
