@@ -11,11 +11,12 @@ const Dashboard = () => {
         <main>
             <section className ="bg-neutral-950 p-6 rounded-xl p-6 shadow">
                 <h2 className="text-xl font-semibold mb-4 text-violet-400">Films en Attente :</h2>
+                    <button className="bg-emerald-500 hover:bg-emerald-600 text-black px-3 py-1 rounded">Approuver</button>
                 
             </section>
             <section className="bg-neutral-950 p-6 rounded-xl p-6 shadow">
                 <h2 className="text-xl font-semibold mb-4 text-violet-400">Gestion du Jury :</h2>
-                
+                <button className="bg-rose-600 hover:bg-rose-700 text-white px-3 py-1 rounded">Reject</button>
             </section>            
         </main>
     </div>
