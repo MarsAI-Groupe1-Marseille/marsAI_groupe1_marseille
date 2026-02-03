@@ -17,6 +17,64 @@ import '../pages/galerie.css'
 // ============================================================
 // C'est le composant React qui gère toute la page de la galerie
 const Galerie = () => {
+  // ========== TABLEAU DE FILMS FICTIFS ==========
+  const fictionalFilms = [
+    {
+      id: 1,
+      title: "Les Rouges de Mars",
+      synopsis: "Une épopée scientifique suivant les premiers explorateurs humains découvrant les mystères cachés de la planète rouge.",
+      duration: 142,
+      poster_url: "https://via.placeholder.com/300x450?text=Les+Rouges+de+Mars",
+      youtube_id: "dQw4w9WgXcQ",
+      created_at: new Date(2025, 11, 15).toISOString()
+    },
+    {
+      id: 2,
+      title: "Horizon Martien",
+      synopsis: "Une histoire captivante d'une femme astronaute qui doit survivre seule sur Mars après un accident catastrophique.",
+      duration: 128,
+      poster_url: "https://via.placeholder.com/300x450?text=Horizon+Martien",
+      youtube_id: "dQw4w9WgXcQ",
+      created_at: new Date(2025, 10, 20).toISOString()
+    },
+    {
+      id: 3,
+      title: "Base Éternelle",
+      synopsis: "Une documentaire immersive sur la construction de la première colonie permanente sur Mars par des équipes internationales.",
+      duration: 95,
+      poster_url: "https://via.placeholder.com/300x450?text=Base+Eternelle",
+      youtube_id: "dQw4w9WgXcQ",
+      created_at: new Date(2025, 9, 10).toISOString()
+    },
+    {
+      id: 4,
+      title: "Signal du Silence",
+      synopsis: "Un thriller de science-fiction où des astronautes découvrent des traces d'une ancienne civilisation extraterrestre.",
+      duration: 156,
+      poster_url: "https://via.placeholder.com/300x450?text=Signal+du+Silence",
+      youtube_id: "dQw4w9WgXcQ",
+      created_at: new Date(2025, 8, 5).toISOString()
+    },
+    {
+      id: 5,
+      title: "Tempête de Poussière",
+      synopsis: "Une aventure où une équipe doit traverser les plus dangereuses tempêtes de la planète pour atteindre la base scientifique perdue.",
+      duration: 138,
+      poster_url: "https://via.placeholder.com/300x450?text=Tempete+de+Poussiere",
+      youtube_id: "dQw4w9WgXcQ",
+      created_at: new Date(2025, 7, 18).toISOString()
+    },
+    {
+      id: 6,
+      title: "Retour à l'Aube",
+      synopsis: "Une histoire émouvante sur le voyage de retour vers la Terre et la nostalgie des explorateurs martiens pour leur première maison.",
+      duration: 112,
+      poster_url: "https://via.placeholder.com/300x450?text=Retour+a+l+Aube",
+      youtube_id: "dQw4w9WgXcQ",
+      created_at: new Date(2025, 6, 22).toISOString()
+    }
+  ]
+
   // ========== GESTION DE L'ÉTAT (State Management) ==========
   
   // films: Stocke TOUS les films reçus de l'API
@@ -51,26 +109,26 @@ const Galerie = () => {
   // ========== EFFET 1: Récupérer les films au chargement de la page ==========
   // useEffect s'exécute UNE SEULE FOIS au montage du composant ([] = dépendance vide)
   useEffect(() => {
-    // Fonction asynchrone pour faire l'appel API
+    // Fonction asynchrone pour charger les films
     const fetchFilms = async () => {
       try {
         // Montre le message "Chargement..." en mettant loading à true
         setLoading(true)
         
-        // Appel GET à l'API pour récupérer les films
-        // http://localhost:3000/api/films: L'adresse du backend
-        const response = await axios.get('http://localhost:3000/api/films')
+        // Utilise les films fictifs au lieu de l'API
+        // Simule un délai pour avoir un effet de chargement réaliste
+        await new Promise(resolve => setTimeout(resolve, 500))
         
-        // Stocke tous les films dans la variable 'films'
-        setFilms(response.data)
+        // Stocke les films fictifs dans la variable 'films'
+        setFilms(fictionalFilms)
         
         // Stocke également les films filtrés (au départ = tous les films)
-        setFilteredFilms(response.data)
+        setFilteredFilms(fictionalFilms)
         
         // Efface les erreurs précédentes s'il y en avait
         setError(null)
       } catch (err) {
-        // Si l'API échoue, affiche l'erreur dans la console
+        // Si une erreur s'est produite, affiche l'erreur dans la console
         console.error('Erreur lors du chargement des films:', err)
         
         // Stocke un message d'erreur pour l'afficher à l'écran
