@@ -263,9 +263,7 @@ Ce que voient les visiteurs du site.
   "marketing_sources": ["Instagram", "LinkedIn", "Bouche à oreille"]
 }
 ```
-    }
-  ]
-  ```
+ 
 
 ### 🔵 Détail d'un film
 * **Route :** `GET /api/films/:id`
