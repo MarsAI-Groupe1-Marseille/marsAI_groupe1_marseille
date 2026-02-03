@@ -26,16 +26,6 @@ const Connexion = () => {
     console.log('Google login');
   };
 
-  const handleFacebookLogin = () => {
-    // Logique de connexion Facebook
-    console.log('Facebook login');
-  };
-
-  const handleAppleLogin = () => {
-    // Logique de connexion Apple
-    console.log('Apple login');
-  };
-
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="flex flex-col min-h-screen">
