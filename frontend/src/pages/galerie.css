@@ -1,0 +1,734 @@
+/* ============================================================
+   CONTENEUR PRINCIPAL DE LA GALERIE
+   ============================================================ */
+
+.galerie-container {
+  /* Limite la largeur maximale à 1400px pour une meilleure lisibilité */
+  max-width: 1400px;
+  
+  /* Centrage horizontal: margin 0 = haut/bas, auto = gauche/droite centré */
+  margin: 0 auto;
+  
+  /* Espacement intérieur: 40px haut/bas, 20px gauche/droite */
+  padding: 40px 20px;
+  
+  /* Gradient sombre de couleur: 135 degrés (du haut-gauche au bas-droite)
+     #0a0e27 = bleu très foncé (0%), #1a1f3a = bleu foncé (100%) */
+  background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+  
+  /* Hauteur minimale de 100% de la fenêtre (100vh = 100% viewport height) */
+  min-height: 100vh;
+}
+
+/* ============================================================
+   EN-TÊTE DE LA GALERIE (Titre et Sous-titre)
+   ============================================================ */
+
+.galerie-header {
+  /* Aligne le texte au centre */
+  text-align: center;
+  
+  /* Espace vide en bas (marge externe): 50px */
+  margin-bottom: 50px;
+  
+  /* Couleur du texte: blanc */
+  color: white;
+}
+
+/* Titre principal (h1) dans l'en-tête */
+.galerie-header h1 {
+  /* Taille de la police: 3rem = 3 × la taille de base (48px environ) */
+  font-size: 3rem;
+  
+  /* Annule les marges par défaut du h1 */
+  margin: 0;
+  
+  /* Épaisseur de la police: 700 = gras */
+  font-weight: 700;
+  
+  /* Ombre de texte: 
+     - 0 4px = décalage horizontal et vertical
+     - 20px = flou de l'ombre
+     - rgba(255, 0, 150, 0.3) = couleur rose magenta avec 30% de transparence */
+  text-shadow: 0 4px 20px rgba(255, 0, 150, 0.3);
+}
+
+/* Sous-titre (p) dans l'en-tête */
+.galerie-header p {
+  /* Taille: 1.2rem = 1.2 × la taille de base */
+  font-size: 1.2rem;
+  
+  /* Couleur: bleu/gris clair */
+  color: #b0b0d0;
+  
+  /* Marge en haut: 10px */
+  margin-top: 10px;
+}
+
+/* ============================================================
+   ZONE DES CONTRÔLES (Recherche et Tri)
+   ============================================================ */
+
+.galerie-controls {
+  /* Utilise flexbox (disposition flexible) */
+  display: flex;
+  
+  /* Espace entre les éléments: 20px */
+  gap: 20px;
+  
+  /* Marge en bas: 40px */
+  margin-bottom: 40px;
+  
+  /* Permet aux éléments de passer à la ligne sur petits écrans */
+  flex-wrap: wrap;
+  
+  /* Centre les éléments horizontalement */
+  justify-content: center;
+}
+
+/* Barre de recherche et sélecteur de tri */
+.search-box,
+.sort-box {
+  /* Grandit pour remplir l'espace disponible */
+  flex: 1;
+  
+  /* Largeur minimale: 250px (ne rétrécit pas au-delà) */
+  min-width: 250px;
+}
+
+/* Input de recherche et select de tri */
+.search-input,
+.sort-select {
+  /* Largeur: 100% du conteneur parent */
+  width: 100%;
+  
+  /* Espacement intérieur: 12px haut/bas, 16px gauche/droite */
+  padding: 12px 16px;
+  
+  /* Bordure: 2px solide, couleur rose très transparente
+     #ff00961a = #ff0096 (rose magenta) avec 1a (10%) de transparence */
+  border: 2px solid #ff00961a;
+  
+  /* Coins arrondis: 10px */
+  border-radius: 10px;
+  
+  /* Fond semi-transparent blanc avec 5% d'opacité */
+  background: rgba(255, 255, 255, 0.05);
+  
+  /* Couleur du texte: blanc */
+  color: white;
+  
+  /* Taille de la police: 1rem = taille de base */
+  font-size: 1rem;
+  
+  /* Transition lisse de toutes les propriétés en 0.3 secondes */
+  transition: all 0.3s ease;
+}
+
+/* Placeholder du champ de recherche (texte grisé avant de taper) */
+.search-input::placeholder {
+  /* Couleur du placeholder: bleu/gris */
+  color: #9090b0;
+}
+
+/* Quand on clique dans l'input ou le select (focus) */
+.search-input:focus,
+.sort-select:focus {
+  /* Enlève la bordure bleue par défaut du navigateur */
+  outline: none;
+  
+  /* Bordure devient rose magenta */
+  border-color: #ff0096;
+  
+  /* Fond devient plus opaque (10% au lieu de 5%) */
+  background: rgba(255, 255, 255, 0.1);
+  
+  /* Ajoute une lueur rose autour (box-shadow) */
+  box-shadow: 0 0 20px rgba(255, 0, 150, 0.3);
+}
+
+/* ============================================================
+   GRILLE DE FILMS
+   ============================================================ */
+
+.films-grid {
+  /* Utilise CSS Grid pour une disposition en grille */
+  display: grid;
+  
+  /* Crée automatiquement des colonnes:
+     - repeat(auto-fill, ...) = crée autant de colonnes que possible
+     - minmax(250px, 1fr) = chaque colonne fait minimum 250px, maximum 1 fraction */
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  
+  /* Espace entre les éléments: 30px */
+  gap: 30px;
+  
+  /* Marge en bas: 40px */
+  margin-bottom: 40px;
+}
+
+/* ============================================================
+   CARTE DE FILM
+   ============================================================ */
+
+.film-card {
+  /* Fond semi-transparent blanc avec 5% opacité */
+  background: rgba(255, 255, 255, 0.05);
+  
+  /* Bordure fine rose avec 20% de transparence */
+  border: 1px solid rgba(255, 0, 150, 0.2);
+  
+  /* Coins arrondis: 15px */
+  border-radius: 15px;
+  
+  /* Cache tout ce qui dépasse des limites de la boîte */
+  overflow: hidden;
+  
+  /* Change le curseur en doigt (indique que c'est cliquable) */
+  cursor: pointer;
+  
+  /* Transition douce de toutes les propriétés */
+  transition: all 0.3s ease;
+  
+  /* Effet vitrail: flou de 10px pour l'effet de verre dépoli */
+  backdrop-filter: blur(10px);
+}
+
+/* Effet au survol de la carte */
+.film-card:hover {
+  /* Soulève la carte de 10px vers le haut */
+  transform: translateY(-10px);
+  
+  /* Bordure devient rose magenta plein */
+  border-color: #ff0096;
+  
+  /* Ajoute une ombre rose sous la carte */
+  box-shadow: 0 15px 40px rgba(255, 0, 150, 0.3);
+  
+  /* Fond devient un peu plus opaque */
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* ============================================================
+   POSTER DU FILM (Image)
+   ============================================================ */
+
+.film-poster {
+  /* Largeur: 100% du conteneur */
+  width: 100%;
+  
+  /* Hauteur fixe: 300px */
+  height: 300px;
+  
+  /* Cache l'image si elle dépasse */
+  overflow: hidden;
+  
+  /* Fond dégradé violet pour les images manquantes */
+  background: linear-gradient(135deg, #1a0033, #330066);
+}
+
+/* Image à l'intérieur du poster */
+.film-poster img {
+  /* Largeur: 100% */
+  width: 100%;
+  
+  /* Hauteur: 100% */
+  height: 100%;
+  
+  /* Ajuste l'image pour couvrir le conteneur sans distorsion 
+     (coupe l'image si nécessaire) */
+  object-fit: cover;
+  
+  /* Transition douce de la transformation */
+  transition: transform 0.3s ease;
+}
+
+/* Au survol de la carte, l'image se zoome légèrement */
+.film-card:hover .film-poster img {
+  /* Agrandit l'image de 5% */
+  transform: scale(1.05);
+}
+
+/* ============================================================
+   INFORMATIONS DU FILM (Titre, Synopsis, Durée)
+   ============================================================ */
+
+.film-info {
+  /* Espacement intérieur: 20px */
+  padding: 20px;
+  
+  /* Couleur du texte: blanc */
+  color: white;
+}
+
+/* Titre du film */
+.film-title {
+  /* Annule la marge par défaut des h3 */
+  margin: 0 0 10px 0;
+  
+  /* Taille: 1.2rem */
+  font-size: 1.2rem;
+  
+  /* Épaisseur: 600 = semi-gras */
+  font-weight: 600;
+  
+  /* Couleur: rose clair */
+  color: #ffb3ff;
+  
+  /* Hauteur de ligne: 1.4 (4 × la hauteur de la police) */
+  line-height: 1.4;
+}
+
+/* Synopsis du film */
+.film-synopsis {
+  /* Marges: 10px haut/bas, 0 gauche/droite */
+  margin: 10px 0;
+  
+  /* Taille: 0.9rem (un peu plus petit) */
+  font-size: 0.9rem;
+  
+  /* Couleur: bleu/gris clair */
+  color: #b0b0d0;
+  
+  /* Hauteur de ligne: 1.5 */
+  line-height: 1.5;
+  
+  /* Hauteur fixe: 54px (permet ~2 lignes maximum) */
+  height: 54px;
+  
+  /* Cache le texte qui dépasse */
+  overflow: hidden;
+}
+
+/* Durée du film */
+.film-duration {
+  /* Marge: 10px en haut, 0 partout ailleurs */
+  margin: 10px 0 0 0;
+  
+  /* Taille: 0.85rem (petit) */
+  font-size: 0.85rem;
+  
+  /* Couleur: gris/bleu encore plus foncé */
+  color: #8080a0;
+  
+  /* Texte en italique */
+  font-style: italic;
+}
+
+/* ============================================================
+   MODAL (Fenêtre Pop-up)
+   ============================================================ */
+
+/* Fond semi-transparent derrière la modal */
+.modal-overlay {
+  /* Position fixe: reste au même endroit quand on scroll */
+  position: fixed;
+  
+  /* Couvre tout l'écran */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  
+  /* Fond noir semi-transparent */
+  background: rgba(0, 0, 0, 0.8);
+  
+  /* Flexbox pour centrer la modal */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  /* Assure que la modal est au-dessus de tout */
+  z-index: 1000;
+  
+  /* Flou léger de 5px */
+  backdrop-filter: blur(5px);
+  
+  /* Animation d'apparition en 0.3 secondes */
+  animation: fadeIn 0.3s ease;
+}
+
+/* Animation de fond: apparition en fondu */
+@keyframes fadeIn {
+  /* État initial: invisible */
+  from {
+    opacity: 0;
+  }
+  /* État final: visible */
+  to {
+    opacity: 1;
+  }
+}
+
+/* Boîte de contenu de la modal */
+.modal-content {
+  /* Gradient sombre bleu */
+  background: linear-gradient(135deg, #1a1f3a 0%, #0f1220 100%);
+  
+  /* Bordure rose magenta: 2px */
+  border: 2px solid #ff0096;
+  
+  /* Coins arrondis: 20px */
+  border-radius: 20px;
+  
+  /* Largeur max: 800px (pas plus grand) */
+  max-width: 800px;
+  
+  /* Largeur: 90% de l'écran */
+  width: 90%;
+  
+  /* Hauteur max: 90% de la fenêtre */
+  max-height: 90vh;
+  
+  /* Si le contenu dépasse, une barre de défilement apparaît */
+  overflow-y: auto;
+  
+  /* Position relative pour les enfants positionnés en absolu */
+  position: relative;
+  
+  /* Ombre rose sous la modal */
+  box-shadow: 0 25px 60px rgba(255, 0, 150, 0.3);
+  
+  /* Animation: slide vers le haut en 0.3 secondes */
+  animation: slideUp 0.3s ease;
+}
+
+/* Animation de la modal: glissement vers le haut */
+@keyframes slideUp {
+  /* État initial: 50px plus bas et invisible */
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  /* État final: à sa position et visible */
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ============================================================
+   BOUTON FERMETURE (X)
+   ============================================================ */
+
+.modal-close {
+  /* Position fixe par rapport à la modal */
+  position: absolute;
+  
+  /* En haut à droite */
+  top: 20px;
+  right: 20px;
+  
+  /* Fond rose semi-transparent */
+  background: rgba(255, 0, 150, 0.2);
+  
+  /* Pas de bordure */
+  border: none;
+  
+  /* Couleur du texte: blanc */
+  color: white;
+  
+  /* Taille du symbole: 2rem (très grand) */
+  font-size: 2rem;
+  
+  /* Curseur en doigt */
+  cursor: pointer;
+  
+  /* Carré de 50px × 50px */
+  width: 50px;
+  height: 50px;
+  
+  /* Coin arrondi à 50%: devient un cercle */
+  border-radius: 50%;
+  
+  /* Flexbox pour centrer le X à l'intérieur */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  /* Transition douce */
+  transition: all 0.3s ease;
+  
+  /* Au-dessus des autres éléments */
+  z-index: 10;
+}
+
+/* Au survol du bouton */
+.modal-close:hover {
+  /* Fond devient rose plein */
+  background: #ff0096;
+  
+  /* Tourne le X de 90 degrés */
+  transform: rotate(90deg);
+}
+
+/* ============================================================
+   CONTENU DE LA MODAL
+   ============================================================ */
+
+.modal-body {
+  /* Espacement intérieur: 40px partout */
+  padding: 40px;
+  
+  /* Couleur du texte: blanc */
+  color: white;
+}
+
+/* Poster dans la modal */
+.modal-poster {
+  /* Largeur: 100% */
+  width: 100%;
+  
+  /* Hauteur max: 400px */
+  max-height: 400px;
+  
+  /* Coins arrondis */
+  border-radius: 15px;
+  
+  /* Cache le qui dépasse */
+  overflow: hidden;
+  
+  /* Marge en bas: 30px */
+  margin-bottom: 30px;
+}
+
+/* Image du poster */
+.modal-poster img {
+  /* Remplisseur totalement */
+  width: 100%;
+  height: 100%;
+  
+  /* Couvre le conteneur sans distorsion */
+  object-fit: cover;
+}
+
+/* Titre dans la modal */
+.modal-details h2 {
+  /* Taille: 2rem (très grand) */
+  font-size: 2rem;
+  
+  /* Marges: 0 en haut et gauche, 20px en bas et droite */
+  margin: 0 0 20px 0;
+  
+  /* Couleur: rose clair */
+  color: #ffb3ff;
+  
+  /* Ombre très légère */
+  text-shadow: 0 2px 10px rgba(255, 0, 150, 0.2);
+}
+
+/* Synopsis complet dans la modal */
+.modal-synopsis {
+  /* Taille: 1rem (normale) */
+  font-size: 1rem;
+  
+  /* Hauteur de ligne: 1.6 */
+  line-height: 1.6;
+  
+  /* Couleur: bleu/gris clair */
+  color: #b0b0d0;
+  
+  /* Marge en bas: 25px */
+  margin-bottom: 25px;
+}
+
+/* ============================================================
+   MÉTADONNÉES (Durée, etc.)
+   ============================================================ */
+
+.modal-meta {
+  /* Fond très léger rose */
+  background: rgba(255, 0, 150, 0.05);
+  
+  /* Espacement: 20px */
+  padding: 20px;
+  
+  /* Coins arrondis */
+  border-radius: 10px;
+  
+  /* Marge en bas */
+  margin-bottom: 25px;
+  
+  /* Bordure gauche rose: 4px (accent) */
+  border-left: 4px solid #ff0096;
+}
+
+/* Paragraphes dans les métadonnées */
+.modal-meta p {
+  /* Marges: 10px haut/bas */
+  margin: 10px 0;
+  
+  /* Couleur: bleu/blanc */
+  color: #c0c0e0;
+}
+
+/* Texte en gras dans les métadonnées */
+.modal-meta strong {
+  /* Couleur: rose clair */
+  color: #ffb3ff;
+}
+
+/* ============================================================
+   LECTEUR VIDÉO YOUTUBE
+   ============================================================ */
+
+.video-container {
+  /* Largeur: 100% */
+  width: 100%;
+  
+  /* Marge en haut */
+  margin-top: 25px;
+  
+  /* Coins arrondis */
+  border-radius: 10px;
+  
+  /* Cache si la vidéo dépasse */
+  overflow: hidden;
+  
+  /* Ombre rose */
+  box-shadow: 0 10px 30px rgba(255, 0, 150, 0.2);
+}
+
+/* ============================================================
+   MESSAGES (Chargement, Erreur, Aucun film)
+   ============================================================ */
+
+.loading,
+.error-message,
+.no-films {
+  /* Aligne le texte au centre */
+  text-align: center;
+  
+  /* Espacement: 60px haut/bas, 20px gauche/droite */
+  padding: 60px 20px;
+  
+  /* Couleur: blanc */
+  color: white;
+  
+  /* Taille: 1.2rem */
+  font-size: 1.2rem;
+}
+
+/* Message d'erreur spécifique */
+.error-message {
+  /* Couleur: rose/rouge */
+  color: #ff6b9d;
+  
+  /* Fond rose très léger */
+  background: rgba(255, 107, 157, 0.1);
+  
+  /* Bordure rose */
+  border: 2px solid #ff6b9d;
+  
+  /* Coins arrondis */
+  border-radius: 10px;
+  
+  /* Espacement: 30px */
+  padding: 30px;
+}
+
+/* Message "Aucun film" */
+.no-films {
+  /* Couleur: bleu/gris */
+  color: #b0b0d0;
+  
+  /* Taille: 1.3rem */
+  font-size: 1.3rem;
+}
+
+/* ============================================================
+   RESPONSIVE - Tablettes (max 768px)
+   ============================================================ */
+
+@media (max-width: 768px) {
+  /* Réduit l'espacement du conteneur */
+  .galerie-container {
+    padding: 20px 10px;
+  }
+
+  /* Réduit la taille du titre */
+  .galerie-header h1 {
+    font-size: 2rem;
+  }
+
+  /* Réduit le sous-titre */
+  .galerie-header p {
+    font-size: 1rem;
+  }
+
+  /* Réduit la taille des cartes */
+  .films-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 20px;
+  }
+
+  /* Réduit la hauteur du poster */
+  .film-poster {
+    height: 220px;
+  }
+
+  /* Modal plus large sur tablette */
+  .modal-content {
+    width: 95%;
+    border-radius: 15px;
+  }
+
+  /* Réduit l'espacement de la modal */
+  .modal-body {
+    padding: 25px;
+  }
+
+  /* Réduit le titre de la modal */
+  .modal-details h2 {
+    font-size: 1.5rem;
+  }
+
+  /* Contrôles en colonne (un au-dessus de l'autre) */
+  .galerie-controls {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  /* Les contrôles prennent toute la largeur */
+  .search-box,
+  .sort-box {
+    min-width: unset;
+  }
+}
+
+/* ============================================================
+   RESPONSIVE - Téléphones (max 480px)
+   ============================================================ */
+
+@media (max-width: 480px) {
+  /* Titre très réduit */
+  .galerie-header h1 {
+    font-size: 1.5rem;
+  }
+
+  /* Une colonne: une seule carte par ligne */
+  .films-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  /* Poster petit */
+  .film-poster {
+    height: 200px;
+  }
+
+  /* Espacement réduit dans la modal */
+  .modal-body {
+    padding: 20px;
+  }
+
+  /* Titre modal: petite taille */
+  .modal-details h2 {
+    font-size: 1.2rem;
+  }
+
+  /* Synopsis: petit texte */
+  .modal-synopsis {
+    font-size: 0.9rem;
+  }
+}
