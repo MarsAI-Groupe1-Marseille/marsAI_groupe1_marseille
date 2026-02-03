@@ -1,5 +1,5 @@
 -- ============================================================
---  RESET TOTAL & INITIALISATION - MARS AI FESTIVAL
+-- 🧹 RESET TOTAL & INITIALISATION - MARS AI FESTIVAL
 -- ============================================================
 
 -- 1. SUPPRESSION ET CRÉATION DE LA BASE
@@ -12,11 +12,11 @@ SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- ============================================================
---  CRÉATION DES TABLES (MVP 1 - Carnet de Note)
+-- 🚀 CRÉATION DES TABLES (Mise à jour Spécifications PDF)
 -- ============================================================
 
 -- ------------------------------------------------------------
--- 1. TABLE : USERS
+-- 1. TABLE : USERS (Admin / Jury)
 -- ------------------------------------------------------------
 DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
@@ -29,33 +29,119 @@ CREATE TABLE `users` (
   `invite_token` VARCHAR(255) NULL,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ------------------------------------------------------------
--- 2. TABLE : DIRECTORS
+-- 2. TABLE : DIRECTORS (Le Réalisateur)
 -- ------------------------------------------------------------
+-- Mise à jour selon PDF Section 1
 DROP TABLE IF EXISTS `directors`;
 CREATE TABLE `directors` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `email` VARCHAR(255) NOT NULL,
-  `full_name` VARCHAR(255) NOT NULL,
-  `phone` VARCHAR(50),
-  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  
+  -- Identité
+  `civility` ENUM('M', 'Mme', 'Iel') DEFAULT 'M',
+  `first_name` VARCHAR(100) NOT NULL,
+  `last_name` VARCHAR(100) NOT NULL,
+  `birth_date` DATE NOT NULL, -- Pour validation 18 ans
+  
+  -- Contact
+  `email` VARCHAR(255) NOT NULL UNIQUE,
+  `phone` VARCHAR(50),      -- Fixe
+  `mobile` VARCHAR(50) NOT NULL, -- Mobile obligatoire
+  
+  -- Adresse (Localisation)
+  `address` VARCHAR(255),
+  `zip_code` VARCHAR(20),
+  `city` VARCHAR(100),
+  `country` VARCHAR(100),
+  
+  -- Profil Pro
+  `job_title` VARCHAR(100) NOT NULL, -- Métier actuel
+  
+  -- Réseaux Sociaux & Marketing
+  -- On stocke les liens (YouTube, Insta, LinkedIn...) en JSON pour la flexibilité
+  `social_links` JSON, 
+  `marketing_source` VARCHAR(100), -- "Comment avez-vous connu..."
+  `newsletter_optin` BOOLEAN DEFAULT FALSE,
+
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ------------------------------------------------------------
--- 3. TABLE : JURY_LISTS
+-- 3. TABLE : SUBMISSIONS (Les Films)
 -- ------------------------------------------------------------
+-- Mise à jour selon PDF Sections 2, 3 et 4
+DROP TABLE IF EXISTS `submissions`;
+CREATE TABLE `submissions` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `director_id` INT NOT NULL,
+  
+  -- Métadonnées Film
+  `title_original` VARCHAR(255) NOT NULL,
+  `title_english` VARCHAR(255),
+  `duration_seconds` INT NOT NULL, -- En secondes (Validation <= 60s coté Back)
+  `language_main` VARCHAR(50) NOT NULL,
+  `theme_tags` VARCHAR(255), -- Tags sémantiques (séparés par virgules)
+  
+  -- Pitch / Synopsis
+  `synopsis_original` TEXT NOT NULL,
+  `synopsis_english` TEXT,
+  
+  -- Section IA (Fondamental)
+  `ai_classification` ENUM('100% IA', 'Hybrid') NOT NULL,
+  `ai_tools` TEXT,        -- Stack techno (Midjourney, Runway...)
+  `ai_methodology` TEXT,  -- Note d'intention technique
+  
+  -- Fichiers & URLs
+  `youtube_id` VARCHAR(50),          -- L'ID de la vidéo finale
+  `poster_url` VARCHAR(255),         -- Vignette officielle
+  `gallery_urls` JSON,               -- Jusqu'à 3 images (Stockées en JSON: ["url1", "url2"])
+  `has_subtitles` BOOLEAN DEFAULT FALSE, -- Si True, on a reçu un .srt (stocké sur disque)
+  
+  -- Statuts Système
+  `video_status` ENUM('uploading', 'processing', 'ready', 'error') DEFAULT 'uploading',
+  `approval_status` ENUM('submitted', 'approved', 'rejected', 'incomplete') DEFAULT 'submitted',
+  
+  `edit_token` VARCHAR(255), -- Pour modification par le réalisateur
+  
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  
+  CONSTRAINT `fk_submission_director` FOREIGN KEY (`director_id`) REFERENCES `directors` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ------------------------------------------------------------
+-- 4. TABLE : COLLABORATORS (L'Équipe)
+-- ------------------------------------------------------------
+-- NOUVEAU : Selon PDF Section 5 "Composition de l'Équipe"
+DROP TABLE IF EXISTS `collaborators`;
+CREATE TABLE `collaborators` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `submission_id` INT NOT NULL,
+  
+  `role` VARCHAR(100) NOT NULL, -- Scénariste, Monteur, etc.
+  `civility` VARCHAR(20),
+  `first_name` VARCHAR(100),
+  `last_name` VARCHAR(100),
+  `job_title` VARCHAR(100),
+  `email` VARCHAR(255),
+  
+  CONSTRAINT `fk_collab_submission` FOREIGN KEY (`submission_id`) REFERENCES `submissions` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ------------------------------------------------------------
+-- 5. TABLES JURY & MODÉRATION (Inchangées ou adaptées)
+-- ------------------------------------------------------------
+
 DROP TABLE IF EXISTS `jury_lists`;
 CREATE TABLE `jury_lists` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `name` VARCHAR(255) NOT NULL,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- ------------------------------------------------------------
--- 4. TABLE : JURY_MEMBERS
--- ------------------------------------------------------------
 DROP TABLE IF EXISTS `jury_members`;
 CREATE TABLE `jury_members` (
   `user_id` INT NOT NULL,
@@ -63,32 +149,8 @@ CREATE TABLE `jury_members` (
   PRIMARY KEY (`user_id`, `jury_list_id`),
   CONSTRAINT `fk_member_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_member_list` FOREIGN KEY (`jury_list_id`) REFERENCES `jury_lists` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- ------------------------------------------------------------
--- 5. TABLE : SUBMISSIONS
--- ------------------------------------------------------------
-DROP TABLE IF EXISTS `submissions`;
-CREATE TABLE `submissions` (
-  `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `director_id` INT NOT NULL,
-  `title` VARCHAR(255) NOT NULL,
-  `synopsis` TEXT,
-  `poster_url` VARCHAR(255),
-  `duration` INT DEFAULT 0,
-  `youtube_id` VARCHAR(50),
-  `video_status` ENUM('uploading', 'processing', 'ready', 'error') DEFAULT 'uploading',
-  `status` ENUM('submitted', 'approved', 'rejected', 'incomplete') DEFAULT 'submitted',
-  `edit_token` VARCHAR(255),
-  `token_expires_at` DATETIME,
-  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  CONSTRAINT `fk_submission_director` FOREIGN KEY (`director_id`) REFERENCES `directors` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- ------------------------------------------------------------
--- 6. TABLE : JURY_LIST_SUBMISSIONS
--- ------------------------------------------------------------
 DROP TABLE IF EXISTS `jury_list_submissions`;
 CREATE TABLE `jury_list_submissions` (
   `jury_list_id` INT NOT NULL,
@@ -97,11 +159,8 @@ CREATE TABLE `jury_list_submissions` (
   PRIMARY KEY (`jury_list_id`, `submission_id`),
   CONSTRAINT `fk_jls_list` FOREIGN KEY (`jury_list_id`) REFERENCES `jury_lists` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_jls_submission` FOREIGN KEY (`submission_id`) REFERENCES `submissions` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- ------------------------------------------------------------
--- 7. TABLE : MODERATION_TICKETS
--- ------------------------------------------------------------
 DROP TABLE IF EXISTS `moderation_tickets`;
 CREATE TABLE `moderation_tickets` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
@@ -113,11 +172,8 @@ CREATE TABLE `moderation_tickets` (
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT `fk_ticket_submission` FOREIGN KEY (`submission_id`) REFERENCES `submissions` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_ticket_admin` FOREIGN KEY (`admin_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- ------------------------------------------------------------
--- 8. TABLE : JURY_EVALUATIONS
--- ------------------------------------------------------------
 DROP TABLE IF EXISTS `jury_evaluations`;
 CREATE TABLE `jury_evaluations` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
@@ -129,28 +185,36 @@ CREATE TABLE `jury_evaluations` (
   UNIQUE KEY `unique_vote` (`submission_id`, `user_id`),
   CONSTRAINT `fk_eval_submission` FOREIGN KEY (`submission_id`) REFERENCES `submissions` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_eval_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- ============================================================
---  JEU DE DONNÉES DE TEST (SEED)
+-- 🧪 JEU DE DONNÉES DE TEST (SEED ACTUALISÉ)
 -- ============================================================
 
 INSERT INTO `users` (`email`, `full_name`, `role`, `password_hash`) VALUES
-('admin@mars-festival.com', 'Super Admin', 'admin', 'HASH_DU_MOT_DE_PASSE'),
-('jury@mars-festival.com', 'Alice Jury', 'jury', 'HASH_DU_MOT_DE_PASSE');
+('admin@mars-festival.com', 'Super Admin', 'admin', '$2b$10$FakeHash...'),
+('jury@mars-festival.com', 'Alice Jury', 'jury', '$2b$10$FakeHash...');
 
-INSERT INTO `jury_lists` (`name`) VALUES ('Compétition IA Générative');
-
+INSERT INTO `jury_lists` (`name`) VALUES ('Compétition IA Générative 2026');
 INSERT INTO `jury_members` (`user_id`, `jury_list_id`) VALUES (2, 1);
 
-INSERT INTO `directors` (`email`, `full_name`) VALUES ('spielberg@gmail.com', 'Steven Spielberg');
+-- Insertion d'un Réalisateur (Avec les nouveaux champs)
+INSERT INTO `directors` 
+(civility, first_name, last_name, birth_date, email, mobile, address, city, country, job_title, social_links) 
+VALUES 
+('M', 'Steven', 'Spielberg', '1946-12-18', 'spielberg@gmail.com', '0600000000', '10 Universal City Plaza', 'Los Angeles', 'USA', 'Réalisateur', '{"twitter": "@stevenspielberg"}');
 
-INSERT INTO `submissions` (`director_id`, `title`, `synopsis`, `youtube_id`, `video_status`, `status`, `duration`) 
-VALUES (1, 'Le Retour du Robot', 'Un robot cherche sa maman.', 'dQw4w9WgXcQ', 'ready', 'approved', 180);
+-- Insertion d'un Film (Avec les nouveaux champs IA)
+INSERT INTO `submissions` 
+(director_id, title_original, title_english, duration_seconds, language_main, synopsis_original, ai_classification, ai_tools, youtube_id, video_status, approval_status) 
+VALUES 
+(1, 'Le Retour du Robot', 'Robot Return', 58, 'Français', 'Un robot cherche sa maman sur Mars.', 'Hybrid', 'Runway Gen-2, Midjourney v6', 'dQw4w9WgXcQ', 'ready', 'approved');
 
+-- Ajout à la liste du jury
 INSERT INTO `jury_list_submissions` (`jury_list_id`, `submission_id`) VALUES (1, 1);
 
-INSERT INTO `jury_evaluations` (`submission_id`, `user_id`, `vote_status`, `comment`) 
-VALUES (1, 2, 'LIKE', 'Superbe lumière, mais la fin est triste.');
+-- Ajout d'un collaborateur (Nouveau)
+INSERT INTO `collaborators` (submission_id, role, first_name, last_name, job_title)
+VALUES (1, 'Monteur', 'Michael', 'Kahn', 'Chef Monteur');

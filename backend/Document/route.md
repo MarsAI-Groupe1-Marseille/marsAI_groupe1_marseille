@@ -1,84 +1,268 @@
-# 📡 DOCUMENTATION API - MARS AI
+# 📡 DOCUMENTATION API - MARS AI Festival
 
-**Version API :** 1.0
+**Version API :** 2.0  
 **Base URL :** `http://localhost:3000` (ou votre domaine)
 
 ---
 
-## 1. AUTHENTIFICATION & UTILISATEURS
-*Gestion des comptes et de la sécurité.*
+## 1. SOUMISSION PUBLIQUE (Cœur du Système) 🎬
 
-### 🟢 Inscription (Register)
-* **Route :** `POST /api/auth/register`
-* **Description :** Créer un nouveau compte utilisateur.
-* **JSON Reçu (Input) :**
-  ```json
-  {
-    "email": "lucas@mail.com",
-    "pseudo": "SkyWalker",
-    "nom_complet": "Lucas Skywalker",
-    "password": "superSecretPassword"
-  }
-  ```
+Pas besoin de compte. Le réalisateur remplit le formulaire et envoie tout.
 
-### 🟢 JSON Renvoyé (Output) - 201 Created :
- ```json
-  {
-  "message": "Compte créé avec succès",
-  "user": {
-    "id_utilisateur": 10,
-    "email": "lucas@mail.com",
-    "pseudo": "SkyWalker"
-  }
+### 🟢 Soumettre un film (Formulaire Principal)
+
+**Route :** `POST /api/submissions`
+
+**Format :** `multipart/form-data` (Important pour les fichiers)
+
+**Description :** Crée le réalisateur (si nouveau), le film, l'équipe et upload les fichiers.
+
+#### Champs Requis (Body) :
+
+| Champ | Type | Description |
+| :--- | :--- | :--- |
+| **Director Info** | | |
+| director_email | String | Email du réalisateur (Clé unique) |
+| director_firstname | String | Prénom |
+| director_lastname | String | Nom |
+| director_birthdate | Date | YYYY-MM-DD (Check 18+) |
+| director_phone | String | Mobile |
+| director_job | String | Métier |
+| director_address | String | Adresse complète |
+| **Film Info** | | |
+| title_original | String | Titre du film |
+| synopsis_original | String | Pitch (max 300 car.) |
+| duration | Int | Durée en secondes |
+| ai_classification | Enum | '100% IA' ou 'Hybrid' |
+| ai_tools | String | Liste des outils (Midjourney, Runway...) |
+| **Fichiers** | | |
+| video_file | File | Le fichier vidéo (.mp4) |
+| poster_file | File | L'affiche (.jpg, .png) |
+| subtitle_file | File | (Optionnel) Le fichier .srt |
+| gallery_files | Files[] | (Optionnel) Jusqu'à 3 images |
+| **JSON Data** | | |
+| collaborators | String | JSON stringifié : `[{"role":"Monteur", "first_name":"Bob"}]` |
+
+#### JSON Renvoyé (201 Created) :
+
+```json
+{
+  "message": "Film envoyé avec succès !",
+  "submission_id": 45,
+  "youtube_id": "dQw4w9WgXcQ",
+  "edit_token": "123e4567-e89b-12d3-a456-426614174000",
+  "director": "Steven Spielberg"
 }
-  ```
-
-### 🟢 Connexion (Login) 
-* **Route :** `POST /api/auth/login`
-* **Description :** Connecter un utilisateur et recevoir un token (JWT).
-* **JSON Reçu (Input) :**
-  ```json
-  {
-    "email": "lucas@mail.com",
-    "password": "superSecretPassword"
-  }
-  ```
-
-* **JSON Renvoyé (Output) - 200 OK :**
-  ```json
-  {
-    "token": "eyJhbGciOiJIUzI1NiIsInR...",
-    "user": {
-      "id_utilisateur": 10,
-      "role_codes": ["USER", "JURY"]
-    }
-  }
-  ```
+```
 
 ---
 
-## 2. GESTION DES FILMS 🎬
-*Le cœur du festival.*
+## 2. ÉDITION RÉALISATEUR (Via Token) ✏️
 
-### 🔵 Lister les films (Public)
-* **Route :** `GET /api/films`
-* **Description :** Récupérer la liste des films validés (APPROVED).
-* **Paramètres optionnels :** `?sort=date`, `?outil=midjourney`
-* **JSON Renvoyé (Output) - 200 OK :**
-  ```json
-  [
-    {
-      "id_film": 45,
-      "titre": "Cyber Dreams",
-      "video_url": "https://youtu.be/...",
-      "realisateur": "SkyWalker",
-      "outils": ["Midjourney", "Runway"]
-    },
-    {
-      "id_film": 46,
-      "titre": "Lost in Space",
-      "realisateur": "SarahConnor",
-      "outils": ["ChatGPT"]
+Le réalisateur utilise le lien reçu par email pour modifier sa fiche.
+
+### 🔵 Récupérer ma soumission
+
+**Route :** `GET /api/submissions/:token`
+
+**Description :** Affiche le formulaire pré-rempli pour modification.
+
+#### JSON Renvoyé (200 OK) :
+
+```json
+{
+  "id": 45,
+  "title_original": "Le Retour du Robot",
+  "poster_url": "uploads/poster-123.jpg",
+  "video_status": "ready",
+  "director": {
+    "first_name": "Steven",
+    "last_name": "Spielberg",
+    "email": "spielberg@gmail.com"
+  },
+  "collaborators": [
+    { "role": "Monteur", "first_name": "Michael", "last_name": "Kahn" }
+  ]
+}
+```
+
+### 🟠 Modifier les textes (Pas la vidéo)
+
+**Route :** `PUT /api/submissions/:token`
+
+**Format :** `application/json` (ou `multipart` si on change l'affiche)
+
+**Description :** Met à jour titre, synopsis, équipe ou affiche. Interdit de changer la vidéo ici.
+
+#### JSON Reçu :
+
+```json
+{
+  "title_original": "Le Retour du Robot (Final Cut)",
+  "synopsis_original": "Correction de la description...",
+  "collaborators": [...]
+}
+```
+
+---
+
+## 3. AUTHENTIFICATION (Admin & Jury) 🔐
+
+Seuls les membres du staff ont un compte avec mot de passe.
+
+### 🟢 Connexion (Login)
+
+**Route :** `POST /api/auth/login`
+
+#### JSON Reçu :
+
+```json
+{
+  "email": "jury@mars-festival.com",
+  "password": "secretPassword"
+}
+```
+
+#### JSON Renvoyé (200 OK) :
+
+```json
+{
+  "token": "eyJhbGciOiJIUzI...",
+  "user": {
+    "id": 2,
+    "role": "jury",
+    "full_name": "Alice Jury"
+  }
+}
+```
+
+---
+
+## 4. DASHBOARD JURY & ADMIN 🕵️
+
+Routes protégées (Header : `Authorization: Bearer TOKEN`)
+
+### 🔵 Lister tous les films
+
+**Route :** `GET /api/admin/submissions`
+
+**Filtres (Query Params) :** `?status=submitted` (nouveaux), `?status=approved`, `?ai=100% IA`
+
+#### JSON Renvoyé :
+
+```json
+[
+  {
+    "id": 45,
+    "title": "Le Retour du Robot",
+    "director": "Steven Spielberg",
+    "status": "submitted",
+    "ai_classification": "Hybrid",
+    "thumbnail": "uploads/poster-123.jpg"
+  }
+]
+```
+
+### 🟠 Modération (Valider/Refuser)
+
+**Route :** `PATCH /api/admin/submissions/:id/status`
+
+**Description :** L'admin valide le film ou demande des corrections.
+
+#### JSON Reçu :
+
+```json
+{
+  "approval_status": "rejected",
+  "reason": "Son inaudible à 00:45"
+}
+```
+
+---
+
+## 5. SYSTÈME DE VOTE (Jury) ⭐
+
+### 🟢 Ajouter un vote
+
+**Route :** `POST /api/jury/vote`
+
+**Description :** Un juré donne son avis sur un film.
+
+#### JSON Reçu :
+
+```json
+{
+  "submission_id": 45,
+  "vote_status": "LIKE",
+  "comment": "Visuellement bluffant mais scénario faible."
+}
+```
+
+### 🔵 Voir les résultats (Admin)
+
+**Route :** `GET /api/admin/submissions/:id/votes`
+
+#### JSON Renvoyé :
+
+```json
+{
+  "submission_id": 45,
+  "stats": { "LIKE": 3, "DISLIKE": 1, "DISCUSS": 0 },
+  "details": [
+    { "jury": "Alice", "vote": "LIKE", "comment": "Top !" }
+  ]
+}
+```
+
+---
+
+## 6. GALERIE PUBLIQUE 🌍
+
+Ce que voient les visiteurs du site.
+
+### 🔵 Le Catalogue (Films Validés)
+
+**Route :** `GET /api/gallery`
+
+**Filtres :** `?year=2026`, `?winner=true`
+
+**Description :** Ne renvoie QUE les films où `approval_status = 'approved'`.
+
+#### JSON Renvoyé :
+
+```json
+[
+  {
+    "id": 45,
+    "youtube_id": "dQw4w9WgXcQ",
+    "title": "Le Retour du Robot",
+    "director": "Steven Spielberg",
+    "synopsis": "Un robot cherche...",
+    "tags": ["Futur", "Espace"],
+    "poster_url": "http://api.marsfestival.com/uploads/poster-123.jpg"
+  }
+]
+```
+
+---
+
+## 7. TABLE DE RÉFÉRENCE (Listes déroulantes) 📋
+
+### 🔵 Infos Formulaire
+
+**Route :** `GET /api/config/form-data`
+
+**Description :** Pour remplir les select du frontend.
+
+#### JSON Renvoyé :
+
+```json
+{
+  "ai_classifications": ["100% IA", "Hybrid"],
+  "civilities": ["M", "Mme", "Iel"],
+  "marketing_sources": ["Instagram", "LinkedIn", "Bouche à oreille"]
+}
+```
     }
   ]
   ```
