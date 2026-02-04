@@ -4,10 +4,10 @@ import { Routes, Route } from 'react-router-dom';
 import Home from './pages/home.jsx';
 import Galerie from './pages/galerie.jsx';
 import Login from './pages/login.jsx';
+import Dashboard from './pages/dashboard.jsx';
 import './App.css'
 
 function App() { 
- 
 
   return (
     <div className="App">
@@ -15,7 +15,11 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/galerie" element={<Galerie />} />
         <Route path="/login" element={<Login />} />
-    </Routes>
+
+        <Route path="/dashboard" element={<Dashboard />} />
+
+      </Routes>
+
       
     </div>
   )
