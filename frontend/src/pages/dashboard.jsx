@@ -29,3 +29,12 @@ function KpiCard({ label, value }) {
         </div>
     );
 }
+
+const Dashboard = () => {
+  return (
+    <div className="min-h-screen bg-neutral-950 text-white p-8 space-y-10">
+      <header>
+        <span className="text-xs uppercase tracking-widest text-neutral-400">
+          Administrateur
+        </span>
+      </header>
