@@ -34,7 +34,9 @@ const Dashboard = () => {
     return (
         <div className="min-h-screen bg-neutral-950 text-white p-8 space-y-10">
             <header>
-                <span className="text-xs text-neutral-400 uppercase tracking-widest">Espace Administrateur</span>
+                <span className="text-xs text-neutral-400 uppercase tracking-widest">
+                    Espace Administrateur
+                </span>
             </header>
 
             <section>
@@ -91,7 +93,7 @@ const Dashboard = () => {
             </section>
             {/* Section d'information */}
             <section className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 text-neutral-400 text-sm">
-                
+                Dashboard front-end uniquement.
             </section>
 
         </div>
