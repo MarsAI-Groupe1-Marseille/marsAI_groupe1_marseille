@@ -1,5 +1,5 @@
 import React from "react";
-import { Users, Film } from "lucide-react";
+import {BarChart3, Layers, TrendingUp, LayoutDashboard, Users, Film} from "lucide-react";
 
 // Permet à construire le graphique en barres pour chaque mois.
 // label = nom du mois
@@ -31,10 +31,17 @@ function Card({ label, value }) {
     );
 }
 // Le composant React ActionCard reçoit des "props" : title, buttonText, onClick :
-function ActionCard({ title, buttonText, onClick }) {
+function ActionCard({ title, buttonText, onClick, icon }) {
     return (
         <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 flex flex-col justify-between hover:bg-neutral-800 transition">
-            <h3 className="text-lg font-semibold text-violet-400 mb-4">{title}</h3>
+            <div className="flex items-center gap-4 mb-6">
+                <div className="text-violet-500">
+                    {icon}
+                </div>
+                <h3 className="text-lg font-semibold text-violet-400">
+                    {title}
+                </h3>
+            </div>
             <button
             // onClick={onClick} → quand on cliques sur le bouton, la fonction passée en prop est exécutée :
                 onClick={onClick}
@@ -56,8 +63,11 @@ const Dashboard = () => {
             </header>
 
             <section>
-                <h1 className="text-4xl font-bold text-violet-500">Tableau Administrateur :</h1>
-                <p className="text-neutral-400 mt-2">Vue générale de l'activité de la plateforme</p>
+                <h1 className= "flex justify-center items-center gap-3 text-4xl font-bold text-violet-500">
+                    <LayoutDashboard size={32} />
+                    Tableau Administrateur :
+                    </h1>
+                <p className="flex justify-center items-center text-neutral-400 mt-2">Vue générale de l'activité de la plateforme</p>
             </section>
             {/* Affiche 4 cartes KPI avec le composant Card */}
             <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
@@ -70,7 +80,10 @@ const Dashboard = () => {
             <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Graphique barres -> Évolution des soumissions des films*/}
                 <div className="lg:col-span-2 bg-neutral-900 rounded-2xl p-6 border border-neutral-800">
-                    <h2 className="text-lg font-semibold text-violet-400 mb-1">Évolution des soumissions</h2>
+                    <h2 className="flex justify-center items-center gap-2 text-lg font-semibold text-violet-400 mb-1">
+                        <TrendingUp size={20} />
+                        Évolution des soumissions
+                    </h2>
                     <p className="text-sm text-neutral-400 mb-6">Données simulées par mois</p>
                     <div className="flex items-end gap-6 h-56">
                         {stats.map((item) => (
@@ -88,7 +101,10 @@ const Dashboard = () => {
 
                 {/* Répartition des catégories */}
                 <div className="bg-neutral-900 rounded-2xl p-6 border border-neutral-800">
-                    <h2 className="text-lg font-semibold text-violet-400 mb-4">Répartition des catégories</h2>                   
+                    <h2 className="flex justify-center items-center gap-2 text-lg font-semibold text-violet-400 mb-4">
+                        <Layers size={20} />
+                        Répartition des catégories
+                    </h2>                   
                     <div className="space-y-4">
                         {/* Boucle sur categories avec map : Affiche pour chaque catégorie :
                             Nom + pourcentage
@@ -107,16 +123,17 @@ const Dashboard = () => {
                     </div>
                 </div>
             </section>
-            {/* ACTION CARDS */}
             <section className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <ActionCard
                     title="Gestion des utilisateurs"
                     buttonText="Voir les utilisateurs"
+                    icon={<Users size={28} />}
                     onClick={() => window.location.href = "/users"}
                 />
                 <ActionCard
                     title="Gestion des films"
                     buttonText="Voir les films"
+                    icon={<Film size={28} />}
                     onClick={() => window.location.href = "/movies"}
                 />
             </section>
