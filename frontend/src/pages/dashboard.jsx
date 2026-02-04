@@ -1,4 +1,5 @@
 import React from "react";
+import { Users, Film } from "lucide-react";
 
 // Permet à construire le graphique en barres pour chaque mois.
 // label = nom du mois
@@ -26,6 +27,21 @@ function Card({ label, value }) {
         <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 hover:bg-neutral-800 transition">
             <p className="text-sm text-neutral-400">{label}</p>
             <p className="text-3xl font-bold mt-2 text-white">{value}</p>
+        </div>
+    );
+}
+// Le composant React ActionCard reçoit des "props" : title, buttonText, onClick :
+function ActionCard({ title, buttonText, onClick }) {
+    return (
+        <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 flex flex-col justify-between hover:bg-neutral-800 transition">
+            <h3 className="text-lg font-semibold text-violet-400 mb-4">{title}</h3>
+            <button
+            // onClick={onClick} → quand on cliques sur le bouton, la fonction passée en prop est exécutée :
+                onClick={onClick}
+                className="bg-violet-500 hover:bg-violet-600 text-white font-semibold py-2 px-4 rounded"
+            >
+                {buttonText}
+            </button>
         </div>
     );
 }
@@ -91,9 +107,18 @@ const Dashboard = () => {
                     </div>
                 </div>
             </section>
-            {/* Section d'information */}
-            <section className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 text-neutral-400 text-sm">
-                Dashboard front-end uniquement.
+            {/* ACTION CARDS */}
+            <section className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <ActionCard
+                    title="Gestion des utilisateurs"
+                    buttonText="Voir les utilisateurs"
+                    onClick={() => window.location.href = "/users"}
+                />
+                <ActionCard
+                    title="Gestion des films"
+                    buttonText="Voir les films"
+                    onClick={() => window.location.href = "/movies"}
+                />
             </section>
 
         </div>
