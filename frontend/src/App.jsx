@@ -15,9 +15,11 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/galerie" element={<Galerie />} />
         <Route path="/login" element={<Login />} />
+
         <Route path="/dashboard" element={<Dashboard />} />
 
       </Routes>
+
       
     </div>
   )
