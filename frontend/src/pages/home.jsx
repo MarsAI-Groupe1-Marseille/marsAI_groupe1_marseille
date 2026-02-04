@@ -4,10 +4,10 @@ import { ArrowRight, Trophy, Users, Cpu, Globe } from 'lucide-react'; // Assumin
 const Home = () => {
     // Data structures make the JSX cleaner and easier to maintain
     const categories = [
-        { title: "Exploration", img: "https://images.unsplash.com/photo-1541873676-a18131494184?auto=format&fit=crop&q=80&w=400", desc: "Mapping the red planet." },
-        { title: "Colonization", img: "https://images.unsplash.com/photo-1614728853913-1e22ba6e985e?auto=format&fit=crop&q=80&w=400", desc: "Sustainable habitats." },
-        { title: "Terraforming", img: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&q=80&w=400", desc: "Atmospheric generation." },
-        { title: "AI Analysis", img: "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&q=80&w=400", desc: "Data driven future." },
+        { title: "SCI-FI", desc: "" },
+        { title: "HORREUR", desc: "" },
+        { title: "ACTION",  desc: "" },
+        { title: "DRAME", desc: "" },
     ];
 
     return (
@@ -46,11 +46,7 @@ const Home = () => {
                         {categories.map((cat, index) => (
                             <div key={index} className="group relative overflow-hidden rounded-2xl bg-slate-900 border border-white/5 hover:border-orange-500/50 transition-all duration-300">
                                 <div className="h-48 overflow-hidden">
-                                    <img
-                                        src={cat.img}
-                                        alt={cat.title}
-                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 opacity-80 group-hover:opacity-100"
-                                    />
+
                                 </div>
                                 <div className="p-6">
                                     <h3 className="text-xl font-bold text-white mb-2">{cat.title}</h3>
@@ -71,22 +67,22 @@ const Home = () => {
                                 <div className="w-16 h-16 bg-orange-500/10 rounded-full flex items-center justify-center text-orange-500 mb-6">
                                     <Trophy size={32} />
                                 </div>
-                                <h3 className="text-4xl font-bold text-white mb-2">1er Prix</h3>
-                                <p className="text-slate-400">Innovation Spatiale 2025</p>
+                                <h3 className="text-4xl font-bold text-white mb-2">Prix à gagner</h3>
+                                <p className="text-slate-400"></p>
                             </div>
                             <div className="flex flex-col items-center">
                                 <div className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center text-blue-500 mb-6">
                                     <Globe size={32} />
                                 </div>
                                 <h3 className="text-4xl font-bold text-white mb-2">Global</h3>
-                                <p className="text-slate-400">Partenariats Internationaux</p>
+                                <p className="text-slate-400"></p>
                             </div>
                             <div className="flex flex-col items-center">
                                 <div className="w-16 h-16 bg-purple-500/10 rounded-full flex items-center justify-center text-purple-500 mb-6">
                                     <Cpu size={32} />
                                 </div>
-                                <h3 className="text-4xl font-bold text-white mb-2">Top 10</h3>
-                                <p className="text-slate-400">Tech Startups France</p>
+                                <h3 className="text-4xl font-bold text-white mb-2">AI ONLY</h3>
+                                <p className="text-slate-400"></p>
                             </div>
                         </div>
                     </div>
@@ -107,18 +103,6 @@ const Home = () => {
                     </div>
                 </section>
             </main>
-
-            {/* --- FOOTER --- */}
-            <footer className="bg-black py-12 border-t border-white/10">
-                <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
-                    <div className="text-xl font-bold text-white">MARS AI © 2026</div>
-                    <div className="flex gap-6 text-slate-400 text-sm">
-                        <a href="#" className="hover:text-white transition">Mentions Légales</a>
-                        <a href="#" className="hover:text-white transition">Politique de Confidentialité</a>
-                        <a href="#" className="hover:text-white transition">Contact</a>
-                    </div>
-                </div>
-            </footer>
         </div>
     )
 }
