@@ -375,5 +375,7 @@ const Galerie = () => {
   )
 }
 
+// Ceci est donc la page galerie pour les réalisateurs
+
 // Exporte le composant pour qu'il soit utilisable ailleurs
 export default Galerie
