@@ -22,8 +22,8 @@ const Connexion = () => {
   };
 
   const handleGoogleLogin = () => {
-    // Logique de connexion Google
-    console.log('Google login');
+    // Redirection vers la page de connexion Google (URL fournie)
+    window.location.href = 'https://accounts.google.com/v3/signin/accountchooser?continue=https%3A%2F%2Faccounts.google.com%2F&dsh=S1780675980%3A1770209050043930&followup=https%3A%2F%2Faccounts.google.com%2F&ifkv=AXbMIuBzVVGi3rsJSIXSwz7iZ6nvA0-N9WWDlsN6okg0aSsOY7seCtI2X_pvA9Nxzh4j-6iHMLrf&passive=1209600&flowName=GlifWebSignIn&flowEntry=ServiceLogin';
   };
 
   const handleFacebookLogin = () => {
