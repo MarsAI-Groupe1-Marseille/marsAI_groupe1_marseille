@@ -18,3 +18,14 @@ const stats = [
   { label: "Avr", value: 55 },
   { label: "Mai", value: 75 },
 ];
+
+// Récuperation de données depuis le tableau : 
+
+function KpiCard({ label, value }) {
+    return (
+        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
+            <p className="text-sm text-neutral-400">{label}</p>
+            <p className="text-2xl font-bold mt-2 text-white">{value}</p>
+        </div>
+    );
+}
