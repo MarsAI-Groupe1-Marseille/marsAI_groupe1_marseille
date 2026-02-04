@@ -22,8 +22,8 @@ const Connexion = () => {
   };
 
   const handleGoogleLogin = () => {
-    // Logique de connexion Google
-    console.log('Google login');
+    // Redirection vers la page de login Google
+    window.location.href = 'https://accounts.google.com/v3/signin/identifier?dsh=S1812573153%3A1655944654029516&flowEntry=ServiceLogin&flowName=WebLiteSignIn&ifkv=AX3vH39E0iYVTmn-NoMNM_C35EPrno8LWsRx2Qhr0HApkVLZ-Zc_Vql8ouaSQOiXzEmthrpOPAV5';
   };
 
   const handleFacebookLogin = () => {
@@ -137,7 +137,7 @@ const Connexion = () => {
 
             {/* Footer Links */}
             <div className="mt-8 text-center space-y-3">
-              <Link to="/mot-de-passe-oublie" className="block text-sm text-gray-400 hover:text-purple-400 transition">
+              <Link to="https://accounts.google.com/v3/signin/identifier?dsh=S1812573153%3A1655944654029516&flowEntry=ServiceLogin&flowName=WebLiteSignIn&ifkv=AX3vH39E0iYVTmn-NoMNM_C35EPrno8LWsRx2Qhr0HApkVLZ-Zc_Vql8ouaSQOiXzEmthrpOPAV5" className="block text-sm text-gray-400 hover:text-purple-400 transition">
                 Mot de passe oublié ?
               </Link>
             </div>
