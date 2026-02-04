@@ -109,7 +109,7 @@ const Connexion = () => {
                 {/* Google */}
                 <button
                   onClick={handleGoogleLogin}
-                  className="w-14 h-14 bg-gray-900/40 border border-gray-800 hover:border-gray-600 rounded-full flex items-center justify-center transition group"
+                  link url="https://accounts.google.com/v3/signin/identifier?dsh=S1812573153%3A1655944654029516&flowEntry=ServiceLogin&flowName=WebLiteSignIn&ifkv=AX3vH39E0iYVTmn-NoMNM_C35EPrno8LWsRx2Qhr0HApkVLZ-Zc_Vql8ouaSQOiXzEmthrpOPAV5" className="w-14 h-14 bg-gray-900/40 border border-gray-800 hover:border-gray-600 rounded-full flex items-center justify-center transition group"
                   aria-label="Se connecter avec Google"
                 >
                   <svg className="w-6 h-6" viewBox="0 0 24 24">
@@ -137,9 +137,9 @@ const Connexion = () => {
 
             {/* Footer Links */}
             <div className="mt-8 text-center space-y-3">
-              <Link to="/mot-de-passe-oublie" className="block text-sm text-gray-400 hover:text-purple-400 transition">
+              <link url="https://accounts.google.com/v3/signin/identifier?dsh=S1812573153%3A1655944654029516&flowEntry=ServiceLogin&flowName=WebLiteSignIn&ifkv=AX3vH39E0iYVTmn-NoMNM_C35EPrno8LWsRx2Qhr0HApkVLZ-Zc_Vql8ouaSQOiXzEmthrpOPAV5" className="block text-sm text-gray-400 hover:text-purple-400 transition">
                 Mot de passe oublié ?
-              </Link>
+              </link>
             </div>
           </div>
         </div>
