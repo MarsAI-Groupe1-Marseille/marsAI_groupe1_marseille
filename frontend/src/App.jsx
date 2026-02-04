@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
+import{Routes , Route} from 'react-router-dom';
+import Home from './pages/home.jsx';
+import Login from './pages/login.jsx';
+import Galerie from './pages/galerie.jsx';
 import './App.css'
-import Login from './login.jsx'
-import Galerie from './galerie.jsx'
 
 
 function App() { 
