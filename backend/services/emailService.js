@@ -6,7 +6,7 @@
 
 const transporter = require('../config/mail');
 
-const emailService = { // ✅ Nom mis à jour pour correspondre au fichier
+const emailService = {
 
     /**
      * 1. EMAIL DE BIENVENUE
@@ -17,20 +17,20 @@ const emailService = { // ✅ Nom mis à jour pour correspondre au fichier
             await transporter.sendMail({
                 from: process.env.EMAIL_USER,
                 to: user.email,
-                subject: "Bienvenue sur Mars'AI ! 🎬",
+                subject: "Bienvenue sur Mars'AI ! ",
                 html: `
                     <div style="font-family: Arial; color: #333; max-width: 600px;">
                         <h1 style="color: #D32F2F;">Bonjour ${user.username || 'cinéaste'} !</h1>
                         <p>Bienvenue dans l'aventure <strong>Mars'AI</strong>.</p>
                         <p>Ton compte est validé. Tu peux dès maintenant te connecter.</p>
                         <br>
-                        <p>L'équipe Mars'AI 🤖</p>
+                        <p>L'équipe Mars'AI </p>
                     </div>
                 `
             });
-            console.log(`✅ Mail bienvenue envoyé à : ${user.email}`);
+            console.log(`Mail bienvenue envoyé à : ${user.email}`);
         } catch (error) {
-            console.error("❌ Erreur mail bienvenue :", error);
+            console.error(" Erreur mail bienvenue :", error);
         }
     },
 
@@ -49,13 +49,13 @@ const emailService = { // ✅ Nom mis à jour pour correspondre au fichier
                         <h1>Bravo !</h1>
                         <p>Ton court-métrage <strong>"${filmTitle}"</strong> a bien été reçu.</p>
                         <p>Notre jury va bientôt le visionner. Tu recevras une notification s'il est sélectionné.</p>
-                        <p>Bonne chance ! 🍀</p>
+                        <p>Bonne chance ! </p>
                     </div>
                 `
             });
-            console.log(`✅ Mail dépôt envoyé à : ${user.email}`);
+            console.log(`Mail dépôt envoyé à : ${user.email}`);
         } catch (error) {
-            console.error("❌ Erreur mail dépôt :", error);
+            console.error("Erreur mail dépôt :", error);
         }
     },
 
@@ -69,7 +69,7 @@ const emailService = { // ✅ Nom mis à jour pour correspondre au fichier
             await transporter.sendMail({
                 from: process.env.EMAIL_USER,
                 to: email,
-                subject: "Tu es invité(e) au Jury Mars'AI ! ⚖️",
+                subject: "Tu es invité(e) au Jury Mars'AI ! ",
                 html: `
                     <div style="font-family: Arial; color: #333;">
                         <h1 style="color: #1976D2;">Félicitations !</h1>
@@ -83,11 +83,11 @@ const emailService = { // ✅ Nom mis à jour pour correspondre au fichier
                     </div>
                 `
             });
-            console.log(`✅ Mail invitation jury envoyé à : ${email}`);
+            console.log(`Mail invitation jury envoyé à : ${email}`);
         } catch (error) {
-            console.error("❌ Erreur mail jury :", error);
+            console.error(" Erreur mail jury :", error);
         }
     }
 };
 
-module.exports = emailService; // ✅ Export mis à jour
+module.exports = emailService; 
