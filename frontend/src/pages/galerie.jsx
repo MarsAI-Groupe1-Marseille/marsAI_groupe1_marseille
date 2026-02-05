@@ -28,7 +28,7 @@ const Galerie = () => {
       id: 1,
       title: "Les Rouges de Mars",
       synopsis: "Une épopée scientifique suivant les premiers explorateurs humains découvrant les mystères cachés de la planète rouge.",
-      duration: 142,
+      duration: 1.42,
       poster_url: "https://via.placeholder.com/300x450?text=Les+Rouges+de+Mars",
       youtube_id: "dQw4w9WgXcQ",
       created_at: new Date(2025, 11, 15).toISOString()
@@ -37,7 +37,7 @@ const Galerie = () => {
       id: 2,
       title: "Horizon Martien",
       synopsis: "Une histoire captivante d'une femme astronaute qui doit survivre seule sur Mars après un accident catastrophique.",
-      duration: 128,
+      duration: 1.28,
       poster_url: "https://via.placeholder.com/300x450?text=Horizon+Martien",
       youtube_id: "dQw4w9WgXcQ",
       created_at: new Date(2025, 10, 20).toISOString()
@@ -46,7 +46,7 @@ const Galerie = () => {
       id: 3,
       title: "Base Éternelle",
       synopsis: "Une documentaire immersive sur la construction de la première colonie permanente sur Mars par des équipes internationales.",
-      duration: 95,
+      duration: 1.95,
       poster_url: "https://via.placeholder.com/300x450?text=Base+Eternelle",
       youtube_id: "dQw4w9WgXcQ",
       created_at: new Date(2025, 9, 10).toISOString()
@@ -55,7 +55,7 @@ const Galerie = () => {
       id: 4,
       title: "Signal du Silence",
       synopsis: "Un thriller de science-fiction où des astronautes découvrent des traces d'une ancienne civilisation extraterrestre.",
-      duration: 156,
+      duration: 1.56,
       poster_url: "https://via.placeholder.com/300x450?text=Signal+du+Silence",
       youtube_id: "dQw4w9WgXcQ",
       created_at: new Date(2025, 8, 5).toISOString()
@@ -64,7 +64,7 @@ const Galerie = () => {
       id: 5,
       title: "Tempête de Poussière",
       synopsis: "Une aventure où une équipe doit traverser les plus dangereuses tempêtes de la planète pour atteindre la base scientifique perdue.",
-      duration: 138,
+      duration: 1.38,
       poster_url: "https://via.placeholder.com/300x450?text=Tempete+de+Poussiere",
       youtube_id: "dQw4w9WgXcQ",
       created_at: new Date(2025, 7, 18).toISOString()
@@ -73,7 +73,7 @@ const Galerie = () => {
       id: 6,
       title: "Retour à l'Aube",
       synopsis: "Une histoire émouvante sur le voyage de retour vers la Terre et la nostalgie des explorateurs martiens pour leur première maison.",
-      duration: 112,
+      duration: 1.12,
       poster_url: "https://via.placeholder.com/300x450?text=Retour+a+l+Aube",
       youtube_id: "dQw4w9WgXcQ",
       created_at: new Date(2025, 6, 22).toISOString()
@@ -379,6 +379,8 @@ const Galerie = () => {
     </div>
   )
 }
+
+// Ceci est donc la page galerie pour les réalisateurs
 
 // Exporte le composant pour qu'il soit utilisable ailleurs
 export default Galerie
