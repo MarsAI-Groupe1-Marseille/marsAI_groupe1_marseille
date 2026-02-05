@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
+import axios from 'axios'
 import {Routes , Route} from 'react-router-dom';
-import axios from 'axios';
 import Home from './pages/home.jsx';
 import Login from './pages/login.jsx';
 import Galerie from './pages/galerie.jsx';
