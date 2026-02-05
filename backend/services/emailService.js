@@ -1,16 +1,16 @@
 // -----------------------------------------------------------------------------
-// SERVICE DE NOTIFICATIONS (EMAILS)
-// Contient les templates d'emails pour l'inscription, le dépôt et le jury.
-// Ticket lié : #73
+// SERVICE D'EMAILING (Ticket #73)
+// Gère l'envoi des mails transactionnels via Nodemailer.
+// Basé sur le Plan Backend (Services/Emailing)
 // -----------------------------------------------------------------------------
 
 const transporter = require('../config/mail');
 
-const notificationService = {
+const emailService = { // ✅ Nom mis à jour pour correspondre au fichier
 
     /**
      * 1. EMAIL DE BIENVENUE
-     * Envoyé juste après l'inscription d'un utilisateur.
+     * Déclenché après l'inscription d'un utilisateur.
      */
     sendWelcomeEmail: async (user) => {
         try {
@@ -22,7 +22,7 @@ const notificationService = {
                     <div style="font-family: Arial; color: #333; max-width: 600px;">
                         <h1 style="color: #D32F2F;">Bonjour ${user.username || 'cinéaste'} !</h1>
                         <p>Bienvenue dans l'aventure <strong>Mars'AI</strong>.</p>
-                        <p>Ton compte est validé.</p>
+                        <p>Ton compte est validé. Tu peux dès maintenant te connecter.</p>
                         <br>
                         <p>L'équipe Mars'AI 🤖</p>
                     </div>
@@ -36,8 +36,7 @@ const notificationService = {
 
     /**
      * 2. CONFIRMATION DE DÉPÔT
-     * Envoyé quand un candidat soumet son court-métrage.
-     * @param {string} filmTitle - Le titre du film déposé
+     * Déclenché quand un réalisateur soumet un film.
      */
     sendSubmissionConfirmation: async (user, filmTitle) => {
         try {
@@ -49,7 +48,7 @@ const notificationService = {
                     <div style="font-family: Arial; color: #333;">
                         <h1>Bravo !</h1>
                         <p>Ton court-métrage <strong>"${filmTitle}"</strong> a bien été reçu.</p>
-                        <p>Notre jury va bientôt le visionner. Tu recevras une notif s'il est sélectionné.</p>
+                        <p>Notre jury va bientôt le visionner. Tu recevras une notification s'il est sélectionné.</p>
                         <p>Bonne chance ! 🍀</p>
                     </div>
                 `
@@ -62,8 +61,8 @@ const notificationService = {
 
     /**
      * 3. INVITATION JURY
-     * Envoyé par l'admin pour inviter un membre du jury.
-     * Contient ses identifiants temporaires générés.
+     * Déclenché par l'admin pour inviter un membre du jury.
+     * Utilisé dans le userController (Ticket #74).
      */
     sendJuryInvitation: async (email, password, link) => {
         try {
@@ -91,4 +90,4 @@ const notificationService = {
     }
 };
 
-module.exports = notificationService;
+module.exports = emailService; // ✅ Export mis à jour
