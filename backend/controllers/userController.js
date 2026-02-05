@@ -4,7 +4,14 @@ const crypto = require('crypto'); // Pour générer un token aléatoire
 
 exports.createJury = async (req, res) => {
     try {
-        // TODO: 1. Récupérer l'email et le nom depuis req.body
+        // 1. Récupérer l'email et le nom depuis req.body
+        const { email, full_name } = req.body;
+        
+        // Validation basique
+        if (!email?.trim() || !full_name?.trim()) {
+            return res.status(400).json({ error: 'Email et nom complet requis' });
+        }
+        
         // TODO: 2. Générer un token d'invitation (crypto.randomBytes)
         // TODO: 3. Créer le User en base avec role='jury' et invite_token=token
         // TODO: 4. Envoyer un email (emailService) contenant le lien: /reset-password?token=XYZ
