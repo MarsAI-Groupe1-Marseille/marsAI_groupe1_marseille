@@ -1,18 +1,168 @@
-const { Submission, Director, Collaborator } = require('../models/index');
-// const youtubeService = require('../services/youtubeService');
+const { Submission, Director, Collaborator } = require('../models');
+const { uploadVideoToYoutube } = require('../services/youtubeService');
+const fs = require('fs');
+const crypto = require('crypto'); // C'est natif dans Node.js
 
 exports.createSubmission = async (req, res) => {
+    // A 'true' POUR TESTER SANS YOUTUBE
+    const MODE_TEST_YOUTUBE = false; // Passe à 'true' pour simuler l'upload YouTube sans faire de requête réelle
+
+    console.log("Réception d'une nouvelle soumission (Version Complète)...");
+
+    // 1. VÉRIFICATION DES FICHIERS
+    if (!req.files || !req.files.video_file || !req.files.poster_file) {
+        return res.status(400).json({ message: "Erreur : La vidéo et l'affiche sont obligatoires." });
+    }
+
+    const videoFile = req.files.video_file[0];
+    const posterFile = req.files.poster_file[0];
+    const subtitleFile = req.files.subtitle_file ? req.files.subtitle_file[0] : null;
+    const galleryFiles = req.files.gallery_files || [];
+
     try {
-        // TODO: 1. Vérifier req.files (Vidéo, Affiche)
-        // TODO: 2. Upload vidéo vers YouTube (youtubeService.upload...)
-        // TODO: 3. Find or Create le Director (avec email)
-        // TODO: 4. Créer la Submission liée au Director et mettre l'ID YouTube
-        // TODO: 5. Boucler sur req.body.collaborators pour créer les Collaborator
-        // TODO: 6. Supprimer la vidéo du serveur (fs.unlink)
-        
-        res.status(201).json({ message: "Bravo !" });
+        // --- ÉTAPE 1 : GESTION DU RÉALISATEUR (Director) ---
+        // On vérifie s'il existe déjà par email
+        let director = await Director.findOne({ where: { email: req.body.director_email } });
+
+        // Parsing des réseaux sociaux (si envoyés en JSON string depuis Insomnia)
+        let socialLinksData = null;
+        if (req.body.director_social_links) {
+            try {
+                socialLinksData = JSON.parse(req.body.director_social_links);
+            } catch (e) {
+                console.warn("Format JSON invalide pour social_links", e);
+            }
+        }
+
+        if (!director) {
+            console.log("Création du réalisateur...");
+            director = await Director.create({
+                // Identité
+                civility: req.body.director_civility || 'M',
+                first_name: req.body.director_firstname,
+                last_name: req.body.director_lastname,
+                birth_date: req.body.director_birth_date, // Format YYYY-MM-DD
+
+                // Contact
+                email: req.body.director_email,
+                phone: req.body.director_phone,
+                mobile: req.body.director_mobile, // Obligatoire selon ton modèle
+
+                // Adresse
+                address: req.body.director_address,
+                zip_code: req.body.director_zip_code,
+                city: req.body.director_city,
+                country: req.body.director_country,
+
+                // Pro
+                job_title: req.body.director_job_title,
+                social_links: socialLinksData, 
+                marketing_source: req.body.director_marketing_source,
+                newsletter_optin: req.body.director_newsletter === 'true'
+            });
+        }
+
+        // --- ÉTAPE 2 : YOUTUBE (Fake ou Réel) ---
+        let youtubeId;
+        if (MODE_TEST_YOUTUBE) {
+            console.log("MODE TEST YOUTUBE ACTIVÉ");
+            youtubeId = "FAKE_ID_" + Date.now(); 
+        } else {
+            console.log("Upload YouTube en cours...");
+            youtubeId = await uploadVideoToYoutube(
+                videoFile.path, 
+                req.body.title_original, 
+                req.body.synopsis_original
+            );
+            // Suppression de la vidéo locale après upload réussi
+            if (fs.existsSync(videoFile.path)) fs.unlinkSync(videoFile.path);
+        }
+
+        // --- ÉTAPE 3 : PRÉPARATION GALERIE ---
+        const galleryUrls = galleryFiles.map(file => `/uploads/${file.filename}`);
+
+        // --- ÉTAPE 4 : CRÉATION DU FILM (Submission) ---
+        const newSubmission = await Submission.create({
+            director_id: director.id,
+            
+            // Titres & Textes
+            title_original: req.body.title_original,
+            title_english: req.body.title_english,
+            synopsis_original: req.body.synopsis_original,
+            synopsis_english: req.body.synopsis_english,
+
+            // Technique
+            duration_seconds: req.body.duration_seconds || 0,
+            language_main: req.body.language_main,
+            theme_tags: req.body.theme_tags, // Peut être une string "Drame, Guerre"
+
+            // IA
+            ai_classification: req.body.ai_classification, // '100% IA' ou 'Hybrid'
+            ai_tools: req.body.ai_tools,
+            ai_methodology: req.body.ai_methodology,
+
+            // Sécurité (Token unique pour édition future)
+            edit_token: crypto.randomBytes(32).toString('hex'),
+
+            // Fichiers & YouTube
+            youtube_id: youtubeId, // Ton modèle attend l'ID, pas l'URL complète
+            poster_url: `/uploads/${posterFile.filename}`,
+            gallery_urls: galleryUrls, // Sequelize gère le JSON array
+            has_subtitles: !!subtitleFile, // true si fichier présent, false sinon
+
+            // Statuts
+            video_status: MODE_TEST_YOUTUBE ? 'ready' : 'processing',
+            approval_status: 'submitted'
+        });
+
+        // --- ÉTAPE 5 : CRÉATION DES COLLABORATEURS ---
+        // Dans Insomnia/FormData, on envoie un tableau d'objets sous forme de TEXTE JSON
+        // Champ: "collaborators_json" -> Valeur: '[{"role":"Monteur", "first_name":"Bob"}, ...]'
+        if (req.body.collaborators_json) {
+            try {
+                const collaboratorsData = JSON.parse(req.body.collaborators_json);
+                
+                if (Array.isArray(collaboratorsData) && collaboratorsData.length > 0) {
+                    console.log(`Ajout de ${collaboratorsData.length} collaborateurs...`);
+                    
+                    // On ajoute l'ID de la submission à chaque collaborateur
+                    const collaboratorsWithId = collaboratorsData.map(collab => ({
+                        ...collab,
+                        submission_id: newSubmission.id, // Liaison avec le film
+                        //  les champs devraient correspondre au modèle Collaborator
+                        role: collab.role,
+                        first_name: collab.first_name,
+                        last_name: collab.last_name,
+                        email: collab.email,
+                        job_title: collab.job_title,
+                        civility: collab.civility
+                    }));
+
+                    // BulkCreate est plus performant pour ajouter une liste
+                    await Collaborator.bulkCreate(collaboratorsWithId);
+                }
+            } catch (error) {
+                console.error("Erreur format JSON Collaborators :", error.message);
+                // On ne bloque pas la soumission pour ça, mais on log l'erreur
+            }
+        }
+
+        // --- RÉPONSE ---
+        res.status(201).json({
+            message: "Film et collaborateurs ajoutés avec succès !",
+            submission_id: newSubmission.id,
+            director: director.last_name,
+            youtube_id: youtubeId
+        });
+
     } catch (error) {
-        // TODO: Gérer le nettoyage des fichiers en cas d'erreur
-        res.status(500).json({ error: error.message });
+        console.error("Erreur Soumission :", error);
+        // Nettoyage fichiers en cas de crash
+        if (req.files) {
+            Object.values(req.files).flat().forEach(file => {
+                if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
+            });
+        }
+        res.status(500).json({ message: "Erreur serveur.", error: error.message });
     }
 };
