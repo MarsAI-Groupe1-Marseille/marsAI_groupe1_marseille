@@ -54,9 +54,9 @@ const Home = () => {
                                 </div>
                             </div>
                         ))}
+
                     </div>
                 </section>
-
 
                 <section id="awards" className="py-20 bg-slate-900/50 border-y border-white/5">
                     <div className="max-w-7xl mx-auto px-6 text-center">
@@ -81,7 +81,7 @@ const Home = () => {
                                 <div className="w-16 h-16 bg-purple-500/10 rounded-full flex items-center justify-center text-purple-500 mb-6">
                                     <Cpu size={32} />
                                 </div>
-                                <h3 className="text-4xl font-bold text-white mb-2">AI ONLY</h3>
+                                <h3 className="text-4xl font-bold text-white mb-2">AI Only</h3>
                                 <p className="text-slate-400"></p>
                             </div>
                         </div>
@@ -96,7 +96,7 @@ const Home = () => {
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-8 opacity-70 grayscale hover:grayscale-0 transition-all duration-500">
                         {[1, 2, 3, 4].map((i) => (
-                            <div key={i} className="h-24 bg-white/5 rounded-lg flex items-center justify-center border border-white/5 hover:bg-white/10 transition cursor-pointer">
+                            <div key={i} className="h-30 bg-white/5 rounded-lg flex items-center justify-center border border-white/5 hover:bg-white/10 transition cursor-pointer">
                                 <span className="font-bold text-xl tracking-widest text-slate-500">LOGO {i}</span>
                             </div>
                         ))}
