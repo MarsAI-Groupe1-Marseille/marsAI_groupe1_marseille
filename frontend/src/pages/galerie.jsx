@@ -9,6 +9,9 @@ import React, { useState, useEffect } from 'react'
 // axios: Bibliothèque pour faire des requêtes HTTP vers l'API
 import axios from 'axios'
 
+// useNavigate: Hook pour naviguer vers d'autres pages
+import { useNavigate } from 'react-router-dom'
+
 // Importe le fichier CSS pour styliser la galerie
 import '../pages/galerie.css'
 
@@ -17,6 +20,8 @@ import '../pages/galerie.css'
 // ============================================================
 // C'est le composant React qui gère toute la page de la galerie
 const Galerie = () => {
+  // Hook de navigation
+  const navigate = useNavigate()
   // ========== TABLEAU DE FILMS FICTIFS ==========
   const fictionalFilms = [
     {
@@ -179,10 +184,10 @@ const Galerie = () => {
   // ========== FONCTIONS DE GESTION DES CLICS ==========
   
   // Fonction appelée quand l'utilisateur clique sur un film
-  // Elle ouvre la modal avec les détails du film
+  // Elle navigue vers la page détail du film
   const handleSelectFilm = (film) => {
-    // Stocke le film cliqué dans selectedFilm
-    setSelectedFilm(film)
+    // Navigue vers la page détail avec l'ID du film
+    navigate(`/galerie/${film.id}`)
   }
 
   // Fonction appelée quand l'utilisateur clique sur le X ou en dehors de la modal
