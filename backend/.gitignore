@@ -1,2 +1,8 @@
 node_modules/
 .env
+# --- UPLOADS ---
+# 1. On ignore TOUT ce qu'il y a dans uploads
+uploads/*
+
+# 2. Sauf le fichier .gitkeep (pour garder le dossier vide sur Git)
+!uploads/.gitkeep
