@@ -3,18 +3,72 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
 exports.login = async (req, res) => {
-    // TODO: 1. Récupérer email et password du req.body
-    // TODO: 2. Chercher le User par email (User.findOne)
-    // TODO: 3. Si user n'existe pas -> erreur 401
-    // TODO: 4. Comparer le password (bcrypt.compare)
-    // TODO: 5. Si ok, générer un Token JWT (jwt.sign)
-    // TODO: 6. Renvoyer le token au client
+    try{
+        const{ email, password } = req.body;
+        //Chercher le User par email (via Sequelize
+        const user = await User.findOne({where: { email }});
+        
+        if(!user) {
+            return res.status(401).json({ message: "Identifiants invalides."});
+        }
+        //Comparer le password (bcrypt.compare)
+        const isMatch = await bcrypt.compare(password, user.password_hash);
+        if(!isMatch){
+            return res.status(401).json({ message: "Identifiants invalides."});
+        }
+        const token = jwt.sign(
+            { id: user.id, role: user.role},
+            process.env.JWT_SECRET,
+            { expiresIn: '24h'}
+        );
+        
+        //Renvoyer le token et les infos de base au client 
+        res.json({
+            message:"Connexion réussie.",
+            token,
+            user: {
+                id: user.id,
+                full_name: user.full_name,
+                role: user.role
+            }
+        }); 
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 };
+
 
 exports.googleCallback = async (req, res) => {
-    // TODO: Géré par Passport, ici on renvoie juste le token final ou une redirection
-};
+    if (!req.user) {
+        return res.status(401).json({ message: "Authentification Google échouée." });
+    }
 
+    const token = jwt.sign(
+        { id: req.user.id, role: req.user.role},
+        process.env.JWT_SECRET,
+        { expiresIn: '24h' }
+    );
+
+    res.json({
+        message: "Connexion Google réussie.",
+        token,
+        user: {
+            id: req.user.id,
+            full_name: req.user.full_name,
+            role: req.user.role
+        }
+    });
+};
+exports.getMe = async (req, res) => {
+    // req.user a été rempli par ton authMiddleware
+    // On renvoie juste les informations de l'utilisateur au Front-end
+    res.json({
+        id: req.user.id,
+        email: req.user.email,
+        full_name: req.user.full_name,
+        role: req.user.role
+    });
+};
 
 
   
