@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from '../config/axiosConfig';
+import { useAuth } from '../context/AuthContext';
 
 const Connexion = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -20,18 +21,18 @@ const Connexion = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setError('');
-    // Logique de connexion ici
-    axios.post('/auth/login', formData)
-      .then(response => {
-        console.log('Login successful:', response.data);
-        // Stocker seulement les infos utilisateur (le token est dans les cookies HttpOnly)
-        const { user } = response.data;
-        localStorage.setItem('user', JSON.stringify(user));
-        
-        // Rediriger vers le dashboard ou la page d'accueil selon le rôle
-        user.role === 'admin' ? navigate('/dashboard') :
-        navigate('/home');
+    
+    login(formData.email, formData.password)
+      .then(user => {
+        console.log('Login successful:', user);
+        // Rediriger selon le rôle
+        if (user.role === 'admin') {
+          navigate('/dashboard');
+        } else if (user.role === 'jury') {
+          navigate('/jury-dashboard');
+        } else {
+          navigate('/home');
+        }
       })
       .catch(error => {
         console.error('Login error:', error);
