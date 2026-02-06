@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from '../config/axiosConfig';
 
 const Connexion = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
-    motDePasse: ''
+    password: ''
   });
+  const [error, setError] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -17,8 +20,24 @@ const Connexion = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setError('');
     // Logique de connexion ici
-    console.log('Login submitted:', formData);
+    axios.post('/auth/login', formData)
+      .then(response => {
+        console.log('Login successful:', response.data);
+        // Stocker seulement les infos utilisateur (le token est dans les cookies HttpOnly)
+        const { user } = response.data;
+        localStorage.setItem('user', JSON.stringify(user));
+        
+        // Rediriger vers le dashboard ou la page d'accueil selon le rôle
+        user.role === 'admin' ? navigate('/dashboard') :
+        navigate('/home');
+      })
+      .catch(error => {
+        console.error('Login error:', error);
+        setError(error.response?.data?.message || 'Erreur de connexion');
+        // Handle login error, e.g., show error message
+      });
   };
 
   const handleGoogleLogin = () => {
@@ -26,15 +45,9 @@ const Connexion = () => {
     console.log('Google login');
   };
 
-  const handleFacebookLogin = () => {
-    // Logique de connexion Facebook
-    console.log('Facebook login');
-  };
+ 
 
-  const handleAppleLogin = () => {
-    // Logique de connexion Apple
-    console.log('Apple login');
-  };
+  
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -61,6 +74,11 @@ const Connexion = () => {
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-5">
+              {error && (
+                <div className="p-4 bg-red-900/30 border border-red-700 rounded-lg text-red-300 text-sm">
+                  {error}
+                </div>
+              )}
               {/* Email */}
               <div>
                 <input
@@ -79,9 +97,9 @@ const Connexion = () => {
               <div>
                 <input
                   type="password"
-                  id="motDePasse"
-                  name="motDePasse"
-                  value={formData.motDePasse}
+                  id="password"
+                  name="password"
+                  value={formData.password}
                   onChange={handleChange}
                   className="w-full px-6 py-4 bg-gray-900/40 border border-gray-800 rounded-full focus:outline-none focus:border-purple-500 transition text-white placeholder-gray-500 text-sm"
                   placeholder="Mot de passe :"
@@ -93,7 +111,7 @@ const Connexion = () => {
               <div className="pt-4">
                 <button
                   type="submit"
-                   link to="/pages/register" className="w-full py-4 bg-gradient-to-r from-purple-500 via-purple-600 to-blue-500 hover:from-purple-600 hover:via-purple-700 hover:to-blue-600 rounded-full font-semibold transition text-white shadow-lg shadow-purple-500/50 flex items-center justify-center space-x-2 uppercase tracking-wider"
+                  className="w-full py-4 bg-gradient-to-r from-purple-500 via-purple-600 to-blue-500 hover:from-purple-600 hover:via-purple-700 hover:to-blue-600 rounded-full font-semibold transition text-white shadow-lg shadow-purple-500/50 flex items-center justify-center space-x-2 uppercase tracking-wider"
                 >
                   <span>Connexion</span>
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

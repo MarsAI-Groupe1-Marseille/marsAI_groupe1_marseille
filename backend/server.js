@@ -1,6 +1,7 @@
 // backend/server.js
 const express = require('express');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 require('dotenv').config();
 const createDefaultAdmin = require('./utils/createAdmin');
 
@@ -28,6 +29,7 @@ app.use(cors({
     credentials: true
 }));
 app.use(express.json());
+app.use(cookieParser()); // Pour parser les cookies
 
 // ==========================================
 // ROUTES

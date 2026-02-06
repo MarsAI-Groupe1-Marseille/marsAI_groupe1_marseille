@@ -22,10 +22,17 @@ exports.login = async (req, res) => {
             { expiresIn: '24h'}
         );
         
-        //Renvoyer le token et les infos de base au client 
+        // Envoyer le token en HttpOnly Cookie
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 24 * 60 * 60 * 1000 // 24 hours
+        });
+
+        //Renvoyer les infos de base au client (sans le token en réponse)
         res.json({
             message:"Connexion réussie.",
-            token,
             user: {
                 id: user.id,
                 full_name: user.full_name,
@@ -49,9 +56,16 @@ exports.googleCallback = async (req, res) => {
         { expiresIn: '24h' }
     );
 
+    // Envoyer le token en HttpOnly Cookie
+    res.cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    });
+
     res.json({
         message: "Connexion Google réussie.",
-        token,
         user: {
             id: req.user.id,
             full_name: req.user.full_name,
