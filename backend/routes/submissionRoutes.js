@@ -19,4 +19,9 @@ router.post('/',
 // Pas de middleware multer ici, on ne fait que lire
 router.get('/', submissionController.getAllSubmissions);
 
+
+// 3. Route GET ONE (Détail)
+// ":id" est une variable dynamique (ex: 1, 45, 99)
+router.get('/:id', submissionController.getSubmissionById);
+
 module.exports = router;

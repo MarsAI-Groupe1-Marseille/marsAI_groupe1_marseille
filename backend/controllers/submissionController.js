@@ -227,3 +227,36 @@ exports.getAllSubmissions = async (req, res) => {
         res.status(500).json({ message: "Impossible de récupérer les films." });
     }
 };
+
+
+/**
+ * 3. RÉCUPÉRER UN FILM PAR SON ID (Pour la page Détail)
+ * Là, on veut TOUT : Réalisateur complet, Collaborateurs, etc.
+ */
+exports.getSubmissionById = async (req, res) => {
+    const id = req.params.id; // L'ID qui vient de l'URL (/api/submissions/12)
+
+    try {
+        const submission = await Submission.findByPk(id, {
+            include: [
+                {
+                    model: Director,
+                    // Ici on prend tout le réalisateur car c'est la page détail
+                },
+                {
+                    model: Collaborator,
+                    // On récupère aussi tous les collaborateurs liés à ce film
+                }
+            ]
+        });
+
+        if (!submission) {
+            return res.status(404).json({ message: "Film introuvable." });
+        }
+
+        res.status(200).json(submission);
+    } catch (error) {
+        console.error(`Erreur récupération film ${id} :`, error);
+        res.status(500).json({ message: "Erreur serveur lors de la récupération du détail." });
+    }
+};
