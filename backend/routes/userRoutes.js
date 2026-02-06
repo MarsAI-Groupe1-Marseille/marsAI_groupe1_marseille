@@ -9,5 +9,7 @@ const { route } = require('./authRoutes');
 
 router.get('/', userController.getAllUsers);
 router.get('/:id', userController.getUserById);
+// Cette ligne permet à l'Admin d'envoyer une invitation
+router.post('/invite-jury', userController.createJury);
 
 module.exports = router;

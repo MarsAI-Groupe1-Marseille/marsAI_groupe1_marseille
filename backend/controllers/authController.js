@@ -59,7 +59,16 @@ exports.googleCallback = async (req, res) => {
         }
     });
 };
-
+exports.getMe = async (req, res) => {
+    // req.user a été rempli par ton authMiddleware
+    // On renvoie juste les informations de l'utilisateur au Front-end
+    res.json({
+        id: req.user.id,
+        email: req.user.email,
+        full_name: req.user.full_name,
+        role: req.user.role
+    });
+};
 
 
   
