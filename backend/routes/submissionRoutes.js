@@ -15,4 +15,8 @@ router.post('/',
     submissionController.createSubmission
 );
 
+// 2. Route GET ALL (Galerie ) avec pagination et filtrage par catégorie (thème) et recherche par titre
+// Pas de middleware multer ici, on ne fait que lire
+router.get('/', submissionController.getAllSubmissions);
+
 module.exports = router;

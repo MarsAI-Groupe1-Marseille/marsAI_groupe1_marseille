@@ -1,8 +1,10 @@
 const { Submission, Director, Collaborator } = require('../models');
 const { uploadVideoToYoutube } = require('../services/youtubeService');
+const { Op } = require('sequelize'); 
 const fs = require('fs');
 const crypto = require('crypto'); // C'est natif dans Node.js
 
+// Création d'une nouvelle soumission (film) avec gestion des fichiers et YouTube
 exports.createSubmission = async (req, res) => {
     // A 'true' POUR TESTER SANS YOUTUBE
     const MODE_TEST_YOUTUBE = false; // Passe à 'true' pour simuler l'upload YouTube sans faire de requête réelle
@@ -164,5 +166,64 @@ exports.createSubmission = async (req, res) => {
             });
         }
         res.status(500).json({ message: "Erreur serveur.", error: error.message });
+    }
+};
+
+// Récupération de tous les films avec pagination, recherche et filtrage par catégorie (thème)  pour la galerie 
+exports.getAllSubmissions = async (req, res) => {
+    try {
+        // --- 1. RÉCUPÉRATION DES PARAMÈTRES (QUERY PARAMS) ---
+        // Le front enverra : /api/submissions?page=1&limit=6&search=avatar&genre=SF
+        
+        const page = parseInt(req.query.page) || 1;       // Page par défaut : 1
+        const limit = parseInt(req.query.limit) || 9;     // Films par page par défaut : 9
+        const search = req.query.search || '';            // Recherche titre
+        const genre = req.query.genre || '';              // Filtre par genre/thème
+
+        // Calcul de l'offset (combien de films on saute)
+        // Ex: Page 2 avec limite 9 -> on saute les 9 premiers ((2-1) * 9 = 9)
+        const offset = (page - 1) * limit;
+
+        // --- 2. CONSTRUCTION DE LA REQUÊTE (WHERE) ---
+        const whereCondition = {};
+
+        // Si une recherche textuelle est présente (Titre original ou Anglais)
+        if (search) {
+            whereCondition[Op.or] = [
+                { title_original: { [Op.like]: `%${search}%` } }, // % permet de chercher "au milieu"
+                { title_english: { [Op.like]: `%${search}%` } }
+            ];
+        }
+
+        // Si un filtre de genre est présent (ex: "Horreur")
+        if (genre) {
+            whereCondition.theme_tags = { [Op.like]: `%${genre}%` };
+        }
+
+        // --- 3. EXÉCUTION DE LA REQUÊTE ---
+        // findAndCountAll est magique : il renvoie les données ET le nombre total
+        const { count, rows } = await Submission.findAndCountAll({
+            where: whereCondition,
+            limit: limit,
+            offset: offset,
+            order: [['createdAt', 'DESC']], // Du plus récent au plus vieux
+            include: [{
+                model: Director,
+                attributes: ['first_name', 'last_name'] // Optimisation : on ne prend que le nécessaire
+            }],
+            distinct: true // Important pour avoir le bon compte avec les includes
+        });
+
+        // --- 4. RÉPONSE FORMÉE POUR LE FRONT ---
+        res.status(200).json({
+            data: rows,           // Les films de la page actuelle
+            totalItems: count,    // Nombre total de films (ex: 50)
+            totalPages: Math.ceil(count / limit), // Nombre total de pages (ex: 6)
+            currentPage: page     // Page actuelle
+        });
+
+    } catch (error) {
+        console.error("Erreur récupération galerie :", error);
+        res.status(500).json({ message: "Impossible de récupérer les films." });
     }
 };
