@@ -19,26 +19,17 @@ const Connexion = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    login(formData.email, formData.password)
-      .then(user => {
-        console.log('Login successful:', user);
-        // Rediriger selon le rôle
-        if (user.role === 'admin') {
-          navigate('/dashboard');
-        } else if (user.role === 'jury') {
-          navigate('/jury-dashboard');
-        } else {
-          navigate('/home');
-        }
-      })
-      .catch(error => {
-        console.error('Login error:', error);
-        setError(error.response?.data?.message || 'Erreur de connexion');
-        // Handle login error, e.g., show error message
-      });
+    try {
+      const user = await login(formData.email, formData.password);
+      console.log('Login successful:', user);
+      // Rediriger selon le rôle
+      user.role === 'admin' ? navigate('/dashboard') : navigate('/home');    
+    } catch (error) {
+      setError(error.response?.data?.message || 'Erreur de connexion');
+    }   
+   
   };
 
   const handleGoogleLogin = () => {
