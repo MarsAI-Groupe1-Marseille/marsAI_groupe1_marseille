@@ -5,6 +5,7 @@
 -- 1. SUPPRESSION ET CRÉATION DE LA BASE
 DROP DATABASE IF EXISTS `mars_ai_db`;
 CREATE DATABASE `mars_ai_db` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+
 USE `mars_ai_db`;
 
 -- 2. CONFIGURATION DE L'ENCODAGE
@@ -37,34 +38,22 @@ CREATE TABLE `users` (
 -- Mise à jour selon PDF Section 1
 DROP TABLE IF EXISTS `directors`;
 CREATE TABLE `directors` (
-  `id` INT AUTO_INCREMENT PRIMARY KEY,
-  
-  -- Identité
+  `id` INT AUTO_INCREMENT PRIMARY KEY,  
   `civility` ENUM('M', 'Mme', 'Iel') DEFAULT 'M',
   `first_name` VARCHAR(100) NOT NULL,
   `last_name` VARCHAR(100) NOT NULL,
-  `birth_date` DATE NOT NULL, -- Pour validation 18 ans
-  
-  -- Contact
+  `birth_date` DATE NOT NULL,   
   `email` VARCHAR(255) NOT NULL UNIQUE,
-  `phone` VARCHAR(50),      -- Fixe
-  `mobile` VARCHAR(50) NOT NULL, -- Mobile obligatoire
-  
-  -- Adresse (Localisation)
+  `phone` VARCHAR(50), 
+  `mobile` VARCHAR(50) NOT NULL,  
   `address` VARCHAR(255),
   `zip_code` VARCHAR(20),
   `city` VARCHAR(100),
-  `country` VARCHAR(100),
-  
-  -- Profil Pro
-  `job_title` VARCHAR(100) NOT NULL, -- Métier actuel
-  
-  -- Réseaux Sociaux & Marketing
-  -- On stocke les liens (YouTube, Insta, LinkedIn...) en JSON pour la flexibilité
+  `country` VARCHAR(100),   
+  `job_title` VARCHAR(100) NOT NULL, 
   `social_links` JSON, 
-  `marketing_source` VARCHAR(100), -- "Comment avez-vous connu..."
+  `marketing_source` VARCHAR(100),
   `newsletter_optin` BOOLEAN DEFAULT FALSE,
-
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -76,39 +65,26 @@ CREATE TABLE `directors` (
 DROP TABLE IF EXISTS `submissions`;
 CREATE TABLE `submissions` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `director_id` INT NOT NULL,
-  
-  -- Métadonnées Film
+  `director_id` INT NOT NULL,  
   `title_original` VARCHAR(255) NOT NULL,
   `title_english` VARCHAR(255),
-  `duration_seconds` INT NOT NULL, -- En secondes (Validation <= 60s coté Back)
+  `duration_seconds` INT NOT NULL, 
   `language_main` VARCHAR(50) NOT NULL,
-  `theme_tags` VARCHAR(255), -- Tags sémantiques (séparés par virgules)
-  
-  -- Pitch / Synopsis
+  `theme_tags` VARCHAR(255),  
   `synopsis_original` TEXT NOT NULL,
   `synopsis_english` TEXT,
-  
-  -- Section IA (Fondamental)
   `ai_classification` ENUM('100% IA', 'Hybrid') NOT NULL,
-  `ai_tools` TEXT,        -- Stack techno (Midjourney, Runway...)
-  `ai_methodology` TEXT,  -- Note d'intention technique
-  
-  -- Fichiers & URLs
-  `youtube_id` VARCHAR(50),          -- L'ID de la vidéo finale
-  `poster_url` VARCHAR(255),         -- Vignette officielle
-  `gallery_urls` JSON,               -- Jusqu'à 3 images (Stockées en JSON: ["url1", "url2"])
-  `has_subtitles` BOOLEAN DEFAULT FALSE, -- Si True, on a reçu un .srt (stocké sur disque)
-  
-  -- Statuts Système
+  `ai_tools` TEXT,
+  `ai_methodology` TEXT,
+  `youtube_id` VARCHAR(50),
+  `poster_url` VARCHAR(255),
+  `gallery_urls` JSON,  
+  `has_subtitles` BOOLEAN DEFAULT FALSE,
   `video_status` ENUM('uploading', 'processing', 'ready', 'error') DEFAULT 'uploading',
-  `approval_status` ENUM('submitted', 'approved', 'rejected', 'incomplete') DEFAULT 'submitted',
-  
-  `edit_token` VARCHAR(255), -- Pour modification par le réalisateur
-  
+  `approval_status` ENUM('submitted', 'approved', 'rejected', 'incomplete') DEFAULT 'submitted',  
+  `edit_token` VARCHAR(255), 
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,  
   CONSTRAINT `fk_submission_director` FOREIGN KEY (`director_id`) REFERENCES `directors` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -119,9 +95,8 @@ CREATE TABLE `submissions` (
 DROP TABLE IF EXISTS `collaborators`;
 CREATE TABLE `collaborators` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `submission_id` INT NOT NULL,
-  
-  `role` VARCHAR(100) NOT NULL, -- Scénariste, Monteur, etc.
+  `submission_id` INT NOT NULL,  
+  `role` VARCHAR(100) NOT NULL,
   `civility` VARCHAR(20),
   `first_name` VARCHAR(100),
   `last_name` VARCHAR(100),
