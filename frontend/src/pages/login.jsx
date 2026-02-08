@@ -51,7 +51,7 @@ const Connexion = () => {
             {/* Icon and Title */}
             <div className="flex justify-center mb-8">
               <div className="relative">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                <div className="w-16 h-16 bg-linear-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
                   <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
@@ -103,7 +103,7 @@ const Connexion = () => {
               <div className="pt-4">
                 <button
                   type="submit"
-                  className="w-full py-4 bg-gradient-to-r from-purple-500 via-purple-600 to-blue-500 hover:from-purple-600 hover:via-purple-700 hover:to-blue-600 rounded-full font-semibold transition text-white shadow-lg shadow-purple-500/50 flex items-center justify-center space-x-2 uppercase tracking-wider"
+                  className="w-full py-4 bg-linear-to-r from-purple-500 via-purple-600 to-blue-500 hover:from-purple-600 hover:via-purple-700 hover:to-blue-600 rounded-full font-semibold transition text-white shadow-lg shadow-purple-500/50 flex items-center justify-center space-x-2 uppercase tracking-wider"
                 >
                   <span>Connexion</span>
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
