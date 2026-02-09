@@ -5,6 +5,7 @@ import Home from './pages/home.jsx';
 import Galerie from './pages/galerie.jsx';
 import Login from './pages/login.jsx';
 import Dashboard from './pages/dashboard.jsx';
+import DashboardUser from './pages/dashboard_user.jsx';
 import './App.css'
 
 function App() { 
@@ -17,6 +18,7 @@ function App() {
         <Route path="/login" element={<Login />} />
 
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/dashboard_user" element={<DashboardUser />} />
 
       </Routes>
 
