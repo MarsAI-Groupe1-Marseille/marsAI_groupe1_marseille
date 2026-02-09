@@ -87,11 +87,11 @@ const Galerie = () => {
   }, []) // Tableau vide = s'exécute une seule fois au montage
 
   // ========== EFFET: Debounce pour la recherche ==========
-  // Attend 500ms après que l'utilisateur ait arrêté de taper avant de lancer la recherche
+  // Attend 1000ms après que l'utilisateur ait arrêté de taper avant de lancer la recherche
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm)
-    }, 500) // 500ms de délai
+    }, 1000) // 1000ms de délai
 
     // Nettoyage: annule le timer si l'utilisateur continue de taper
     return () => clearTimeout(timer)
