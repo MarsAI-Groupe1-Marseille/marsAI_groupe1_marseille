@@ -4,6 +4,22 @@ const { Op } = require('sequelize');
 const fs = require('fs');
 const crypto = require('crypto'); // C'est natif dans Node.js
 
+// Fonction pour normaliser gallery_urls en array JSON
+const normalizeGalleryUrls = (submission) => {
+  if (submission && submission.gallery_urls) {
+    if (typeof submission.gallery_urls === 'string') {
+      try {
+        submission.gallery_urls = JSON.parse(submission.gallery_urls);
+      } catch (e) {
+        console.warn('Erreur lors du parsing de gallery_urls:', e);
+        submission.gallery_urls = [];
+      }
+    }
+    // Si c'est déjà un array, rien à faire
+  }
+  return submission;
+};
+
 // Création d'une nouvelle soumission (film) avec gestion des fichiers et YouTube
 exports.createSubmission = async (req, res) => {
     // A 'true' POUR TESTER SANS YOUTUBE
@@ -214,6 +230,9 @@ exports.getAllSubmissions = async (req, res) => {
             distinct: true // Important pour avoir le bon compte avec les includes
         });
 
+        // Normaliser gallery_urls pour chaque film
+        rows.forEach(row => normalizeGalleryUrls(row));
+
         // --- 4. RÉPONSE FORMÉE POUR LE FRONT ---
         res.status(200).json({
             data: rows,           // Les films de la page actuelle
@@ -253,6 +272,9 @@ exports.getSubmissionById = async (req, res) => {
         if (!submission) {
             return res.status(404).json({ message: "Film introuvable." });
         }
+
+        // Normaliser gallery_urls pour assurer la cohérence
+        normalizeGalleryUrls(submission);
 
         res.status(200).json(submission);
     } catch (error) {

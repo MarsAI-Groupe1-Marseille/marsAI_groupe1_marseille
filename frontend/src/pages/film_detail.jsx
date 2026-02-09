@@ -158,6 +158,23 @@ export default function FilmDetail() {
     return `${baseUrl}${path}`;
   };
   
+  // Fonction robuste pour parser gallery_urls (string ou array)
+  const parseGalleryUrls = (galleryData) => {
+    if (!galleryData) return [];
+    // Si c'est déjà un array, retourner directement
+    if (Array.isArray(galleryData)) return galleryData;
+    // Si c'est une string, essayer de la parser
+    if (typeof galleryData === 'string') {
+      try {
+        return JSON.parse(galleryData);
+      } catch (e) {
+        console.error('Erreur lors du parsing de gallery_urls:', e);
+        return [];
+      }
+    }
+    return [];
+  };
+  
   // Formater le statut d'approbation
   const formatApprovalStatus = (status) => {
     const statuses = {
@@ -383,13 +400,13 @@ export default function FilmDetail() {
             </div>
 
             {/* GALERIE */}
-            {film.gallery_urls && film.gallery_urls.length > 0 && (
+            {film.gallery_urls && parseGalleryUrls(film.gallery_urls).length > 0 && (
               <div className="gallery-section">
                 <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <Film className="w-6 h-6" style={{ color: '#ffb3ff' }} /> Galerie
                 </h2>
                 <div className="gallery-grid">
-                  {JSON.parse(film.gallery_urls).map((url, idx) => (
+                  {parseGalleryUrls(film.gallery_urls).map((url, idx) => (
                     <div key={idx} className="gallery-item">
                       <img src={getImageUrl(url)} alt={`Galerie ${idx + 1}`} />
                     </div>
