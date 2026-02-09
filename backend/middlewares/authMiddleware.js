@@ -5,11 +5,10 @@ require('dotenv').config();
 // --- VÉRIFICATION DU TOKEN ---
 const verifyToken = async (req, res, next) => {
     try {
-        const authHeader = req.headers.authorization;// Récupère le token depuis les headers
-        if (!authHeader) return res.status(401).json({ message: "Token manquant." });
-
-        const token = authHeader.split(' ')[1]; // On enlève "Bearer "
-        if (!token) return res.status(401).json({ message: "Token invalide." });
+        // Récupérer le token depuis les cookies HttpOnly
+        const token = req.cookies.token;
+        
+        if (!token) return res.status(401).json({ message: "Token manquant." });
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const user = await User.findByPk(decoded.id);//Sequalize function
