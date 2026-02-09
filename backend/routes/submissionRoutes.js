@@ -20,7 +20,11 @@ router.post('/',
 router.get('/', submissionController.getAllSubmissions);
 
 
-// 3. Route GET ONE (Détail)
+// 3. Route GET GENRES (Récupérer tous les genres uniques)
+// IMPORTANT : Cette route doit être AVANT /:id sinon "genres" sera interprété comme un id
+router.get('/genres/all', submissionController.getAllGenres);
+
+// 4. Route GET ONE (Détail)
 // ":id" est une variable dynamique (ex: 1, 45, 99)
 router.get('/:id', submissionController.getSubmissionById);
 

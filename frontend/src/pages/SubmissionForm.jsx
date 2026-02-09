@@ -133,7 +133,7 @@ const SubmissionForm = () => {
 
     try {
       // 🚀 ENVOI VERS TON BACKEND
-      const response = await axios.post('http://localhost:3000/api/submissions', data, {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/submissions`, data, {
         headers: { 'Content-Type': 'multipart/form-data' },
         // Optionnel : Suivre la progression de l'upload
         onUploadProgress: (progressEvent) => {

@@ -2,6 +2,7 @@
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const path = require('path');
 require('dotenv').config();
 const createDefaultAdmin = require('./utils/createAdmin');
 
@@ -30,6 +31,9 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(cookieParser()); // Pour parser les cookies
+
+// Servir les fichiers statiques du dossier uploads avec chemin absolu
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ==========================================
 // ROUTES
