@@ -389,7 +389,7 @@ export default function FilmDetail() {
                   <Film className="w-6 h-6" style={{ color: '#ffb3ff' }} /> Galerie
                 </h2>
                 <div className="gallery-grid">
-                  {film.gallery_urls.map((url, idx) => (
+                  {JSON.parse(film.gallery_urls).map((url, idx) => (
                     <div key={idx} className="gallery-item">
                       <img src={getImageUrl(url)} alt={`Galerie ${idx + 1}`} />
                     </div>
