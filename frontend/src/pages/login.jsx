@@ -33,7 +33,7 @@ const Connexion = () => {
   };
 
   const handleGoogleLogin = () => {
-    // Logique de connexion Google
+    window.location.href = "http://localhost:3000/api/auth/google";
     console.log('Google login');
   };
 
