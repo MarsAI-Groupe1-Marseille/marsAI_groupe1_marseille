@@ -22,9 +22,9 @@ const UsersList = [
     },
 ];
 
-function UserRow({ user }) {
+function User({ user }) {
     return (
-        <section className="grid grid-cols-4 items-center gap-4 p-4 border-b border-neutral-800 hover:bg-neutral-900 transition">
+        <div className="grid grid-cols-4 items-center gap-4 p-4 border-b border-neutral-800 hover:bg-neutral-900 transition">
             <div>
                 <p className="font-semibold">{user.name}</p>
                 <p className="text-sm text-neutral-400">{user.email}</p>
@@ -36,13 +36,13 @@ function UserRow({ user }) {
                 <button className="p-2 rounded-lg bg-neutral-800 hover:bg-violet-500 transition">
                     <Eye size={18} />
                 </button>
-
                 <button className="p-2 rounded-lg bg-neutral-800 hover:bg-violet-500 transition">
                     <Pencil size={18} />
                 </button>
-
                 <button className="p-2 rounded-lg bg-neutral-800 hover:bg-red-600 transition">
                     <Trash2 size={18} />
                 </button>
             </div>
-        </section>
+        </div>
+    );
+}
