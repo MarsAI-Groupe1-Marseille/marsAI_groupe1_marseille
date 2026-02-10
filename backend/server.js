@@ -32,8 +32,7 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser()); // Pour parser les cookies
 
-// Servir les fichiers statiques du dossier uploads avec chemin absolu
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 
 // ==========================================
 // ROUTES
@@ -45,7 +44,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/submissions', submissionRoutes); 
 
 
-
+// Servir les fichiers statiques du dossier uploads avec chemin absolu
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
 // ==========================================
