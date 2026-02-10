@@ -8,6 +8,9 @@ import FilmDetail from './pages/film_detail.jsx';
 import Dashboard from './pages/dashboard.jsx';
 import './App.css'
 import SubmissionForm from './pages/SubmissionForm.jsx';
+import Forgotpass from './pages/forgotpass.jsx';
+import ResetPassword from './pages/ResetPassword.jsx';
+
 
 function App() { 
 
@@ -20,6 +23,8 @@ function App() {
           <Route path="/galerie/:id" element={<FilmDetail />} />
           <Route path="/login" element={<Login />} />
           <Route path='/submission' element ={<SubmissionForm/>}/>
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/forgotpass" element={<Forgotpass />} />
 
           <Route path="/dashboard" element={<Dashboard />} />
 

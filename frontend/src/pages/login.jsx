@@ -147,7 +147,7 @@ const Connexion = () => {
 
             {/* Footer Links */}
             <div className="mt-8 text-center space-y-3">
-              <Link to="/mot-de-passe-oublie" className="block text-sm text-gray-400 hover:text-purple-400 transition">
+              <Link to="/forgotpass" className="block text-sm text-gray-400 hover:text-purple-400 transition">
                 Mot de passe oublié ?
               </Link>
             </div>
