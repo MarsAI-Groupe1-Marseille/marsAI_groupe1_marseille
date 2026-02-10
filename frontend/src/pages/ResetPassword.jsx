@@ -1,13 +1,28 @@
-import React, {useState} from 'react'
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import axios from '../config/axiosConfig';
 
 const ResetPassword = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState(''); // ← AJOUTE CETTE LIGNE
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [searchParams] = useSearchParams();
+  const tokenFromSearch = searchParams.get('token');
+  const token = tokenFromSearch 
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert(`Un lien de réinitialisation a été envoyé à ${email}`);
+    if (!token) {
+      alert('Token manquant dans l\'URL.');
+      return;
+    }
+    if (password !== confirmPassword) {
+      alert('Les mots de passe ne correspondent pas.');
+      return;
+    }
+    await axios.post('/users/reset-password', { token, new_password: password });
+    alert('Mot de passe réinitialisé avec succès.');
+    navigate('/login');
   };
 
   const handleGoogleAuth = () => {
@@ -38,18 +53,6 @@ const ResetPassword = () => {
         {/* Form */}
         <form onSubmit={handleSubmit}>
           <div className="mb-5">
-            <input 
-              type="email" 
-              placeholder="Adresse mail" 
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              autoComplete="email"
-              className="w-full px-6 py-4 bg-gray-900/40 border border-gray-800 rounded-full focus:outline-none focus:border-purple-500 transition text-white placeholder-gray-500 text-sm"
-            />
-          </div>
-
-          <div className="mb-5">
             <input
               type="password"
               id="password"
@@ -66,12 +69,13 @@ const ResetPassword = () => {
             <input
               type="password"
               id="confirmPassword"
-              name="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              name="confirmPassword"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
               className="w-full px-6 py-4 bg-gray-900/40 border border-gray-800 rounded-full focus:outline-none focus:border-purple-500 transition text-white placeholder-gray-500 text-sm"
               placeholder="Confirmation du mot de passe :"
               required
+              
             />
           </div>
 
