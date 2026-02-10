@@ -11,5 +11,7 @@ router.get('/', userController.getAllUsers);
 router.get('/:id', userController.getUserById);
 // Cette ligne permet à l'Admin d'envoyer une invitation
 router.post('/invite-jury', userController.createJury);
+// Cette ligne permet au jury de définir son mot de passe via le lien magique
+router.post('/reset-password', userController.resetPassword);
 
 module.exports = router;

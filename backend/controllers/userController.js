@@ -1,6 +1,7 @@
 const { User } = require('../models');
 const emailService = require('../services/emailService');
 const crypto = require('crypto');
+ const bcrypt = require('bcrypt');
 
 /**
  * TICKET #74 : INVITATION D'UN MEMBRE DU JURY
@@ -49,17 +50,38 @@ exports.createJury = async (req, res) => {
     }
 };
 
-/**
- * TODO : À RÉALISER DANS UN AUTRE TICKET
- * Logique de définition du mot de passe (Non implémentée pour l'instant).
- */
+// Réinitialiser le mot de passe avec un token d'invitation
 exports.resetPassword = async (req, res) => {
-    // TODO: 1. Récupérer le token et le nouveau mot de passe
-    // TODO: 2. Trouver le user qui a ce token
-    // TODO: 3. Hasher le mot de passe (bcrypt.hash)
-    // TODO: 4. Mettre à jour le user et vider le invite_token
-    res.status(501).json({ message: "Fonctionnalité prévue dans le prochain ticket." });
+    try {
+        // Récupération du token et du nouveau mot de passe depuis le corps de la requête
+        const { token, new_password } = req.body;
+
+        // Validation des paramètres
+        if (!token || !new_password) {
+            return res.status(400).json({ error: "Le token et le nouveau mot de passe sont requis." });
+        }
+
+        // Vérifier l'existence du token
+        const user = await User.findOne({ where: { invite_token: token } });
+        if (!user) {
+            return res.status(404).json({ error: "Token invalide ou expiré." });
+        }
+
+        // Hasher le nouveau mot de passe
+        const password_hash = await bcrypt.hash(new_password, 10);
+
+        // Mettre à jour l'utilisateur et invalider le token
+        await User.update(
+            { password_hash, invite_token: null },
+            { where: { invite_token: token } }
+        );
+
+        res.status(200).json({ message: "Mot de passe réinitialisé avec succès." });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 };
+
 
 /**
  * RÉCUPÉRER TOUS LES UTILISATEURS
