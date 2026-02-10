@@ -2,8 +2,11 @@
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const passport = require('passport');
 const path = require('path');
 require('dotenv').config();
+require('./config/passport');
+
 const createDefaultAdmin = require('./utils/createAdmin');
 
 // Import de la connexion Sequelize
@@ -31,7 +34,7 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(cookieParser()); // Pour parser les cookies
-
+app.use(passport.initialize());
 // Servir les fichiers statiques du dossier uploads avec chemin absolu
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 

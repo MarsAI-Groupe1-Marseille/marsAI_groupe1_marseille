@@ -11,11 +11,13 @@ router.get('/google',
 );
 
 router.get('/google/callback', 
-    passport.authenticate('google', { session: false }), 
+    passport.authenticate('google', { 
+        session: false,
+        failureRedirect: 'http://localhost:5173/login?error=not_invited' 
+    }), 
     authController.googleCallback
 );
 
-// Route pour récupérer les infos de l'utilisateur connecté
 router.get('/me', authMiddleware.verifyToken, authController.getMe);
 
 module.exports = router;
