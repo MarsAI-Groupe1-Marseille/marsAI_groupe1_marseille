@@ -25,7 +25,7 @@ const Connexion = () => {
       const user = await login(formData.email, formData.password);
       console.log('Login successful:', user);
       // Rediriger selon le rôle
-      user.role === 'admin' ? navigate('/dashboard') : navigate('/home');    
+      user.role === 'admin' ? navigate('/dashboard') : navigate('/');    
     } catch (error) {
       setError(error.response?.data?.message || 'Erreur de connexion');
     }   
