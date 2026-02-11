@@ -71,17 +71,30 @@ Submission.hasMany(JuryEvaluation, {
 JuryEvaluation.belongsTo(Submission, { foreignKey: 'submission_id' });
 
 // --- 6. ModerationTicket (Admin sur Submission) ---
+
+// Relation Côté User (Admin)
 User.hasMany(ModerationTicket, {
     foreignKey: 'admin_id',
-    as: 'TicketsHandled' // Alias utile pour différencier des autres relations User
+    as: 'TicketsHandled',
+    onDelete: 'RESTRICT', // <--- CHANGEMENT ICI : On empêche la suppression de l'admin
+    hooks: true 
 });
-ModerationTicket.belongsTo(User, { foreignKey: 'admin_id', as: 'Admin' });
 
+// Relation Côté Ticket
+ModerationTicket.belongsTo(User, { 
+    foreignKey: 'admin_id',
+    as: 'Admin' 
+});
+
+// Relation Côté Submission (Ça on garde CASCADE, si le film saute, le ticket ne sert plus à rien)
 Submission.hasMany(ModerationTicket, {
     foreignKey: 'submission_id',
     onDelete: 'CASCADE'
 });
-ModerationTicket.belongsTo(Submission, { foreignKey: 'submission_id' });
+
+ModerationTicket.belongsTo(Submission, { 
+    foreignKey: 'submission_id' 
+});
 
 
 // Export de tous les modèles et de l'instance
