@@ -1,5 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { Users, Eye, Pencil, Trash2, UserPlus } from "lucide-react";
+
+const [editingUserId, setEditingUserId] = useState(null);
+
+const toggleEdit = (id) => {
+    setEditingUserId(editingUserId === id ? null : id);
+};
 
 const users = [
     { id: 1, name: "Benjamin Lacroix", email: "benjamin@gmail.com", role: "Admin" },
@@ -63,7 +69,11 @@ export default function UsersDashboard() {
                 </div>
 
                 {users.map((user) => (
-                    <UserRow key={user.id} user={user} />
+                    <UserRow 
+                    key={user.id}
+                    user={user} 
+                    isEditing={editingUserId === user.id}
+                    toggleEdit={toggleEdit} />
                 ))}
             </section>
 
