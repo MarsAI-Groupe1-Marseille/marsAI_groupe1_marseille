@@ -1,17 +1,25 @@
 import React, { useState } from "react";
 import { Users, Eye, Pencil, Trash2, UserPlus } from "lucide-react";
 
-const [editingUserId, setEditingUserId] = useState(null);
-
-const toggleEdit = (id) => {
-    setEditingUserId(editingUserId === id ? null : id);
-};
-
 const users = [
     { id: 1, name: "Benjamin Lacroix", email: "benjamin@gmail.com", role: "Admin" },
     { id: 2, name: "Diakité Mossad", email: "diakite@gmail.com", role: "Jury" },
     { id: 3, name: "Belinda santabou", email: "belinda@gmail.com", role: "Utilisateur" },
 ];
+
+function BadgeAttribution({ role }) {
+    const styles = {
+        Admin: "bg-red-500/20 text-red-400 border border-red-500/30",
+        Jury: "bg-blue-500/20 text-blue-400 border border-blue-500/30",
+        Utilisateur: "bg-green-500/20 text-green-400 border border-green-500/30",
+    };
+
+    return (
+        <span className={`text-xs px-3 py-1 rounded-full font-medium ${styles[role]}`}>
+            {role}
+        </span>
+    );
+}
 
 function UserRow({ user, isEditing, toggleEdit }) {
     return (
@@ -52,6 +60,11 @@ function UserRow({ user, isEditing, toggleEdit }) {
 }
 
 export default function UsersDashboard() {
+    const [editingUserId, setEditingUserId] = useState(null);
+
+    const toggleEdit = (id) => {
+    setEditingUserId(editingUserId === id ? null : id);
+};
     return (
         <div className="min-h-screen bg-neutral-950 text-white p-8 space-y-8">
 
