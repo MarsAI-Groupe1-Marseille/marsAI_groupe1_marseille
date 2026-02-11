@@ -3,7 +3,7 @@ const { User } = require('../models');
 
 const createDefaultAdmin = async () => {
   try {
-    const adminEmail = 'mohamed.zenbout@laplateforme.io';
+    const adminEmail = 'admin@gmail.com'; // L'email de l'admin par défaut
     const adminPassword = 'AdminPassword123!'; // Le mot de passe par défaut
 
     // 1. On vérifie si l'admin existe déjà
