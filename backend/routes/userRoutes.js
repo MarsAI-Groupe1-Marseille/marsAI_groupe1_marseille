@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
+const { verifyToken, checkRole } = require('../middlewares/authMiddleware');
 const { route } = require('./authRoutes');
 
 
@@ -9,6 +10,11 @@ const { route } = require('./authRoutes');
 
 router.get('/', userController.getAllUsers);
 router.get('/:id', userController.getUserById);
+router.put( '/:id',
+     verifyToken,          // 1. Vérification connexion
+    checkRole('admin'),   // 2. Vérification rôle Admin
+    userController.updateUser
+);
 // Cette ligne permet à l'Admin de créer et inviter un utilisateur (jury, admin, modérateur)
 router.post('/invite', userController.createUser);
 // Cette ligne permet au jury de définir son mot de passe via le lien magique

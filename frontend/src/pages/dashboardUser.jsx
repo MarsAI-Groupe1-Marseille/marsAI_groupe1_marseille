@@ -23,13 +23,14 @@ function BadgeAttribution({ role }) {
     );
 }
 
-function FormEdition({ user }) {
+function FormEdition({ user, editingData, setEditingData, onSave, onCancel, isLoading }) {
     return (
-        <form className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+        <form onSubmit={onSave} className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
             <div className="flex flex-col w-full">
                 <label className="text-sm text-neutral-400 mb-1">Nom complet :</label>
                 <input
-                    defaultValue={user.full_name}
+                    value={editingData?.full_name || ''}
+                    onChange={(e) => setEditingData({ ...editingData, full_name: e.target.value })}
                     className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-violet-500"
                     placeholder="Nom complet"
                 />
@@ -38,19 +39,33 @@ function FormEdition({ user }) {
             <div className="flex flex-col">
                 <label className="text-sm text-neutral-400 mb-1">Email :</label>
                 <input
-                    defaultValue={user.email}
+                    value={editingData?.email || ''}
+                    onChange={(e) => setEditingData({ ...editingData, email: e.target.value })}
                     className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-violet-500"
                     placeholder="Email"
                 />
             </div>
 
+            <div className="flex flex-col">
+                <label className="text-sm text-neutral-400 mb-1">Rôle :</label>
+                <select
+                    value={editingData?.role || ''}
+                    onChange={(e) => setEditingData({ ...editingData, role: e.target.value })}
+                    className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                >
+                    <option value="admin">Admin</option>
+                    <option value="jury">Jury</option>
+                    <option value="moderator">Modérateur</option>
+                </select>
+            </div>
+
             <div className="md:col-span-2 flex flex-wrap justify-end gap-3 mt-4">
-                <button type="button" className="w-full md:w-auto px-4 py-2 rounded-lg bg-neutral-700 hover:bg-neutral-600 transition">
+                <button type="button" onClick={onCancel} className="w-full md:w-auto px-4 py-2 rounded-lg bg-neutral-700 hover:bg-neutral-600 transition" disabled={isLoading}>
                     Annuler
                 </button>
 
-                <button type="submit" className="w-full md:w-auto px-4 py-2 rounded-lg bg-gradient-to-r from-violet-500 to-pink-500 hover:opacity-90 transition">
-                    Enregistrer
+                <button type="submit" className="w-full md:w-auto px-4 py-2 rounded-lg bg-gradient-to-r from-violet-500 to-pink-500 hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed" disabled={isLoading}>
+                    {isLoading ? "Enregistrement..." : "Enregistrer"}
                 </button>
             </div>
         </form>
@@ -58,7 +73,7 @@ function FormEdition({ user }) {
 }
 
 
-function UserRow({ user, isEditing, toggleEdit }) {
+function UserRow({ user, isEditing, toggleEdit, editingData, setEditingData, onSaveUser, isLoading }) {
     return (
         <>
             <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4 p-4 border-b border-neutral-800 hover:bg-neutral-900 transition">                
@@ -77,7 +92,12 @@ function UserRow({ user, isEditing, toggleEdit }) {
                         Voir
                     </button>
 
-                    <button onClick={() => toggleEdit(user.id)} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-800 hover:bg-gradient-to-r hover:from-violet-500 hover:to-pink-500 transition text-sm">
+                    <button onClick={() => {
+                        toggleEdit(user.id);
+                        if (!editingData?.id || editingData.id !== user.id) {
+                            setEditingData({ id: user.id, full_name: user.full_name, email: user.email, role: user.role });
+                        }
+                    }} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-800 hover:bg-gradient-to-r hover:from-violet-500 hover:to-pink-500 transition text-sm">
                         <Pencil size={16} />
                         Modifier profil
                     </button>
@@ -91,7 +111,14 @@ function UserRow({ user, isEditing, toggleEdit }) {
 
             {isEditing && (
                 <div className="bg-neutral-950 p-6 border-b border-neutral-800">
-                    <FormEdition user={user} />
+                    <FormEdition 
+                        user={user} 
+                        editingData={editingData}
+                        setEditingData={setEditingData}
+                        onSave={() => onSaveUser(user.id)}
+                        onCancel={() => toggleEdit(user.id)}
+                        isLoading={isLoading}
+                    />
                 </div>
             )}
         </>
@@ -100,14 +127,44 @@ function UserRow({ user, isEditing, toggleEdit }) {
 
 export default function UsersDashboard() {
     const [editingUserId, setEditingUserId] = useState(null);
+    const [editingData, setEditingData] = useState(null);
     const [showAddForm, setShowAddForm] = useState(false);
     const [usersList, setUsersList] = useState([]);
     const [newUser, setNewUser] = useState({ fullName: "", email: "", role: "jury" });
     const [isLoading, setIsLoading] = useState(false);
 
     const toggleEdit = (id) => {
-    setEditingUserId(prev => (prev === id ? null : id));
-};
+        setEditingUserId(prev => (prev === id ? null : id));
+    };
+
+    const handleUpdateUser = async (userId) => {
+        if (!editingData || editingData.id !== userId) return;
+
+        setIsLoading(true);
+        try {
+            const response = await axios.put(`/users/${userId}`, {
+                full_name: editingData.full_name,
+                email: editingData.email,
+                role: editingData.role
+            });
+
+            // Mettre à jour la liste localement
+            setUsersList(usersList.map(user => 
+                user.id === userId ? { ...user, ...editingData } : user
+            ));
+
+            console.log("Utilisateur mis à jour avec succès :", response.data);
+            alert("Utilisateur mis à jour avec succès !");
+            setEditingUserId(null);
+            setEditingData(null);
+        } catch (error) {
+            console.error("Erreur lors de la mise à jour de l'utilisateur :", error);
+            alert(`Erreur : ${error.response?.data?.error || "Impossible de mettre à jour l'utilisateur"}`);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const handleAddUser = async (e) => {
         e.preventDefault();
         setIsLoading(true);
@@ -138,6 +195,7 @@ export default function UsersDashboard() {
             setIsLoading(false);
         }
     };
+
     useEffect(() => {
         // Appel à l'API pour récupérer les utilisateurs
         axios.get('/users')     
@@ -239,10 +297,15 @@ export default function UsersDashboard() {
 
                 {usersList.map((user) => (
                     <UserRow 
-                    key={user.id}
-                    user={user} 
-                    isEditing={editingUserId === user.id}
-                    toggleEdit={toggleEdit} />
+                        key={user.id}
+                        user={user} 
+                        isEditing={editingUserId === user.id}
+                        toggleEdit={toggleEdit}
+                        editingData={editingData}
+                        setEditingData={setEditingData}
+                        onSaveUser={handleUpdateUser}
+                        isLoading={isLoading}
+                    />
                 ))}
             </section>
 

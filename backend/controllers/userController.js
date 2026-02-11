@@ -123,3 +123,40 @@ exports.getUserById = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+/**
+ * METTRE À JOUR UN UTILISATEUR (ex: Changer le rôle ou le nom)
+ * Cette route peut être utilisée par l'admin pour modifier les informations d'un utilisateur.
+ */
+exports.updateUser = async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const { full_name, role, email } = req.body;
+        const user = await User.findByPk(userId);
+        if (!user) {
+            return res.status(404).json({ error: 'Utilisateur non trouvé' });
+        }
+        // Mise à jour des champs si ils sont fournis
+        if(!full_name && !role && !email) {
+            return res.status(400).json({ error: 'Au moins un champ (full_name, role, email) doit être fourni pour la mise à jour.' });
+        }
+        if (full_name) user.full_name = full_name;
+        if (role) {
+            const allowedRoles = ['jury', 'admin', 'moderator'];
+            if (!allowedRoles.includes(role)) {
+                return res.status(400).json({ error: "Rôle invalide. Rôles acceptés : jury, admin, moderator." });
+            }
+            user.role = role;
+        }
+        if (email) user.email = email;
+        await user.save();
+        res.json({ message: 'Utilisateur mis à jour avec succès', user: {
+            id: user.id,
+            email: user.email,
+            full_name: user.full_name,
+            role: user.role
+        } });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
