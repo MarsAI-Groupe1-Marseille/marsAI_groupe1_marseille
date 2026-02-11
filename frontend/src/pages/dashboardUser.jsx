@@ -105,9 +105,19 @@ function UserRow({ user, isEditing, toggleEdit }) {
 
 export default function UsersDashboard() {
     const [editingUserId, setEditingUserId] = useState(null);
+    const [showAddForm, setShowAddForm] = useState(false);
+    const [usersList, setUsersList] = useState(users);
+    const [newUser, setNewUser] = useState({ name: "", firstName: "", email: "", role: "Utilisateur" });
 
     const toggleEdit = (id) => {
     setEditingUserId(prev => (prev === id ? null : id));
+};
+    const handleAddUser = (e) => {
+        e.preventDefault();
+        const id = usersList.length + 1;
+        setUsersList([...usersList, { id, ...newUser }]);
+        setNewUser({ name: "", firstName: "", email: "", role: "Utilisateur" });
+        setShowAddForm(false);
 };
     return (
         <div className="min-h-screen bg-neutral-950 text-white p-8 space-y-8">
