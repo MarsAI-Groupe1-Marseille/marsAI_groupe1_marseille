@@ -160,3 +160,21 @@ exports.updateUser = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+/**
+ * SUPPRIMER UN UTILISATEUR
+ * Cette route peut être utilisée par l'admin pour supprimer un utilisateur (ex: un jury qui ne fait plus partie du projet).
+ */
+exports.deleteUser = async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const user = await User.findByPk(userId);
+        if (!user) {
+            return res.status(404).json({ error: 'Utilisateur non trouvé' });
+        }
+        await user.destroy();
+        res.json({ message: 'Utilisateur supprimé avec succès' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};

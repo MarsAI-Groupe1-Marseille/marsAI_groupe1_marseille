@@ -10,10 +10,17 @@ const { route } = require('./authRoutes');
 
 router.get('/', userController.getAllUsers);
 router.get('/:id', userController.getUserById);
+// Cette ligne permet à l'Admin de modifier le rôle d'un utilisateur (jury, admin, modérateur) ou son nom complet ou son email
 router.put( '/:id',
      verifyToken,          // 1. Vérification connexion
     checkRole('admin'),   // 2. Vérification rôle Admin
     userController.updateUser
+);
+// Cette ligne permet à l'Admin de supprimer un utilisateur (ex: un jury qui ne fait plus partie du projet)
+router.delete('/:id',
+    verifyToken,          // 1. Vérification connexion
+    checkRole('admin'),   // 2. Vérification rôle Admin
+    userController.deleteUser
 );
 // Cette ligne permet à l'Admin de créer et inviter un utilisateur (jury, admin, modérateur)
 router.post('/invite', userController.createUser);

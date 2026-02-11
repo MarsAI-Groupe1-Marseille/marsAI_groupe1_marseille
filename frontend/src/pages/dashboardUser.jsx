@@ -73,7 +73,7 @@ function FormEdition({ user, editingData, setEditingData, onSave, onCancel, isLo
 }
 
 
-function UserRow({ user, isEditing, toggleEdit, editingData, setEditingData, onSaveUser, isLoading }) {
+function UserRow({ user, isEditing, toggleEdit, editingData, setEditingData, onSaveUser, onDeleteUser, isLoading }) {
     return (
         <>
             <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4 p-4 border-b border-neutral-800 hover:bg-neutral-900 transition">                
@@ -102,7 +102,7 @@ function UserRow({ user, isEditing, toggleEdit, editingData, setEditingData, onS
                         Modifier profil
                     </button>
 
-                    <button className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-800 hover:bg-red-600 transition text-sm">
+                    <button onClick={() => onDeleteUser(user.id, user.full_name)} disabled={isLoading} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-800 hover:bg-red-600 transition text-sm disabled:opacity-50 disabled:cursor-not-allowed">
                         <Trash2 size={16} />
                         Supprimer
                     </button>
@@ -160,6 +160,28 @@ export default function UsersDashboard() {
         } catch (error) {
             console.error("Erreur lors de la mise à jour de l'utilisateur :", error);
             alert(`Erreur : ${error.response?.data?.error || "Impossible de mettre à jour l'utilisateur"}`);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleDeleteUser = async (userId, userName) => {
+        if (!window.confirm(`Êtes-vous sûr de vouloir supprimer ${userName} ? Cette action est irréversible.`)) {
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+            await axios.delete(`/users/${userId}`);
+
+            // Mettre à jour la liste en supprimant l'utilisateur
+            setUsersList(prev => prev.filter(user => user.id !== userId));
+
+            console.log("Utilisateur supprimé avec succès");
+            alert("Utilisateur supprimé avec succès !");
+        } catch (error) {
+            console.error("Erreur lors de la suppression de l'utilisateur :", error);
+            alert(`Erreur : ${error.response?.data?.error || "Impossible de supprimer l'utilisateur"}`);
         } finally {
             setIsLoading(false);
         }
@@ -304,6 +326,7 @@ export default function UsersDashboard() {
                         editingData={editingData}
                         setEditingData={setEditingData}
                         onSaveUser={handleUpdateUser}
+                        onDeleteUser={handleDeleteUser}
                         isLoading={isLoading}
                     />
                 ))}
