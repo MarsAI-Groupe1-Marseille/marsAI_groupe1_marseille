@@ -1,7 +1,9 @@
-// 1. On importe Director en plus des autres
+// 1. On importe les modèles nécessaires
 const { sequelize, Submission, ModerationTicket, Director } = require('../models');
+// 2. On importe le service d'emailing pour envoyer les notifications aux réalisateurs
 const emailService = require('../services/emailService');
 
+// 3. On implémente la logique de modération dans une seule fonction
 exports.moderateSubmission = async (req, res) => {
     const transaction = await sequelize.transaction();
 
@@ -32,10 +34,10 @@ exports.moderateSubmission = async (req, res) => {
             // Envoi de l'email au DIRECTOR
             // Note : Sequelize met le résultat dans film.Director (avec majuscule par défaut)
             if (film.Director && film.Director.email) {
-                // On adapte l'objet pour qu'il ait un 'username' compatible avec ton emailService
+                // On adapte l'objet pour qu'il ait un 'username' compatible avec emailService
                 const directorData = {
                     email: film.Director.email,
-                    username: film.Director.firstname || film.Director.name || "Cinéaste"
+                    username: film.Director.last_name || "Cinéaste"
                 };
                 await emailService.sendFilmApproved(directorData, film.title_original);
             }
@@ -66,7 +68,7 @@ exports.moderateSubmission = async (req, res) => {
             if (film.Director && film.Director.email) {
                 const directorData = {
                     email: film.Director.email,
-                    username: film.Director.firstname || film.Director.name || "Cinéaste"
+                    username: film.Director.last_name || "Cinéaste"
                 };
                 await emailService.sendFilmRefused(directorData, film.title_original, description);
             }

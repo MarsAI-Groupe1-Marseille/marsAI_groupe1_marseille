@@ -1,5 +1,5 @@
 const bcrypt = require('bcrypt');
-const { User } = require('../models'); // Assure-toi que le chemin vers tes modèles est bon
+const { User } = require('../models');
 
 const createDefaultAdmin = async () => {
   try {

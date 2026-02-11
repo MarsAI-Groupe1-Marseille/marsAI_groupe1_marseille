@@ -99,21 +99,21 @@ const emailService = {
             // Configuration selon le rôle
             const roleConfig = {
                 jury: {
-                    subject: "Tu es invité(e) au Jury Mars'AI ! 🎬",
+                    subject: "Tu es invité(e) au Jury Mars'AI !",
                     title: "Félicitations !",
                     color: "#1976D2",
                     message: "Tu as été sélectionné(e) pour être membre du Jury.",
                     description: "Tu pourras visionner et noter les films soumis au concours."
                 },
                 admin: {
-                    subject: "Invitation - Administrateur Mars'AI 🚀",
+                    subject: "Invitation - Administrateur Mars'AI",
                     title: "Bienvenue dans l'équipe !",
                     color: "#D32F2F",
                     message: "Tu as été invité(e) en tant qu'administrateur de la plateforme Mars'AI.",
                     description: "Tu auras accès à la gestion complète de la plateforme et des utilisateurs."
                 },
                 moderator: {
-                    subject: "Invitation - Modérateur Mars'AI 🎥",
+                    subject: "Invitation - Modérateur Mars'AI",
                     title: "Rejoins l'équipe de modération !",
                     color: "#7B1FA2",
                     message: "Tu as été sélectionné(e) pour être modérateur.",
@@ -151,16 +151,16 @@ const emailService = {
                                 <span style="color: #1976D2;">${link}</span>
                             </p>
                         </div>
-                        <p style="margin-top: 30px;">À très bientôt sur Mars'AI ! 🚀</p>
+                        <p style="margin-top: 30px;">À très bientôt sur Mars'AI !</p>
                         <p style="color: #666; font-size: 12px; margin-top: 40px; border-top: 1px solid #ddd; padding-top: 20px;">
                             Si tu n'as pas demandé cette invitation, tu peux ignorer cet email.
                         </p>
                     </div>
                 `
             });
-            console.log(`✉️ Mail invitation ${role} envoyé à : ${email}`);
+            console.log(`Mail invitation ${role} envoyé à : ${email}`);
         } catch (error) {
-            console.error(`❌ Erreur mail invitation ${role} :`, error);
+            console.error(`Erreur mail invitation ${role} :`, error);
             throw error;
         }
     },
@@ -183,7 +183,7 @@ const emailService = {
                         <p>Nous avons le plaisir de t'annoncer que ton film <strong>"${filmTitle}"</strong> a été validé par notre équipe de modération.</p>
                         <p>Il est désormais visible par le Jury et le public.</p>
                         <br>
-                        <p>L'équipe Mars'AI 🚀</p>
+                        <p>L'équipe Mars'AI</p>
                     </div>
                 `
             });
