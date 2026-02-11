@@ -36,7 +36,7 @@ export default function UsersDashboard() {
     return (
         <div className="min-h-screen bg-neutral-950 text-white p-8 space-y-8">
 
-            <header className="flex justify-between items-center">
+            <header className="flex justify-between items-center p-6 rounded-2xl bg-gradient-to-r from-violet-600 via-fuchsia-600 to-pink-600">
                 <div className="flex items-center gap-3">
                     <Users className="text-violet-500" />
                     <h1 className="text-3xl font-bold text-violet-400">
