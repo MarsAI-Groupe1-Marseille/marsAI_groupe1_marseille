@@ -21,6 +21,40 @@ function BadgeAttribution({ role }) {
     );
 }
 
+function FormEdition({ user }) {
+    return (
+        <form className="grid md:grid-cols-3 gap-4">
+            <input
+                defaultValue={user.name}
+                className="bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                placeholder="Nom"
+            />
+
+            <input
+                defaultValue={user.email}
+                className="bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                placeholder="Email"
+            />
+
+            <select defaultValue={user.role} className="bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-violet-500">
+                <option>Admin</option>
+                <option>Jury</option>
+                <option>Utilisateur</option>
+            </select>
+
+            <div className="md:col-span-3 flex justify-end gap-3 mt-4">
+                <button type="button" className="px-4 py-2 rounded-lg bg-neutral-700 hover:bg-neutral-600 transition">
+                    Annuler
+                </button>
+
+                <button type="submit" className="px-4 py-2 rounded-lg bg-gradient-to-r from-violet-500 to-pink-500 hover:opacity-90 transition">
+                    Enregistrer
+                </button>
+            </div>
+        </form>
+    );
+}
+
 function UserRow({ user, isEditing, toggleEdit }) {
     return (
         <>
@@ -52,7 +86,7 @@ function UserRow({ user, isEditing, toggleEdit }) {
 
             {isEditing && (
                 <div className="bg-neutral-950 p-6 border-b border-neutral-800">
-                    <EditUserForm user={user} />
+                    <FormEdition user={user} />
                 </div>
             )}
         </>
@@ -63,7 +97,7 @@ export default function UsersDashboard() {
     const [editingUserId, setEditingUserId] = useState(null);
 
     const toggleEdit = (id) => {
-    setEditingUserId(editingUserId === id ? null : id);
+    setEditingUserId(prev => (prev === id ? null : id));
 };
     return (
         <div className="min-h-screen bg-neutral-950 text-white p-8 space-y-8">
