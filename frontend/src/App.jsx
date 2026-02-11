@@ -6,6 +6,7 @@ import Galerie from './pages/galerie.jsx';
 import Login from './pages/login.jsx';
 import FilmDetail from './pages/film_detail.jsx';
 import Dashboard from './pages/dashboard.jsx';
+import DashboardUser from './pages/dashboardUser.jsx';
 import './App.css'
 import SubmissionForm from './pages/SubmissionForm.jsx';
 import Forgotpass from './pages/forgotpass.jsx';
@@ -27,6 +28,7 @@ function App() {
           <Route path="/forgotpass" element={<Forgotpass />} />
 
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboardUser" element={<DashboardUser />} />
 
         </Routes>
 
