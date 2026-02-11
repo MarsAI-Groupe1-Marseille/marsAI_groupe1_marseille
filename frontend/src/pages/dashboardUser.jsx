@@ -24,23 +24,32 @@ function BadgeAttribution({ role }) {
 function FormEdition({ user }) {
     return (
         <form className="grid md:grid-cols-3 gap-4">
-            <input
-                defaultValue={user.name}
-                className="bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-violet-500"
-                placeholder="Nom"
-            />
+            <div className="flex flex-col">
+                <label className="text-sm text-neutral-400 mb-1">Nom :</label>
+                <input
+                    defaultValue={user.name}
+                    className="bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                    placeholder="Nom"
+                />
+            </div>
 
-            <input
-                defaultValue={user.email}
-                className="bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-violet-500"
-                placeholder="Email"
-            />
+            <div className="flex flex-col">
+                <label className="text-sm text-neutral-400 mb-1">Prénom :</label>
+                <input
+                    defaultValue={user.firstName || ""}
+                    className="bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                    placeholder="Prénom"
+                />
+            </div>
 
-            <select defaultValue={user.role} className="bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-violet-500">
-                <option>Admin</option>
-                <option>Jury</option>
-                <option>Utilisateur</option>
-            </select>
+            <div className="flex flex-col">
+                <label className="text-sm text-neutral-400 mb-1">Email :</label>
+                <input
+                    defaultValue={user.email}
+                    className="bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                    placeholder="Email"
+                />
+            </div>
 
             <div className="md:col-span-3 flex justify-end gap-3 mt-4">
                 <button type="button" className="px-4 py-2 rounded-lg bg-neutral-700 hover:bg-neutral-600 transition">
@@ -54,6 +63,7 @@ function FormEdition({ user }) {
         </form>
     );
 }
+
 
 function UserRow({ user, isEditing, toggleEdit }) {
     return (
