@@ -87,7 +87,65 @@ const emailService = {
         } catch (error) {
             console.error(" Erreur mail jury :", error);
         }
+    },
+   
+
+    /**
+     * 4. FILM APPROUVÉ / SÉLECTIONNÉ
+     * Déclenché par l'admin quand un film passe la modération.
+     */
+    sendFilmApproved: async (user, filmTitle) => {
+        try {
+            await transporter.sendMail({
+                from: process.env.EMAIL_USER,
+                to: user.email,
+                subject: `Félicitations ! Votre film "${filmTitle}" est sélectionné ! 🎬`,
+                html: `
+                    <div style="font-family: Arial; color: #333;">
+                        <h1 style="color: #2E7D32;">Excellente nouvelle !</h1>
+                        <p>Bonjour ${user.username},</p>
+                        <p>Nous avons le plaisir de t'annoncer que ton film <strong>"${filmTitle}"</strong> a été validé par notre équipe de modération.</p>
+                        <p>Il est désormais visible par le Jury et le public.</p>
+                        <br>
+                        <p>L'équipe Mars'AI 🚀</p>
+                    </div>
+                `
+            });
+            console.log(`Mail approbation envoyé à : ${user.email}`);
+        } catch (error) {
+            console.error("Erreur mail approbation :", error);
+        }
+    },
+
+    /**
+     * 5. FILM REFUSÉ
+     * Déclenché par l'admin si le film ne respecte pas les règles.
+     */
+    sendFilmRefused: async (user, filmTitle, reason) => {
+        try {
+            await transporter.sendMail({
+                from: process.env.EMAIL_USER,
+                to: user.email,
+                subject: `Mise à jour concernant votre film "${filmTitle}"`,
+                html: `
+                    <div style="font-family: Arial; color: #333;">
+                        <h1 style="color: #C62828;">Notification de modération</h1>
+                        <p>Bonjour ${user.username},</p>
+                        <p>Malheureusement, ton film <strong>"${filmTitle}"</strong> n'a pas été retenu pour la compétition.</p>
+                        <p><strong>Raison :</strong> ${reason || "Non-respect des critères de la charte."}</p>
+                        <p>Tu peux modifier ton film et le soumettre à nouveau.</p>
+                        <br>
+                        <p>L'équipe Mars'AI</p>
+                    </div>
+                `
+            });
+            console.log(`Mail refus envoyé à : ${user.email}`);
+        } catch (error) {
+            console.error("Erreur mail refus :", error);
+        }
     }
+
+
 };
 
 module.exports = emailService; 
