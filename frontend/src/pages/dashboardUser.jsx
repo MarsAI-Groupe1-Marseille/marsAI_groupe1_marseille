@@ -30,7 +30,7 @@ function UserRow({ user, isEditing, toggleEdit }) {
                     <p className="text-sm text-neutral-400">{user.email}</p>
                 </div>
 
-                <RoleBadge role={user.role} />
+                <BadgeAttribution role={user.role} />
 
                 <div className="flex gap-3 justify-end col-span-2">
                     <button className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 transition text-sm">
