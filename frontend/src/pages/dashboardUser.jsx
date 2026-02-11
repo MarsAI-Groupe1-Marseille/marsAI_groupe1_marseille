@@ -13,33 +13,41 @@ const users = [
     { id: 3, name: "Belinda santabou", email: "belinda@gmail.com", role: "Utilisateur" },
 ];
 
-function UserRow({ user }) {
+function UserRow({ user, isEditing, toggleEdit }) {
     return (
-        <div className="grid grid-cols-4 items-center gap-4 p-4 border-b border-neutral-800 hover:bg-neutral-900 transition">
-            <div>
-                <p className="font-semibold">{user.name}</p>
-                <p className="text-sm text-neutral-400">{user.email}</p>
+        <>
+            <div className="grid grid-cols-4 items-center gap-4 p-4 border-b border-neutral-800 hover:bg-neutral-900 transition">                
+                <div>
+                    <p className="font-semibold">{user.name}</p>
+                    <p className="text-sm text-neutral-400">{user.email}</p>
+                </div>
+
+                <RoleBadge role={user.role} />
+
+                <div className="flex gap-3 justify-end col-span-2">
+                    <button className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 transition text-sm">
+                        <Eye size={16} />
+                        Voir
+                    </button>
+
+                    <button onClick={() => toggleEdit(user.id)} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-800 hover:bg-gradient-to-r hover:from-violet-500 hover:to-pink-500 transition text-sm">
+                        <Pencil size={16} />
+                        Modifier profil
+                    </button>
+
+                    <button className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-800 hover:bg-red-600 transition text-sm">
+                        <Trash2 size={16} />
+                        Supprimer
+                    </button>
+                </div>
             </div>
 
-            <span className="text-sm text-violet-400">{user.role}</span>
-
-            <div className="flex gap-3 justify-end col-span-2">
-                <button className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 transition text-sm">
-                    <Eye size={16} />
-                    Voir
-                </button>
-
-                <button onClick={() => toggleEdit(user.id)} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-800 hover:bg-gradient-to-r hover:from-violet-500 hover:to-pink-500 transition text-sm">
-                    <Pencil size={16} />
-                    Modifier profil
-                </button>
-
-                <button className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-800 hover:bg-red-600 transition text-sm">
-                    <Trash2 size={16} />
-                    Supprimer
-                </button>
-            </div>
-        </div>
+            {isEditing && (
+                <div className="bg-neutral-950 p-6 border-b border-neutral-800">
+                    <EditUserForm user={user} />
+                </div>
+            )}
+        </>
     );
 }
 
