@@ -1,44 +1,37 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import { Users, Eye, Pencil, Trash2, UserPlus } from "lucide-react";
+import axios from '../config/axiosConfig';
 
-const users = [
-    { id: 1, name: "Benjamin Lacroix", email: "benjamin@gmail.com", role: "Admin" },
-    { id: 2, name: "Diakité Mossad", email: "diakite@gmail.com", role: "Jury" },
-    { id: 3, name: "Belinda santabou", email: "belinda@gmail.com", role: "Utilisateur" },
-];
 
 function BadgeAttribution({ role }) {
     const styles = {
-        Admin: "bg-red-500/20 text-red-400 border border-red-500/30",
-        Jury: "bg-blue-500/20 text-blue-400 border border-blue-500/30",
-        Utilisateur: "bg-green-500/20 text-green-400 border border-green-500/30",
+        admin: "bg-red-500/20 text-red-400 border border-red-500/30",
+        jury: "bg-blue-500/20 text-blue-400 border border-blue-500/30",
+        moderator: "bg-purple-600/40 text-purple-200 border border-purple-400",
+    };
+
+    const labels = {
+        admin: "Admin",
+        jury: "Jury",
+        moderator: "Modérateur",
     };
 
     return (
-        <span className={`text-xs px-1 py-1 rounded-full font-medium min-w-[50px] text-center ${styles[role]}`}>
-            {role}
+        <span className={`text-sm px-4 py-1.5 rounded-full font-medium whitespace-nowrap ${styles[role] || "bg-gray-500/20 text-gray-400 border border-gray-500/30"}`}>
+            {labels[role] || role}
         </span>
     );
 }
 
 function FormEdition({ user }) {
     return (
-        <form className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+        <form className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
             <div className="flex flex-col w-full">
-                <label className="text-sm text-neutral-400 mb-1">Nom :</label>
+                <label className="text-sm text-neutral-400 mb-1">Nom complet :</label>
                 <input
-                    defaultValue={user.name}
+                    defaultValue={user.full_name}
                     className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-violet-500"
-                    placeholder="Nom"
-                />
-            </div>
-
-            <div className="flex flex-col">
-                <label className="text-sm text-neutral-400 mb-1">Prénom :</label>
-                <input
-                    defaultValue={user.firstName || ""}
-                    className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-violet-500"
-                    placeholder="Prénom"
+                    placeholder="Nom complet"
                 />
             </div>
 
@@ -51,7 +44,7 @@ function FormEdition({ user }) {
                 />
             </div>
 
-            <div className="md:col-span-3 flex flex-wrap justify-end gap-3 mt-4">
+            <div className="md:col-span-2 flex flex-wrap justify-end gap-3 mt-4">
                 <button type="button" className="w-full md:w-auto px-4 py-2 rounded-lg bg-neutral-700 hover:bg-neutral-600 transition">
                     Annuler
                 </button>
@@ -70,11 +63,13 @@ function UserRow({ user, isEditing, toggleEdit }) {
         <>
             <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4 p-4 border-b border-neutral-800 hover:bg-neutral-900 transition">                
                 <div>
-                    <p className="font-semibold">{user.name}</p>
+                    <p className="font-semibold">{user.full_name}</p>
                     <p className="text-sm text-neutral-400">{user.email}</p>
                 </div>
 
-                <BadgeAttribution role={user.role} />
+                <div className="flex justify-center items-center">
+                    <BadgeAttribution role={user.role} />
+                </div>
 
                 <div className="flex flex-wrap gap-2 justify-start sm:justify-end col-span-2">
                     <button className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 transition text-sm">
@@ -106,19 +101,54 @@ function UserRow({ user, isEditing, toggleEdit }) {
 export default function UsersDashboard() {
     const [editingUserId, setEditingUserId] = useState(null);
     const [showAddForm, setShowAddForm] = useState(false);
-    const [usersList, setUsersList] = useState(users);
-    const [newUser, setNewUser] = useState({ fullName: "", email: "", role: "Utilisateur" });
+    const [usersList, setUsersList] = useState([]);
+    const [newUser, setNewUser] = useState({ fullName: "", email: "", role: "jury" });
+    const [isLoading, setIsLoading] = useState(false);
 
     const toggleEdit = (id) => {
     setEditingUserId(prev => (prev === id ? null : id));
 };
-    const handleAddUser = (e) => {
+    const handleAddUser = async (e) => {
         e.preventDefault();
-        const id = usersList.length + 1;
-        setUsersList([...usersList, { id, name: newUser.fullName, email: newUser.email, role: newUser.role }]);
-        setNewUser({ fullName: "", email: "", role: "Utilisateur" });
-        setShowAddForm(false);
+        setIsLoading(true);
+        
+        try {
+            // Appel à l'API pour créer et inviter l'utilisateur
+            const response = await axios.post('/users/invite', {
+                email: newUser.email,
+                full_name: newUser.fullName,
+                role: newUser.role
+            });
+            
+            // Afficher un message de succès
+            console.log("Utilisateur créé avec succès :", response.data);
+            alert(`Invitation envoyée avec succès à ${newUser.email} !`);
+            
+            // Recharger la liste des utilisateurs
+            const usersResponse = await axios.get('/users');
+            setUsersList(usersResponse.data);
+            
+            // Réinitialiser le formulaire
+            setNewUser({ fullName: "", email: "", role: "jury" });
+            setShowAddForm(false);
+        } catch (error) {
+            console.error("Erreur lors de la création de l'utilisateur :", error);
+            alert(`Erreur : ${error.response?.data?.error || "Impossible de créer l'utilisateur"}`);
+        } finally {
+            setIsLoading(false);
+        }
     };
+    useEffect(() => {
+        // Appel à l'API pour récupérer les utilisateurs
+        axios.get('/users')     
+            .then(response => {
+                console.log("Utilisateurs récupérés :", response.data);
+                setUsersList(response.data); // On suppose que l'API renvoie un tableau d'utilisateurs
+            })
+            .catch(error => {
+                console.error("Erreur lors de la récupération des utilisateurs :", error);
+            });
+    }, []);
     return (
         <div className="min-h-screen bg-neutral-950 text-white p-8 space-y-8">
 
@@ -174,8 +204,9 @@ export default function UsersDashboard() {
                             onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
                             className="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-violet-500"
                         >
-                            <option value="Admin">Modérateur</option>
-                            <option value="Jury">Jury</option>
+                            <option value="admin">Admin</option>
+                            <option value="jury">Jury</option>
+                            <option value="moderator">Modérateur</option>
                         </select>
                     </div>
 
@@ -184,12 +215,17 @@ export default function UsersDashboard() {
                             type="button"
                             onClick={() => setShowAddForm(false)}
                             className="px-4 py-2 rounded-lg bg-neutral-700 hover:bg-neutral-600 transition w-full"
+                            disabled={isLoading}
                         >
                             Annuler
                         </button>
 
-                        <button type="submit" className="px-4 py-2 rounded-lg bg-gradient-to-r from-violet-500 to-pink-500 hover:opacity-90 transition w-full md:w-auto">
-                            Ajouter
+                        <button 
+                            type="submit" 
+                            className="px-4 py-2 rounded-lg bg-gradient-to-r from-violet-500 to-pink-500 hover:opacity-90 transition w-full md:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={isLoading}
+                        >
+                            {isLoading ? "Envoi en cours..." : "Ajouter et inviter"}
                         </button>
                     </div>
                 </form>
@@ -201,7 +237,7 @@ export default function UsersDashboard() {
                     <span className="col-span-2 text-right">Actions</span>
                 </div>
 
-                {users.map((user) => (
+                {usersList.map((user) => (
                     <UserRow 
                     key={user.id}
                     user={user} 

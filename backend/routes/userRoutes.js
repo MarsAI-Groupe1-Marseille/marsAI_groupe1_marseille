@@ -9,8 +9,8 @@ const { route } = require('./authRoutes');
 
 router.get('/', userController.getAllUsers);
 router.get('/:id', userController.getUserById);
-// Cette ligne permet à l'Admin d'envoyer une invitation
-router.post('/invite-jury', userController.createJury);
+// Cette ligne permet à l'Admin de créer et inviter un utilisateur (jury, admin, modérateur)
+router.post('/invite', userController.createUser);
 // Cette ligne permet au jury de définir son mot de passe via le lien magique
 router.post('/reset-password', userController.resetPassword);
 
