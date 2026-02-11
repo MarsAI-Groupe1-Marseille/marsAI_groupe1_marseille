@@ -20,6 +20,7 @@ const port = process.env.PORT || 3000;
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const submissionRoutes = require('./routes/submissionRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
 
 
@@ -45,6 +46,7 @@ app.use(passport.initialize());
 app.use('/api/auth', authRoutes);         
 app.use('/api/users', userRoutes);        
 app.use('/api/submissions', submissionRoutes); 
+app.use('/api/admin', adminRoutes); // Routes admin (validation des films, modération, etc.)
 
 
 // Servir les fichiers statiques du dossier uploads avec chemin absolu
