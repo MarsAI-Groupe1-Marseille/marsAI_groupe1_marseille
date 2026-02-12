@@ -73,5 +73,25 @@ const handleSaveEvaluation = () => {
 };
 
 
-    return();
+return (
+    <div className="min-h-screen bg-black text-white p-6">
+        {/* Header */}
+        <header className="flex flex-col md:flex-row md:items-center md:justify-between mb-10 gap-6">
+            <div>
+                <h1 className="text-3xl font-bold">Dashboard Jury</h1>
+                <p className="text-neutral-400 mt-1">
+                    Gestion et évaluation des films assignés
+                </p>
+            </div>
+            <section className="flex items-center gap-4 bg-neutral-900 border border-neutral-800 px-4 py-3 rounded-2xl">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-violet-500 to-pink-500 flex items-center justify-center font-bold">
+                    J
+                </div>
+                <div>
+                    <p className="text-sm font-semibold">Jury Member</p>
+                    <p className="text-xs text-neutral-400">jury@festival.com</p>
+                </div>
+            </section>
+        </header>
+    );
 }
