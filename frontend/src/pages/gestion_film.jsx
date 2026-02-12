@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import axios from '../config/axiosConfig';
 import { Search, ChevronRight, ChevronLeft, Check, X, Clock, Globe, Users, LayoutDashboard, Film as FilmIcon, BarChart3, Calendar, Settings } from "lucide-react";
 
 /* ─────────────────────────── DONNÉES ─────────────────────────── */
@@ -221,8 +222,12 @@ function Sidebar({ active }) {
 
 /* ─────────────────────────── COMPOSANT PRINCIPAL ─────────────── */
 export default function GestionFilms() {
-  const [films, setFilms]         = useState(INITIAL_FILMS);
+  const [films, setFilms]         = useState([]);
+  const [loading, setLoading]     = useState(false);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalFilms, setTotalFilms] = useState(0);
   const [query, setQuery]         = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [page, setPage]           = useState(1);
   const [statutFilter, setStatutFilter] = useState("");
   const [selectedFilm, setSelectedFilm] = useState(null);
@@ -230,16 +235,85 @@ export default function GestionFilms() {
   const [toast, setToast]         = useState({ visible: false, msg: "", color: "#4f8ef7" });
   const toastTimer                = useRef(null);
 
-  /* filtre */
-  const filtered = films.filter(f => {
-    const q = query.toLowerCase();
-    const matchQuery = !q || f.titre.toLowerCase().includes(q) || f.real.toLowerCase().includes(q);
-    const matchStatut = !statutFilter || f.statut === statutFilter;
-    return matchQuery && matchStatut;
-  });
+  // Debounce pour la recherche
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(query);
+      setPage(1); // Reset à la page 1 lors d'une recherche
+    }, 500); // 500ms de délai
 
-  const totalPages = Math.ceil(filtered.length / PER_PAGE);
-  const slice      = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+    return () => clearTimeout(timer);
+  }, [query]);
+
+  // Mapping des statuts backend -> frontend
+  const mapStatus = (backendStatus) => {
+    const statusMap = {
+      'approved': 'valide',
+      'rejected': 'refuse',
+      'submitted': 'attente'
+    };
+    return statusMap[backendStatus] || 'attente';
+  };
+
+  // Mapping des statuts frontend -> backend
+  const mapStatusToBackend = (frontendStatus) => {
+    const statusMap = {
+      'valide': 'approved',
+      'refuse': 'rejected',
+      'attente': 'submitted'
+    };
+    return statusMap[frontendStatus] || '';
+  };
+
+  // Mapping des données backend vers format frontend
+  const mapFilmData = (backendFilm) => {
+    return {
+      id: backendFilm.id,
+      titre: backendFilm.title_original,
+      real: backendFilm.Director ? `${backendFilm.Director.first_name} ${backendFilm.Director.last_name}` : 'N/A',
+      date: new Date(backendFilm.createdAt).toLocaleDateString('fr-FR'),
+      statut: mapStatus(backendFilm.approval_status),
+      avant: false, // À adapter selon votre logique
+      synopsis: backendFilm.synopsis_original || '',
+      duree: Math.floor(backendFilm.duration_seconds / 60) || 0,
+      email: backendFilm.Director?.email || 'N/A',
+      ville: backendFilm.Director?.city || 'N/A',
+      tags: backendFilm.theme_tags || '',
+      youtubeId: backendFilm.youtube_id || '',
+      posterUrl: backendFilm.poster_url || ''
+    };
+  };
+
+  // Fonction pour récupérer les films depuis l'API
+  const fetchFilms = async () => {
+    setLoading(true);
+    try {
+      const params = {
+        page: page,
+        limit: PER_PAGE,
+        search: debouncedQuery,
+        status: mapStatusToBackend(statutFilter)
+      };
+
+      const response = await axios.get('/submissions', { params });
+      
+      const mappedFilms = response.data.data.map(mapFilmData);
+      setFilms(mappedFilms);
+      setTotalPages(response.data.totalPages);
+      setTotalFilms(response.data.totalItems);
+    } catch (error) {
+      console.error("Erreur lors de la récupération des films:", error);
+      showToast("Erreur lors du chargement des films", "#f05a5a");
+      setFilms([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // useEffect pour charger les films au montage et lors des changements de filtres
+  useEffect(() => {
+    fetchFilms();
+  }, [page, debouncedQuery, statutFilter]);
 
   /* helpers */
   const showToast = (msg, color) => {
@@ -248,19 +322,52 @@ export default function GestionFilms() {
     toastTimer.current = setTimeout(() => setToast(t => ({ ...t, visible: false })), 2400);
   };
 
+  // Fonction pour modérer un film (approuver ou rejeter)
+  const moderateFilm = async (filmId, action) => {
+    try {
+      const endpoint = `/admin/moderation/${filmId}`;
+      const payload = action === 'approved' 
+        ? { status: 'approved' }
+        : { 
+            status: 'rejected', 
+            issue_type: 'quality', 
+            description: 'Film rejeté par l\'administrateur' 
+          };
+
+      await axios.post(endpoint, payload);
+      
+      const labels = { 
+        'approved': "Film approuvé ✓", 
+        'rejected': "Film rejeté" 
+      };
+      const colors = { 
+        'approved': "#2ac98e", 
+        'rejected': "#f05a5a" 
+      };
+      
+      showToast(labels[action], colors[action]);
+      
+      // Recharger les films après modération
+      fetchFilms();
+    } catch (error) {
+      console.error("Erreur lors de la modération:", error);
+      showToast("Erreur lors de la modération du film", "#f05a5a");
+    }
+  };
+
   const changeStatut = (id, statut) => {
-    setFilms(prev => prev.map(f => f.id === id ? { ...f, statut } : f));
-    const labels = { valide: "Film approuvé ✓", refuse: "Film rejeté", attente: "Film en attente" };
-    const colors = { valide: "#2ac98e",         refuse: "#f05a5a",      attente: "#f59e0b" };
-    showToast(labels[statut], colors[statut]);
+    // Mapping frontend -> backend
+    const backendAction = statut === 'valide' ? 'approved' : 'rejected';
+    moderateFilm(id, backendAction);
   };
 
   const toggleAvant = (id, val) => {
+    // Cette fonctionnalité nécessiterait une route backend dédiée
+    // Pour l'instant on garde le comportement local
     setFilms(prev => prev.map(f => f.id === id ? { ...f, avant: val } : f));
     showToast(val ? "Film mis en avant" : "Retiré de la mise en avant", "#4f8ef7");
   };
 
-  const handleSearch = (v) => { setQuery(v); setPage(1); };
 
   return (
     <div className="flex min-h-screen bg-neutral-950 text-white">
@@ -298,7 +405,7 @@ export default function GestionFilms() {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-500" size={16} />
                 <input
                   value={query}
-                  onChange={e => handleSearch(e.target.value)}
+                  onChange={e => setQuery(e.target.value)}
                   placeholder="Rechercher un film ou un réalisateur…"
                   className="w-full border border-neutral-700 rounded-lg pl-9 pr-4 py-2 bg-neutral-800 text-sm text-neutral-200 placeholder-neutral-500 focus:border-violet-500 focus:bg-neutral-800 focus:outline-none transition"
                 />
@@ -350,84 +457,103 @@ export default function GestionFilms() {
 
           {/* Table */}
           <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-neutral-800 border-b border-neutral-700">
-                  {["Affiche", "Titre", "Réalisateur", "Statut", "Date", "Actions", ""].map(h => (
-                    <th key={h} className="text-xs font-bold uppercase text-neutral-400 px-4 py-3 text-left tracking-wider whitespace-nowrap">
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {slice.map(f => {
-                  const gradientClass = GRADIENTS[f.id % GRADIENTS.length];
-                  return (
-                    <tr key={f.id} className="border-b border-neutral-800 hover:bg-neutral-800 transition-colors">
+            {loading ? (
+              <div className="flex justify-center items-center py-20">
+                <div className="text-neutral-400">Chargement des films...</div>
+              </div>
+            ) : (
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-neutral-800 border-b border-neutral-700">
+                    {["Affiche", "Titre", "Réalisateur", "Statut", "Date", "Actions", ""].map(h => (
+                      <th key={h} className="text-xs font-bold uppercase text-neutral-400 px-4 py-3 text-left tracking-wider whitespace-nowrap">
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {films.map(f => {
+                    return (
+                      <tr key={f.id} className="border-b border-neutral-800 hover:bg-neutral-800 transition-colors">
 
-                      {/* Affiche */}
-                      <td className="px-4 py-3">
-                        <div className={`w-12 h-9 rounded bg-gradient-to-br ${gradientClass} flex items-center justify-center overflow-hidden`}>
-                          <div className="text-white opacity-50" size={16}>▶</div>
-                        </div>
-                      </td>
+                        {/* Affiche */}
+                        <td className="px-4 py-3">
+                          <div className="w-16 h-20 rounded overflow-hidden bg-neutral-800 flex items-center justify-center">
+                            {f.posterUrl ? (
+                              <img 
+                                src={`http://localhost:3000${f.posterUrl}`} 
+                                alt={f.titre}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  e.target.onerror = null;
+                                  e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="64" height="80" viewBox="0 0 64 80"%3E%3Crect fill="%23262626" width="64" height="80"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23666" font-size="24"%3E🎬%3C/text%3E%3C/svg%3E';
+                                }}
+                              />
+                            ) : (
+                              <div className="text-neutral-600 text-2xl">🎬</div>
+                            )}
+                          </div>
+                        </td>
 
-                      {/* Titre */}
-                      <td className="px-4 py-3">
-                        <div className="font-bold text-sm text-white">{f.titre}</div>
-                        <div className="text-xs text-neutral-400">Film soumis</div>
-                      </td>
+                        {/* Titre */}
+                        <td className="px-4 py-3">
+                          <div className="font-bold text-sm text-white">{f.titre}</div>
+                          <div className="text-xs text-neutral-400">Film soumis</div>
+                        </td>
 
-                      {/* Réalisateur */}
-                      <td className="px-4 py-3 text-neutral-300 font-medium text-sm">{f.real}</td>
+                        {/* Réalisateur */}
+                        <td className="px-4 py-3 text-neutral-300 font-medium text-sm">{f.real}</td>
 
-                      {/* Statut */}
-                      <td className="px-4 py-3"><Badge statut={f.statut} /></td>
+                        {/* Statut */}
+                        <td className="px-4 py-3"><Badge statut={f.statut} /></td>
 
-                      {/* Date */}
-                      <td className="px-4 py-3 text-neutral-400 font-medium text-sm">{f.date}</td>
+                        {/* Date */}
+                        <td className="px-4 py-3 text-neutral-400 font-medium text-sm">{f.date}</td>
 
-                      {/* Actions */}
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2 flex-nowrap">
-                          <button
-                            onClick={() => changeStatut(f.id, "valide")}
-                            className="inline-flex items-center gap-1 px-3 py-1 rounded text-xs font-bold uppercase tracking-wider bg-green-900 text-green-200 border border-green-700 hover:bg-green-800 transition whitespace-nowrap"
+                        {/* Actions */}
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2 flex-nowrap">
+                            <button
+                              onClick={() => changeStatut(f.id, "valide")}
+                              disabled={f.statut === 'valide'}
+                              className="inline-flex items-center gap-1 px-3 py-1 rounded text-xs font-bold uppercase tracking-wider bg-green-900 text-green-200 border border-green-700 hover:bg-green-800 transition whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              <Check size={13} /> Approuver
+                            </button>
+                            <button
+                              onClick={() => changeStatut(f.id, "refuse")}
+                              disabled={f.statut === 'refuse'}
+                              className="inline-flex items-center gap-1 px-3 py-1 rounded text-xs font-bold uppercase tracking-wider bg-red-900 text-red-200 border border-red-700 hover:bg-red-800 transition whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              <X size={13} /> Rejeter
+                            </button>
+                          </div>
+                        </td>
+
+                        {/* Détail */}
+                        <td className="px-4 py-3">
+                          <button 
+                            onClick={() => { setSelectedFilm(f); setIsModalOpen(true); }}
+                            className="inline-flex items-center justify-center w-8 h-8 rounded border border-neutral-700 bg-neutral-800 text-violet-400 hover:border-violet-500 hover:bg-neutral-700 transition"
                           >
-                            <Check size={13} /> Approuver
+                            <ChevronRight size={16} />
                           </button>
-                          <button
-                            onClick={() => changeStatut(f.id, "refuse")}
-                            className="inline-flex items-center gap-1 px-3 py-1 rounded text-xs font-bold uppercase tracking-wider bg-red-900 text-red-200 border border-red-700 hover:bg-red-800 transition whitespace-nowrap"
-                          >
-                            <X size={13} /> Rejeter
-                          </button>
-                        </div>
-                      </td>
+                        </td>
+                      </tr>
+                    );
+                  })}
 
-                      {/* Détail */}
-                      <td className="px-4 py-3">
-                        <button 
-                          onClick={() => { setSelectedFilm(f); setIsModalOpen(true); }}
-                          className="inline-flex items-center justify-center w-8 h-8 rounded border border-neutral-700 bg-neutral-800 text-violet-400 hover:border-violet-500 hover:bg-neutral-700 transition"
-                        >
-                          <ChevronRight size={16} />
-                        </button>
+                  {films.length === 0 && !loading && (
+                    <tr>
+                      <td colSpan={7} className="px-4 py-10 text-center text-neutral-400 text-sm">
+                        Aucun film trouvé {query && `pour « ${query} »`}
                       </td>
                     </tr>
-                  );
-                })}
-
-                {slice.length === 0 && (
-                  <tr>
-                    <td colSpan={7} className="px-4 py-10 text-center text-neutral-400 text-sm">
-                      Aucun film trouvé pour « {query} »
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                  )}
+                </tbody>
+              </table>
+            )}
           </div>
 
           {/* Pagination */}
@@ -464,9 +590,9 @@ export default function GestionFilms() {
               {/* Suivant */}
               <button
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages}
+                disabled={page === totalPages || totalPages === 0}
                 className={`w-8 h-8 rounded border flex items-center justify-center transition ${
-                  page === totalPages
+                  page === totalPages || totalPages === 0
                     ? 'border-neutral-700 bg-neutral-900 text-neutral-600 opacity-50 cursor-not-allowed'
                     : 'border-neutral-700 bg-neutral-900 text-neutral-400 hover:border-violet-500 hover:text-violet-400'
                 }`}
@@ -476,7 +602,7 @@ export default function GestionFilms() {
             </div>
 
             <div className="text-xs text-neutral-400 font-semibold uppercase tracking-wider">
-              Page {page} sur {totalPages} — {filtered.length} film{filtered.length > 1 ? "s" : ""} trouvé{filtered.length > 1 ? "s" : ""}
+              Page {page} sur {totalPages || 1} — {totalFilms} film{totalFilms > 1 ? "s" : ""} trouvé{totalFilms > 1 ? "s" : ""}
             </div>
           </div>
 
