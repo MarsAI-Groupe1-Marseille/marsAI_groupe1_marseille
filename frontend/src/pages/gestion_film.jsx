@@ -325,7 +325,7 @@ export default function GestionFilms() {
   // Fonction pour modérer un film (approuver ou rejeter)
   const moderateFilm = async (filmId, action) => {
     try {
-      const endpoint = `/api/admin/moderation/${filmId}`;
+      const endpoint = `/admin/moderation/${filmId}`;
       const payload = action === 'approved' 
         ? { status: 'approved' }
         : { 
