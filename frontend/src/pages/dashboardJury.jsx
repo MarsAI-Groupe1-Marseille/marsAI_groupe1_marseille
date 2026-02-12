@@ -117,7 +117,7 @@ export default function DashboardJury() {
                     )
                 )}
             </div>
-            {/* Films List */}
+            {/* BlocListe des Films */}
             <div className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden">
                 {filteredFilms.map((film) => (
                     <FilmRow
@@ -126,6 +126,20 @@ export default function DashboardJury() {
                         onEvaluate={() => setSelectedFilm(film)}
                     />
                 ))}
-            </div>            
+            </div>
+            {/* Modal Evaluation */}
+           {selectedFilm && (
+                <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
+                    <div className="bg-neutral-900 border border-neutral-800 rounded-2xl w-full max-w-2xl p-6 relative">
+                    <button onClick={() => setSelectedFilm(null)} className="absolute top-4 right-4 text-neutral-400 hover:text-white">
+                        <X size={20} />
+                    </button>
+                    <h2 className="text-xl font-semibold mb-6">
+                    Évaluation : {selectedFilm.title}
+                    </h2>
+            
+
+            
+                        
     );
 }
