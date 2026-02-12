@@ -195,6 +195,19 @@ return (
     </div>
 );
 }
+
+function StatusBadge({ status }) {
+    const styles = {
+    "À évaluer": "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
+    Approuvé: "bg-green-500/20 text-green-400 border-green-500/30",
+    Rejeté: "bg-red-500/20 text-red-400 border-red-500/30",
+};
+return (
+    <span className={`text-xs px-2 py-1 rounded-full border ${styles[status]}`}>
+        {status}
+    </span>
+);
+}
             
                         
  
