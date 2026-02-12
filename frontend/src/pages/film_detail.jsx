@@ -198,7 +198,7 @@ export default function FilmDetail() {
             <ChevronLeft className="w-5 h-5" /> Retour à la galerie
           </button>
           <div style={{ color: 'white', fontWeight: '600', fontSize: '0.875rem' }}>Mars AI Festival</div>
-          <button className="login-button">Se connecter</button>
+          
         </div>
       </header>
 
