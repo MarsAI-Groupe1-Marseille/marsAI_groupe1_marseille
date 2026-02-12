@@ -12,6 +12,15 @@ router.post('/moderation/:submissionId',
     verifyToken,          // 1. Vérification connexion
     checkRole('admin'),   // 2. Vérification rôle Admin
     adminController.moderateSubmission // 3. La nouvelle logique unique
+); 
+// route pour creeé une playlist de jury 
+router.post('/jury-list',
+    verifyToken,
+    checkRole('admin'),
+    adminController.createJuryList
 );
 
+
+
 module.exports = router;
+
