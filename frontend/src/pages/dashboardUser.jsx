@@ -294,7 +294,7 @@ export default function UsersDashboard() {
                         <button
                             type="button"
                             onClick={() => setShowAddForm(false)}
-                            className="px-4 py-2 rounded-lg bg-neutral-700 hover:bg-neutral-600 transition w-full"
+                            className="px-6 py-2 rounded-lg bg-neutral-700 hover:bg-neutral-600 transition w-full md:w-auto"
                             disabled={isLoading}
                         >
                             Annuler
@@ -302,7 +302,7 @@ export default function UsersDashboard() {
 
                         <button 
                             type="submit" 
-                            className="px-4 py-2 rounded-lg bg-gradient-to-r from-violet-500 to-pink-500 hover:opacity-90 transition w-full md:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="px-6 py-2 rounded-lg bg-gradient-to-r from-violet-500 to-pink-500 hover:opacity-90 transition w-full md:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
                             disabled={isLoading}
                         >
                             {isLoading ? "Envoi en cours..." : "Ajouter et inviter"}
