@@ -128,8 +128,8 @@ export default function DashboardJury() {
                 ))}
             </div>
             {/* Modal Evaluation */}
-           {selectedFilm && (
-                <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
+            {selectedFilm && (
+                <section className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
                     <div className="bg-neutral-900 border border-neutral-800 rounded-2xl w-full max-w-2xl p-6 relative">
                     <button onClick={() => setSelectedFilm(null)} className="absolute top-4 right-4 text-neutral-400 hover:text-white">
                         <X size={20} />
@@ -145,9 +145,25 @@ export default function DashboardJury() {
                         className="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-violet-500"
                         />
                     </div>
+                    <div className="flex flex-wrap gap-3">
+                        <button onClick={() => setSelectedFilm({ ...selectedFilm, status: "Approuvé" })} className="px-4 py-2 bg-green-600 rounded-lg w-full sm:w-auto">
+                            Approuver
+                        </button>
+                        <button onClick={() => setSelectedFilm({ ...selectedFilm, status: "Rejeté" })} className="px-4 py-2 bg-red-600 rounded-lg w-full sm:w-auto">
+                            Rejeter
+                        </button>
+                        <button onClick={handleSaveEvaluation} className="px-4 py-2 bg-gradient-to-r from-violet-500 to-pink-500 rounded-lg w-full sm:w-auto">
+                            Enregistrer
+                        </button>
+                    </div>
+                </section>
+            </div>
+        )}
+    </div>
+);
+}
             
 
             
                         
-    );
-}
+ 
