@@ -95,10 +95,10 @@ export default function DashboardJury() {
             </header>
             {/* Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-                <StatCard title="Films assignés" value={stats.total} />
-                <StatCard title="Films vus" value={stats.viewed} />
-                <StatCard title="Approuvés" value={stats.approved} />
-                <StatCard title="Rejetés" value={stats.rejected} />
+                <Stats title="Films assignés" value={stats.total} />
+                <Stats title="Films vus" value={stats.viewed} />
+                <Stats title="Approuvés" value={stats.approved} />
+                <Stats title="Rejetés" value={stats.rejected} />
             </div>
 
             <div className="flex flex-wrap gap-3 mb-6">
@@ -163,7 +163,14 @@ export default function DashboardJury() {
 );
 }
             
-
+function Stats({ title, value }) {
+return (
+    <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
+        <p className="text-sm text-neutral-400">{title}</p>
+        <h3 className="text-3xl font-bold mt-2">{value}</h3>
+    </div>
+);
+}
             
                         
  
