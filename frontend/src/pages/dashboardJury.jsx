@@ -137,6 +137,14 @@ export default function DashboardJury() {
                     <h2 className="text-xl font-semibold mb-6">
                     Évaluation : {selectedFilm.title}
                     </h2>
+                    <div className="mb-4">
+                        <label className="block text-sm text-neutral-400 mb-2">
+                            Note (/10)
+                        </label>
+                        <input type="number" min="1" max="10" value={selectedFilm.rating || ""} onChange={(e) => setSelectedFilm({...selectedFilm,rating: Number(e.target.value),})}
+                        className="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                        />
+                    </div>
             
 
             
