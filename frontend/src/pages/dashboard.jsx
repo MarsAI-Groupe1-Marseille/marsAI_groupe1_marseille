@@ -1,16 +1,24 @@
 import React from "react";
 import {Link } from "react-router-dom";
 import {BarChart3, Layers, TrendingUp, LayoutDashboard, Users, Film} from "lucide-react";
+import {
+    AreaChart,
+    Area,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    ResponsiveContainer,
+} from "recharts";
 
-// Permet à construire le graphique en barres pour chaque mois.
-// label = nom du mois
-// value = hauteur de la barre en %
+// Données pour le graphique d'évolution des soumissions
 const stats = [
-    { label: "Jan", value: 40 },
-    { label: "Fév", value: 65 },
-    { label: "Mar", value: 90 },
-    { label: "Avr", value: 55 },
-    { label: "Mai", value: 75 },
+    { mois: "Jan", soumissions: 45, approuvés: 30 },
+    { mois: "Fév", soumissions: 78, approuvés: 52 },
+    { mois: "Mar", soumissions: 105, approuvés: 68 },
+    { mois: "Avr", soumissions: 65, approuvés: 42 },
+    { mois: "Mai", soumissions: 89, approuvés: 58 },
+    { mois: "Juin", soumissions: 120, approuvés: 85 },
 ];
 // Permet à créer un graphique de répartition "style barre horizontale"
 // name = nom de la catégorie
@@ -80,25 +88,64 @@ const Dashboard = () => {
             </section>
 
             <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Graphique barres -> Évolution des soumissions des films*/}
+                {/* Graphique moderne -> Évolution des soumissions des films*/}
                 <div className="lg:col-span-2 bg-neutral-900 rounded-2xl p-6 border border-neutral-800">
                     <h2 className="flex justify-center items-center gap-2 text-lg font-semibold text-violet-400 mb-1">
                         <TrendingUp size={20} />
                         Évolution des soumissions
                     </h2>
                     <p className="text-sm text-neutral-400 mb-6">Données simulées par mois</p>
-                    <div className="flex items-end gap-6 h-56">
-                        {stats.map((item) => (
-                            // identifiant unique pour React avec l'attribut key
-                            <div key={item.label} className="flex flex-col items-center gap-2">
-                                <div
-                                    className="w-10 bg-violet-500 rounded-t-lg"
-                                    style={{ height: `${item.value}%` }}
-                                />
-                                <span className="text-xs text-neutral-400">{item.label}</span>
-                            </div>
-                        ))}
-                    </div>
+                    <ResponsiveContainer width="100%" height={250}>
+                        <AreaChart data={stats} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                            <defs>
+                                <linearGradient id="colorSoumissions" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8}/>
+                                    <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                                </linearGradient>
+                                <linearGradient id="colorApprouves" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.8}/>
+                                    <stop offset="95%" stopColor="#06b6d4" stopOpacity={0}/>
+                                </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
+                            <XAxis 
+                                dataKey="mois" 
+                                stroke="#9ca3af"
+                                style={{ fontSize: '12px' }}
+                            />
+                            <YAxis 
+                                stroke="#9ca3af"
+                                style={{ fontSize: '12px' }}
+                            />
+                            <Tooltip
+                                contentStyle={{
+                                    backgroundColor: '#1f2937',
+                                    border: '1px solid #374151',
+                                    borderRadius: '8px',
+                                    color: '#fff'
+                                }}
+                                labelStyle={{ color: '#a78bfa' }}
+                            />
+                            <Area 
+                                type="monotone" 
+                                dataKey="soumissions" 
+                                stroke="#8b5cf6" 
+                                strokeWidth={2}
+                                fillOpacity={1} 
+                                fill="url(#colorSoumissions)"
+                                name="Soumissions"
+                            />
+                            <Area 
+                                type="monotone" 
+                                dataKey="approuvés" 
+                                stroke="#06b6d4" 
+                                strokeWidth={2}
+                                fillOpacity={1} 
+                                fill="url(#colorApprouves)"
+                                name="Approuvés"
+                            />
+                        </AreaChart>
+                    </ResponsiveContainer>
                 </div>
 
                 {/* Répartition des catégories */}
