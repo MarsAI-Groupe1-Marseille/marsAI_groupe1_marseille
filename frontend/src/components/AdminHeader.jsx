@@ -1,11 +1,12 @@
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { LayoutDashboard, LogOut, ShieldCheck } from "lucide-react";
 import { useAuth } from "../context/AuthContext.jsx";
 
 const AdminHeader = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = async () => {
     await logout();
@@ -14,8 +15,21 @@ const AdminHeader = () => {
 
   const roleLabel = user?.role === "moderator" ? "MODERATOR" : "ADMIN";
 
+  const headerBg = (() => {
+    if (location.pathname.startsWith("/gestion-films")) {
+      return "bg-neutral-950";
+    }
+    if (location.pathname.startsWith("/distribution_jury")) {
+      return "bg-gradient-to-r from-violet-900/70 via-neutral-950 to-neutral-950";
+    }
+    if (location.pathname.startsWith("/dashboard")) {
+      return "bg-gradient-to-r from-violet-900/80 via-fuchsia-900/40 to-neutral-950";
+    }
+    return "bg-neutral-950";
+  })();
+
   return (
-    <header className="mars-header sticky top-0 z-50 w-full border-b border-[var(--color-border)] bg-[var(--color-header-bg)]">
+    <header className={`mars-header sticky top-0 z-50 w-full border-b border-neutral-800 ${headerBg}`}>
       <div className="container-mars flex items-center justify-between" style={{ paddingTop: "var(--header-py)", paddingBottom: "var(--header-py)" }}>
         <Link to="/dashboard" className="flex items-center gap-2 group select-none min-w-0">
           <ShieldCheck size={22} className="text-[var(--color-secondary)]" />
