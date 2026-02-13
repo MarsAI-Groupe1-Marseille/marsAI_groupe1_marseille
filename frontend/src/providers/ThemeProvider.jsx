@@ -1,9 +1,3 @@
-// src/providers/ThemeProvider.jsx
-
-document.documentElement.setAttribute("data-theme", "neon-soft");
-document.documentElement.setAttribute("data-mode", "light"); // optionnel
-
-
 // Import React + Context // 
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react"; // 
 

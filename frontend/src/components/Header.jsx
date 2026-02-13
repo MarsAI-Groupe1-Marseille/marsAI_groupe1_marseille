@@ -152,8 +152,8 @@ const Header = () => { //
               aria-label="Mode clair/sombre"
               title="Mode"
             >
-              {/* {mode === "light" ? <Moon size={18} /> : <Sun size={18} />} */}
-              {mode === "neon-soft" ? <Moon size={18} /> : <Sun size={18} />}
+              {mode === "light" ? <Moon size={18} /> : <Sun size={18} />}
+              {/* {mode === "neon-soft" ? <Moon size={18} /> : <Sun size={18} />} */}
             </button>
           </div>
         </div>
@@ -275,7 +275,7 @@ const Header = () => { //
           />
 {/* <div className="mars-drawer absolute left-0 right-0 top-full mx-3 rounded-2xl ..."> */}
 
-          <div className="mars-drawer absolute left-0 right-0 top-full mx-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-xl">
+          <div className="mars-drawer absolute left-0 right-0 top-4 mx-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-xl">
             {/* Header du drawer : logo + close */}
             <div className="flex items-center justify-between px-4 py-4 border-b border-[var(--color-border)]">
               <Link to="/" className="flex items-center gap-2 min-w-0" onClick={() => setIsMobileMenuOpen(false)}>
