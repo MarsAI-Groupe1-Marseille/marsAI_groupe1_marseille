@@ -189,12 +189,13 @@ exports.createSubmission = async (req, res) => {
 exports.getAllSubmissions = async (req, res) => {
     try {
         // --- 1. RÉCUPÉRATION DES PARAMÈTRES (QUERY PARAMS) ---
-        // Le front enverra : /api/submissions?page=1&limit=6&search=avatar&genre=SF&lang=fr
+        // Le front enverra : /api/submissions?page=1&limit=6&search=avatar&genre=SF&lang=fr&status=approved
         
         const page = parseInt(req.query.page) || 1;       // Page par défaut : 1
         const limit = parseInt(req.query.limit) || 9;     // Films par page par défaut : 9
         const search = req.query.search || '';            // Recherche titre
         const genre = req.query.genre || '';              // Filtre par genre/thème
+        const status = req.query.status || '';            // Filtre par statut (approved, rejected, submitted)
         const lang = req.query.lang || 'fr';              // Langue pour le filtre : 'fr' ou 'en'
 
         // Calcul de l'offset (combien de films on saute)
@@ -214,6 +215,11 @@ exports.getAllSubmissions = async (req, res) => {
         // Si un filtre de genre est présent (ex: "Horreur")
         if (genre) {
             whereCondition.theme_tags = { [Op.like]: `%${genre}%` };
+        }
+
+        // Si un filtre de statut est présent (ex: "approved", "rejected", "submitted")
+        if (status) {
+            whereCondition.approval_status = status;
         }
 
         // --- 3. EXÉCUTION DE LA REQUÊTE ---
