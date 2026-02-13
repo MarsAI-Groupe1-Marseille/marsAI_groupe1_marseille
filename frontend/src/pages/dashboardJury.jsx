@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, Filter } from "lucide-react";
+import { X } from "lucide-react";
 
 export default function DashboardJury() {
   const [playlists, setPlaylists] = useState([
@@ -9,138 +9,161 @@ export default function DashboardJury() {
       id: 1,
       name: "Sélection Officielle 2026",
       description: "Films compétition officielle",
-      gradient: "from-violet-600 to-pink-500",
+      thumbnail: "/images/playlist1.jpg",
       videos: [
-        { id: 1, title: "Gourou", director: "Yann Gozlan", duration: "12:30", thumbnail: "/images/video1.jpg" },
-        { id: 2, title: "Le Mage Du Kremlin", director: "Olivier Assayas", duration: "1:45:00", thumbnail: "/images/video2.jpg" },
+        { id: 1, title: "Gourou", director: "Yann Gozlan", thumbnail: "/images/video1.jpg", status: "Assigné" },
+        { id: 2, title: "Le Mage Du Kremlin", director: "Olivier Assayas", thumbnail: "/images/video2.jpg", status: "Aimé" },
       ],
     },
     {
       id: 2,
       name: "Documentaires",
       description: "Sélection Documentaire",
-      gradient: "from-green-500 to-blue-500",
+      thumbnail: "/images/playlist2.jpg",
       videos: [
-        { id: 3, title: "Film Doc 1", director: "Réalisateur A", duration: "0:50:00", thumbnail: "/images/video3.jpg" },
+        { id: 3, title: "Océans Profonds", director: "Luc Jacquet", thumbnail: "/images/video3.jpg", status: "Assigné" },
       ],
     },
     {
       id: 3,
-      name: "Courts Métrages",
-      description: "Sélection de courts métrages",
-      gradient: "from-pink-500 to-orange-500",
+      name: "Courts métrages",
+      description: "Sélection courts métrages",
+      thumbnail: "/images/playlist3.jpg",
       videos: [
-        { id: 4, title: "Short Film 1", director: "Réalisateur B", duration: "15:20", thumbnail: "/images/video4.jpg" },
-      ],
-    },
-    {
-      id: 4,
-      name: "Films Expérimentaux",
-      description: "Sélection expérimentale",
-      gradient: "from-purple-500 to-indigo-500",
-      videos: [
-        { id: 5, title: "Exp Film 1", director: "Réalisateur C", duration: "22:10", thumbnail: "/images/video5.jpg" },
-      ],
-    },
-    {
-      id: 5,
-      name: "Animation",
-      description: "Films d'animation",
-      gradient: "from-yellow-400 to-red-400",
-      videos: [
-        { id: 6, title: "Animé 1", director: "Réalisateur D", duration: "10:45", thumbnail: "/images/video6.jpg" },
-      ],
-    },
-    {
-      id: 6,
-      name: "Sélection Jeunes Talents",
-      description: "Films des nouveaux réalisateurs",
-      gradient: "from-teal-400 to-blue-600",
-      videos: [
-        { id: 7, title: "Talent 1", director: "Réalisateur E", duration: "18:20", thumbnail: "/images/video7.jpg" },
+        { id: 4, title: "Évasion", director: "Jean Dupont", thumbnail: "/images/video4.jpg", status: "Détesté" },
+        { id: 5, title: "Mystère", director: "Claire Martin", thumbnail: "/images/video5.jpg", status: "Aimé" },
       ],
     },
   ]);
 
   const [selectedPlaylist, setSelectedPlaylist] = useState(null);
 
+  // --- STATS ---
+  const totalVideos = playlists.reduce((sum, p) => sum + p.videos.length, 0);
+  const liked = playlists.reduce(
+    (sum, p) => sum + p.videos.filter((v) => v.status === "Aimé").length,
+    0
+  );
+  const disliked = playlists.reduce(
+    (sum, p) => sum + p.videos.filter((v) => v.status === "Détesté").length,
+    0
+  );
+  const assigned = playlists.reduce(
+    (sum, p) => sum + p.videos.filter((v) => v.status === "Assigné").length,
+    0
+  );
+
   return (
-    <div className="min-h-screen bg-black text-white p-6 flex flex-col items-center">
-      
+    <div className="min-h-screen bg-black text-white p-6">
       {/* Header */}
-      <header className="flex flex-col md:flex-row md:items-center md:justify-between mb-10 gap-6 w-full max-w-6xl">
-        <div>
-          <h1 className="text-3xl font-bold">Mes Playlists</h1>
-          <p className="text-neutral-400 mt-1">
-            Cliquez sur une playlist pour consulter les vidéos
-          </p>
-        </div>
+      <header className="text-center mb-10">
+        <h1 className="text-4xl font-bold mb-2">Mes Playlists</h1>
+        <p className="text-neutral-400">Cliquez sur une playlist pour voir les vidéos</p>
       </header>
 
-      {/* Playlists */}
-      {selectedPlaylist && (
-        <section className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
-          <div className="bg-neutral-900 border border-neutral-800 rounded-2xl w-full max-w-5xl p-6 relative">
-      {/* Bouton fermer */}
-      <button
-        onClick={() => setSelectedPlaylist(null)}
-        className="absolute top-4 right-4 text-neutral-400 hover:text-white z-20"
-      >
-        <X size={24} />
-      </button>
+      {/* Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10 max-w-5xl mx-auto">
+        <StatCard title="Vidéos assignées" value={assigned} color="bg-blue-600" />
+        <StatCard title="Vidéos aimées" value={liked} color="bg-green-600" />
+        <StatCard title="Vidéos détestées" value={disliked} color="bg-red-600" />
+      </div>
 
-      <h2 className="text-2xl font-bold mb-6">{selectedPlaylist.name}</h2>
-
-      {/* Slider horizontal */}
-      <div className="relative group">
-        <div className="flex overflow-x-auto space-x-4 scrollbar-none">
-          {selectedPlaylist.videos.map((video) => (
-            <a
-              key={video.id}
-              href={`/videos/${video.id}`}
-              className="flex-shrink-0 w-48 bg-neutral-800 rounded-xl overflow-hidden hover:scale-105 transition transform"
+      {/* PLAYLISTS GRID */}
+      {!selectedPlaylist && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          {playlists.map((playlist, i) => (
+            <div
+              key={playlist.id}
+              onClick={() => setSelectedPlaylist(playlist)}
+              className={`cursor-pointer rounded-2xl overflow-hidden transform transition hover:scale-105 border border-neutral-800`}
+              style={{ background: `linear-gradient(135deg, hsl(${i*60},70%,50%), hsl(${i*60+30},80%,60%))` }}
             >
-              <img
-                src={video.thumbnail}
-                alt={video.title}
-                className="w-full h-36 object-cover"
-              />
-              <div className="p-3">
-                <p className="font-semibold">{video.title}</p>
-                <p className="text-sm text-neutral-400">{video.director}</p>
+              <div className="h-44 w-full overflow-hidden relative">
+                <img
+                  src={playlist.thumbnail}
+                  alt={playlist.name}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-black/30 flex items-center justify-center text-xl font-bold text-white">
+                  {playlist.name}
+                </div>
               </div>
-            </a>
+              <div className="p-4">
+                <p className="text-neutral-200">{playlist.videos.length} vidéos</p>
+              </div>
+            </div>
           ))}
         </div>
+      )}
 
-        {/* Chevrons gauche/droite */}
-        <button
-          onClick={() => {
-            const slider = document.querySelector(
-              ".group > .flex.overflow-x-auto"
-            );
-            slider.scrollBy({ left: -300, behavior: "smooth" });
-          }}
-          className="absolute top-1/2 -left-2 -translate-y-1/2 bg-neutral-800/70 hover:bg-neutral-800 p-2 rounded-full hidden group-hover:block"
-        >
-          ◀
-        </button>
-        <button
-          onClick={() => {
-            const slider = document.querySelector(
-              ".group > .flex.overflow-x-auto"
-            );
-            slider.scrollBy({ left: 300, behavior: "smooth" });
-          }}
-          className="absolute top-1/2 -right-2 -translate-y-1/2 bg-neutral-800/70 hover:bg-neutral-800 p-2 rounded-full hidden group-hover:block"
-        >
-          ▶
-        </button>
-      </div>
+      {/* MODAL PLAYLIST */}
+      {selectedPlaylist && (
+        <section className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
+          <div className="bg-neutral-900 border border-neutral-800 rounded-2xl w-full max-w-6xl p-6 relative">
+            <button
+              onClick={() => setSelectedPlaylist(null)}
+              className="absolute top-4 right-4 text-neutral-400 hover:text-white z-20"
+            >
+              <X size={28} />
+            </button>
+
+            <h2 className="text-2xl font-bold mb-6">{selectedPlaylist.name}</h2>
+
+            {/* Slider */}
+            <div className="relative group">
+              <div className="flex overflow-x-auto space-x-4 scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-neutral-800">
+                {selectedPlaylist.videos.map((video) => (
+                  <a
+                    key={video.id}
+                    href={`/videos/${video.id}`}
+                    className="flex-shrink-0 w-48 bg-neutral-800 rounded-xl overflow-hidden hover:scale-105 hover:shadow-lg transition transform"
+                  >
+                    <img
+                      src={video.thumbnail}
+                      alt={video.title}
+                      className="w-full h-36 object-cover"
+                    />
+                    <div className="p-3">
+                      <p className="font-semibold">{video.title}</p>
+                      <p className="text-sm text-neutral-400">{video.director}</p>
+                    </div>
+                  </a>
+                ))}
+              </div>
+
+              {/* Chevrons */}
+              <button
+                onClick={() => {
+                  const slider = document.querySelector(".group > .flex.overflow-x-auto");
+                  slider.scrollBy({ left: -300, behavior: "smooth" });
+                }}
+                className="absolute top-1/2 -left-2 -translate-y-1/2 bg-black/50 hover:bg-black/70 p-2 rounded-full hidden group-hover:block z-10"
+              >
+                ◀
+              </button>
+              <button
+                onClick={() => {
+                  const slider = document.querySelector(".group > .flex.overflow-x-auto");
+                  slider.scrollBy({ left: 300, behavior: "smooth" });
+                }}
+                className="absolute top-1/2 -right-2 -translate-y-1/2 bg-black/50 hover:bg-black/70 p-2 rounded-full hidden group-hover:block z-10"
+              >
+                ▶
+              </button>
+            </div>
+          </div>
+        </section>
+      )}
     </div>
-  </section>
-)}
+  );
+}
 
+// --- Composants ---
+function StatCard({ title, value, color }) {
+  return (
+    <div className={`p-6 rounded-2xl text-center ${color}`}>
+      <p className="text-sm text-neutral-200">{title}</p>
+      <h3 className="text-3xl font-bold mt-2">{value}</h3>
     </div>
   );
 }
