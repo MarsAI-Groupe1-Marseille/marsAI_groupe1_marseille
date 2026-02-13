@@ -12,6 +12,7 @@ import './App.css'
 import SubmissionForm from './pages/SubmissionForm.jsx';
 import Forgotpass from './pages/forgotpass.jsx';
 import ResetPassword from './pages/ResetPassword.jsx';
+import NotationJury  from './pages/NotationJury.jsx';
 
 
 function App() { 
@@ -30,6 +31,7 @@ function App() {
 
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboardUser" element={<DashboardUser />} />
+          <Route path="/notationjury/:id" element={<NotationJury />} />
           <Route path="/gestion-films" element={<GestionFilms />} />
 
         </Routes>
