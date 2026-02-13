@@ -208,28 +208,42 @@ function Stats({ title, value }) {
   );
 }
 
-function FilmRow({ film, onEvaluate }) {
+function VideoRow({ video, onEvaluate }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-6 gap-4 items-center p-4 border-b border-neutral-800 hover:bg-neutral-800 transition">
+      
       <div className="lg:col-span-2">
-        <p className="font-semibold">{film.title}</p>
-        <p className="text-sm text-neutral-400">{film.director}</p>
+        <p className="font-semibold">{video.title}</p>
+        <p className="text-sm text-neutral-400">{video.director}</p>
       </div>
-      <div className="text-sm text-neutral-400">{film.category}</div>
-      <StatusBadge status={film.status} />
+
+      <div className="text-sm text-neutral-400">
+        {video.category}
+      </div>
+
+      <StatusBadge status={video.status} />
+
       <div className="text-sm font-medium">
-        {film.rating !== null ? `${film.rating}/10` : "-"}
+        {video.rating !== null ? `${video.rating}/10` : "-"}
       </div>
+
       <div className="flex flex-wrap gap-2 justify-start lg:justify-end">
-        <button className="px-3 py-2 bg-neutral-800 rounded-lg hover:bg-neutral-700 text-sm flex items-center gap-2">
-          <Eye size={16} /> Voir
-        </button>
+
+        {/* Redirection vers la page détails : */}
+        <a
+          href={`/videos/${video.id}`}
+          className="px-3 py-2 bg-neutral-800 rounded-lg hover:bg-neutral-700 text-sm"
+        >
+          Voir détails
+        </a>
+
         <button
           onClick={onEvaluate}
           className="px-3 py-2 bg-gradient-to-r from-violet-500 to-pink-500 rounded-lg text-sm"
         >
           Évaluer
         </button>
+
       </div>
     </div>
   );
