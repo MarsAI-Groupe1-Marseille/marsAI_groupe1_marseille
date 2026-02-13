@@ -1,130 +1,145 @@
 "use client";
 
 import { useState } from "react";
+import { X, Filter } from "lucide-react";
 
 export default function DashboardJury() {
-
-  const [playlists] = useState([
+  const [playlists, setPlaylists] = useState([
     {
       id: 1,
       name: "Sélection Officielle 2026",
       description: "Films compétition officielle",
-      thumbnail: "/images/playlist1.jpg",
+      gradient: "from-violet-600 to-pink-500",
       videos: [
-        {
-          id: 1,
-          title: "Gourou",
-          director: "Yann Gozlan",
-          duration: "12:30",
-          status: "À évaluer",
-        },
-        {
-          id: 2,
-          title: "Le Mage Du Kremlin",
-          director: "Olivier Assayas",
-          duration: "1:45:00",
-          status: "Approuvé",
-        },
+        { id: 1, title: "Gourou", director: "Yann Gozlan", duration: "12:30", thumbnail: "/images/video1.jpg" },
+        { id: 2, title: "Le Mage Du Kremlin", director: "Olivier Assayas", duration: "1:45:00", thumbnail: "/images/video2.jpg" },
+      ],
+    },
+    {
+      id: 2,
+      name: "Documentaires",
+      description: "Sélection Documentaire",
+      gradient: "from-green-500 to-blue-500",
+      videos: [
+        { id: 3, title: "Film Doc 1", director: "Réalisateur A", duration: "0:50:00", thumbnail: "/images/video3.jpg" },
       ],
     },
     {
       id: 3,
-      name: "Documentaires",
-      description: "Sélection Documentaire",
-      thumbnail: "/images/playlist2.jpg",
-      videos: [],
+      name: "Courts Métrages",
+      description: "Sélection de courts métrages",
+      gradient: "from-pink-500 to-orange-500",
+      videos: [
+        { id: 4, title: "Short Film 1", director: "Réalisateur B", duration: "15:20", thumbnail: "/images/video4.jpg" },
+      ],
+    },
+    {
+      id: 4,
+      name: "Films Expérimentaux",
+      description: "Sélection expérimentale",
+      gradient: "from-purple-500 to-indigo-500",
+      videos: [
+        { id: 5, title: "Exp Film 1", director: "Réalisateur C", duration: "22:10", thumbnail: "/images/video5.jpg" },
+      ],
+    },
+    {
+      id: 5,
+      name: "Animation",
+      description: "Films d'animation",
+      gradient: "from-yellow-400 to-red-400",
+      videos: [
+        { id: 6, title: "Animé 1", director: "Réalisateur D", duration: "10:45", thumbnail: "/images/video6.jpg" },
+      ],
+    },
+    {
+      id: 6,
+      name: "Sélection Jeunes Talents",
+      description: "Films des nouveaux réalisateurs",
+      gradient: "from-teal-400 to-blue-600",
+      videos: [
+        { id: 7, title: "Talent 1", director: "Réalisateur E", duration: "18:20", thumbnail: "/images/video7.jpg" },
+      ],
     },
   ]);
 
   const [selectedPlaylist, setSelectedPlaylist] = useState(null);
 
   return (
-    <div className="min-h-screen bg-black text-white p-6">
-
+    <div className="min-h-screen bg-black text-white p-6 flex flex-col items-center">
+      
       {/* Header */}
-      <header className="flex flex-col md:flex-row md:items-center md:justify-between mb-10 gap-6">
+      <header className="flex flex-col md:flex-row md:items-center md:justify-between mb-10 gap-6 w-full max-w-6xl">
         <div>
-          <h1 className="text-3xl font-bold">Dashboard Jury</h1>
+          <h1 className="text-3xl font-bold">Mes Playlists</h1>
           <p className="text-neutral-400 mt-1">
-            Playlists assignées par l'administrateur
+            Cliquez sur une playlist pour consulter les vidéos
           </p>
         </div>
       </header>
 
-      {/* CONTENU PRINCIPAL */}
-      {!selectedPlaylist ? (
+      {/* Playlists */}
+      {selectedPlaylist && (
+        <section className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
+          <div className="bg-neutral-900 border border-neutral-800 rounded-2xl w-full max-w-5xl p-6 relative">
+      {/* Bouton fermer */}
+      <button
+        onClick={() => setSelectedPlaylist(null)}
+        className="absolute top-4 right-4 text-neutral-400 hover:text-white z-20"
+      >
+        <X size={24} />
+      </button>
 
-        // PLAYLISTS
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <h2 className="text-2xl font-bold mb-6">{selectedPlaylist.name}</h2>
 
-          {playlists.map((playlist) => (
-            <div
-              key={playlist.id}
-              onClick={() => setSelectedPlaylist(playlist)}
-              className="cursor-pointer bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden hover:scale-105 transition"
+      {/* Slider horizontal */}
+      <div className="relative group">
+        <div className="flex overflow-x-auto space-x-4 scrollbar-none">
+          {selectedPlaylist.videos.map((video) => (
+            <a
+              key={video.id}
+              href={`/videos/${video.id}`}
+              className="flex-shrink-0 w-48 bg-neutral-800 rounded-xl overflow-hidden hover:scale-105 transition transform"
             >
-              <div className="h-40 bg-gradient-to-r from-violet-600 to-pink-600 flex items-center justify-center text-xl font-bold">
-                {playlist.name}
+              <img
+                src={video.thumbnail}
+                alt={video.title}
+                className="w-full h-36 object-cover"
+              />
+              <div className="p-3">
+                <p className="font-semibold">{video.title}</p>
+                <p className="text-sm text-neutral-400">{video.director}</p>
               </div>
-
-              <div className="p-4">
-                <p className="font-semibold">{playlist.name}</p>
-                <p className="text-sm text-neutral-400">
-                  {playlist.videos.length} vidéos
-                </p>
-              </div>
-            </div>
+            </a>
           ))}
-
         </div>
 
-      ) : (
-
-        // VIDEOS DE LA PLAYLIST
-        <div>
-
-          <button
-            onClick={() => setSelectedPlaylist(null)}
-            className="mb-6 px-4 py-2 bg-neutral-800 rounded-lg"
-          >
-            ← Retour aux playlists
-          </button>
-
-          <h2 className="text-2xl font-bold mb-6">
-            {selectedPlaylist.name}
-          </h2>
-
-          <div className="space-y-4">
-            {selectedPlaylist.videos.map((video) => (
-              <div
-                key={video.id}
-                className="flex items-center gap-4 bg-neutral-900 border border-neutral-800 rounded-xl p-4 hover:bg-neutral-800 transition"
-              >
-                <div className="w-40 h-24 bg-neutral-700 rounded-lg flex items-center justify-center">
-                  Thumbnail
-                </div>
-
-                <div className="flex-1">
-                  <p className="font-semibold">{video.title}</p>
-                  <p className="text-sm text-neutral-400">
-                    {video.director}
-                  </p>
-                </div>
-
-                <a
-                  href={`/videos/${video.id}`}
-                  className="px-4 py-2 bg-gradient-to-r from-violet-500 to-pink-500 rounded-lg text-sm"
-                >
-                  Voir
-                </a>
-
-              </div>
-            ))}
-          </div>
-
-        </div>
-
-      )}
+        {/* Chevrons gauche/droite */}
+        <button
+          onClick={() => {
+            const slider = document.querySelector(
+              ".group > .flex.overflow-x-auto"
+            );
+            slider.scrollBy({ left: -300, behavior: "smooth" });
+          }}
+          className="absolute top-1/2 -left-2 -translate-y-1/2 bg-neutral-800/70 hover:bg-neutral-800 p-2 rounded-full hidden group-hover:block"
+        >
+          ◀
+        </button>
+        <button
+          onClick={() => {
+            const slider = document.querySelector(
+              ".group > .flex.overflow-x-auto"
+            );
+            slider.scrollBy({ left: 300, behavior: "smooth" });
+          }}
+          className="absolute top-1/2 -right-2 -translate-y-1/2 bg-neutral-800/70 hover:bg-neutral-800 p-2 rounded-full hidden group-hover:block"
+        >
+          ▶
+        </button>
+      </div>
+    </div>
+  </section>
+)}
 
     </div>
   );
