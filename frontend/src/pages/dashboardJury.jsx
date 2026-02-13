@@ -62,10 +62,10 @@ export default function DashboardJury() {
 };
     // Si filtre = "Tous" → on affiche tout
     // Sinon → on affiche seulement les films correspondant au statut
-    const filteredFilms =
+    const filteredVideos =
         activeFilter === "Tous"
-            ? films
-            : films.filter((f) => f.status === activeFilter);
+        ? playlist.videos
+        : playlist.videos.filter((v) => v.status === activeFilter);
 
     // On parcourt tous les films
     // On remplace uniquement celui modifié
