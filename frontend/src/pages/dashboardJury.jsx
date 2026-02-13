@@ -122,7 +122,7 @@ export default function DashboardJury() {
         ))}
       </div>
 
-      {/* Liste des films */}
+      {/* Liste des videos */}
       <div className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden">
         {filteredVideos.map((video) => (
           <VideoRow
