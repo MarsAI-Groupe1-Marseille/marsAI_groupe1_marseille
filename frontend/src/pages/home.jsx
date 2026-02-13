@@ -1,8 +1,7 @@
 import React from 'react';
-import { ArrowRight, Trophy, Users, Cpu, Globe } from 'lucide-react'; // Assuming you can use lucide-react, or replace with standard text/svg
+import { ArrowRight, Trophy, Users, Cpu, Globe } from 'lucide-react';
 
 const Home = () => {
-    // Data structures make the JSX cleaner and easier to maintain
     const categories = [
         { title: "SCI-FI", desc: "" },
         { title: "HORREUR", desc: "" },
@@ -14,9 +13,7 @@ const Home = () => {
         <div className="min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-violet-950 selection:text-white">
 
             <main className="pt-20">
-                {/* --- HERO SECTION --- */}
                 <section id="accueil" className="relative py-32 lg:py-48 flex flex-col items-center text-center px-4 overflow-hidden">
-                    {/* Background Glow Effect */}
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-orange-600/20 rounded-full blur-[100px] -z-10"></div>
 
                     <h1 className="text-6xl md:text-8xl font-black text-white tracking-tight mb-6">
@@ -45,16 +42,13 @@ const Home = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         {categories.map((cat, index) => (
                             <div key={index} className="group relative overflow-hidden rounded-2xl bg-slate-900 border border-white/5 hover:border-orange-500/50 transition-all duration-300">
-                                <div className="h-48 overflow-hidden">
-
-                                </div>
+                                <div className="h-48 overflow-hidden"></div>
                                 <div className="p-6">
                                     <h3 className="text-xl font-bold text-white mb-2">{cat.title}</h3>
                                     <p className="text-slate-400 text-sm">{cat.desc}</p>
                                 </div>
                             </div>
                         ))}
-
                     </div>
                 </section>
 
