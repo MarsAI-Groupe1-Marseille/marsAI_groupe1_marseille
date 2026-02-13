@@ -5,36 +5,42 @@ import { Eye, X, Star, Filter } from "lucide-react";
 
 export default function DashboardJury() {
     //  on stocke : tous les films assignés au jury, leurs informations,leur statut, leur note, leur commentaire
-    const [films, setFilms] = useState([
-        // Chaque film est un objet : sinon les vrai données peuvent provenir d'une API.
-        {
-            id: 1,
-            title: "Gourou",
-            director: "Yann Gozlan",
-            category: "Court métrage",
-            status: "À évaluer",
-            rating: null,
-            comment: "",
-        },
-        {
-            id: 2,
-            title: "Le Mage Du Kremlin",
-            director: "Olivier Assayas",
-            category: "Documentaire",
-            status: "Approuvé",
-            rating: 6,
-            comment: "Très belle réalisation.",
-        },
-        {
-            id: 3,
-            title: "L'affaire Bojarski",
-            director: "Jean-Paul Salomé",
-            category: "Long métrage",
-            status: "Rejeté",
-            rating: 4,
-            comment: "Manque de rythme.",
-        },
-    ]);
+    const [playlist, setPlaylist] = useState({
+    id: 1,
+    name: "Sélection Officielle 2026",
+    description: "Playlist assignée par l'administrateur",
+    videos: [
+    {
+      id: 1,
+      title: "Gourou",
+      director: "Yann Gozlan",
+      category: "Court métrage",
+      videoUrl: "/videos/gourou.mp4",
+      status: "À évaluer",
+      rating: null,
+      comment: "",
+    },
+    {
+    id: 2,
+    title: "Le Mage Du Kremlin",
+    director: "Olivier Assayas",
+    category: "Documentaire",
+    videoUrl: "/videos/mage.mp4",
+    status: "Approuvé",
+    rating: 6,
+    comment: "",
+    },
+    {
+    id: 3,
+    title: "L'affaire Bojarski",
+    director: "Jean-Paul Salomé",
+    category: "Long métrage",
+    status: "Rejeté",
+    rating: 4,
+    comment: "Manque de rythme.",
+    },
+  ],
+});
     // Ce state sert à : Stocker le film en cours d’évaluation, Ouvrir la modal
     // Quand il est null → modal fermée
     // Quand il contient un film → modal ouverte
@@ -49,12 +55,11 @@ export default function DashboardJury() {
     // Si un statut change → les stats se mettent à jour automatiquement.
 
     const stats = {
-        total: films.length,
-        viewed: films.filter((f) => f.status !== "À évaluer").length,
-        approved: films.filter((f) => f.status === "Approuvé").length,
-        rejected: films.filter((f) => f.status === "Rejeté").length,
-    };
-
+        total: playlist.videos.length,
+        viewed: playlist.videos.filter((v) => v.status !== "À évaluer").length,
+        approved: playlist.videos.filter((v) => v.status === "Approuvé").length,
+        rejected: playlist.videos.filter((v) => v.status === "Rejeté").length,
+};
     // Si filtre = "Tous" → on affiche tout
     // Sinon → on affiche seulement les films correspondant au statut
     const filteredFilms =
