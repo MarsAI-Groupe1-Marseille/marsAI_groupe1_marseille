@@ -124,11 +124,11 @@ export default function DashboardJury() {
 
       {/* Liste des films */}
       <div className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden">
-        {filteredFilms.map((film) => (
-          <FilmRow
-            key={film.id}
-            film={film}
-            onEvaluate={() => setSelectedFilm(film)}
+        {filteredVideos.map((video) => (
+          <VideoRow
+            key={video.id}
+            video={video}
+            onEvaluate={() => setSelectedFilm(video)}
           />
         ))}
       </div>
