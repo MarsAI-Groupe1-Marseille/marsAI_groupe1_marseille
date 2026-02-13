@@ -35,7 +35,7 @@ const Home = () => {
                     </div>
                 </section>
 
-                {/* --- CATEGORIES --- */}
+
                 <section id="categories" className="py-20 max-w-7xl mx-auto px-6">
                     <div className="flex items-center gap-4 mb-12">
                         <h2 className="text-3xl font-bold text-white uppercase tracking-wider">Catégories</h2>
