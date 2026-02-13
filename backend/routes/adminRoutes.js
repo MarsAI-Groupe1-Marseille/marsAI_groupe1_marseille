@@ -25,7 +25,11 @@ router.post('/assigne-film',
     checkRole('admin'),
     adminController.addMovieToPlayList);
 
-
+// route qui assigne les jurys aux films
+router.post('/assigne-jury',
+    verifyToken,
+    checkRole('admin'),
+    adminController.assignedJuryToPlaylist);
 
 module.exports = router;
 

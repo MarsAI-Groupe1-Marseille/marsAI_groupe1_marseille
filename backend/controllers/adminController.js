@@ -129,3 +129,15 @@ exports.addMovieToPlayList = async (req, res) =>{
     }
 
 };
+
+exports.assignedJuryToPLaylist = async (req, res) =>{
+    try {
+        const{jury_list_id , user_id } = req.body;
+        if(!jury_list_id || !user_id){
+            return res.status(400).json({ message: "message: "jurylist_id et submission_id est requis" });
+        }
+    }
+    catch(error){
+
+    }
+};
