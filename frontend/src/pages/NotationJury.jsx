@@ -229,11 +229,10 @@ export default function NotationJury() {
       try {
         setLoading(true);
         await new Promise((r) => setTimeout(r, 500));
-        // TODO: const res = await axios.get(`/submissions/${id}`); setFilm(res.data);
-        const mockFilm = MOCK_FILMS[id];
-        if (!mockFilm) throw new Error("Film non trouvé");
-        setFilm(mockFilm);
-        setError(null);
+         const res = await axios.get(`/submissions/${id}`);
+         if(!res.data) throw new Error("Film non trouvé");
+         setFilm(res.data);
+         setError(null);       
         const saved = JSON.parse(localStorage.getItem(`vote-${id}`) || "null");
         if (saved) {
           setSelectedVote(saved.vote);
@@ -271,8 +270,9 @@ export default function NotationJury() {
     }
   };
 
-  const getEmbedUrl = (url) => {
-    const vid = url?.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/)?.[1];
+  const getEmbedUrl = (url, youtubeId) => {
+    const vidFromUrl = url?.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/)?.[1];
+    const vid = youtubeId || vidFromUrl;
     return vid ? `https://www.youtube.com/embed/${vid}?autoplay=1` : null;
   };
 
@@ -308,8 +308,27 @@ export default function NotationJury() {
     );
   }
 
+  const apiBaseUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
+  const resolveAssetUrl = (url) => {
+    if (!url) return "";
+    return url.startsWith("http") ? url : `${apiBaseUrl}${url}`;
+  };
+
   const duration = film.duration_seconds ? `${Math.floor(film.duration_seconds / 60)} MIN` : "N/A";
-  const embedUrl = getEmbedUrl(film.video_url);
+  const embedUrl = getEmbedUrl(film.video_url, film.youtube_id);
+
+  const director = film.Director || null;
+  const directorName = director
+    ? `${director.first_name || ""} ${director.last_name || ""}`.trim()
+    : film.director_name;
+  const directorEmail = director?.email || film.director_email;
+  const location = director?.city
+    ? `${director.city}${director.country ? `, ${director.country}` : ""}`
+    : film.location;
+
+  const themes = film.theme_tags
+    ? film.theme_tags.split(",").map((t) => t.trim()).filter(Boolean)
+    : (film.themes || []);
 
   // FIX: sélection du synopsis selon la langue active
   // "fr" → synopsis_original (version française d'origine)
@@ -318,9 +337,9 @@ export default function NotationJury() {
   const synopsisText =
     synopsisLang === "fr"
       ? film.synopsis_original
-      : (film.synopsis_french || film.synopsis_original);
+      : (film.synopsis_english || film.synopsis_french || film.synopsis_original);
 
-  const hasTranslation = Boolean(film.synopsis_french);
+  const hasTranslation = Boolean(film.synopsis_english || film.synopsis_french);
 
   return (
     <div
@@ -359,7 +378,7 @@ export default function NotationJury() {
               className={`relative group rounded-2xl overflow-hidden shadow-[0_0_0_1px_rgba(123,47,255,0.3),0_20px_60px_rgba(0,0,0,0.7),0_0_80px_rgba(123,47,255,0.2)] transition-shadow duration-500 hover:shadow-[0_0_0_1px_rgba(123,47,255,0.6),0_20px_80px_rgba(0,0,0,0.8),0_0_120px_rgba(123,47,255,0.4)] ${embedUrl ? "cursor-pointer" : ""}`}
             >
               <img
-                src={film.poster_url}
+                src={resolveAssetUrl(film.poster_url)}
                 alt={film.title_original}
                 className="w-full aspect-[2/3] object-cover block transition-transform duration-700 group-hover:scale-[1.04]"
               />
@@ -383,7 +402,7 @@ export default function NotationJury() {
             </div>
 
             {/* Themes */}
-            {film.themes?.length > 0 && (
+            {themes.length > 0 && (
               <div className="bg-[rgba(15,12,30,0.85)] border border-[rgba(123,47,255,0.25)] rounded-xl p-[18px] backdrop-blur-sm">
                 <div className="flex items-center gap-2 mb-3">
                   <Tag size={12} color="#9b8ec4" />
@@ -392,7 +411,7 @@ export default function NotationJury() {
                   </span>
                 </div>
                 <div className="flex flex-wrap gap-1">
-                  {film.themes.map((theme, idx) => (
+                  {themes.map((theme, idx) => (
                     <span
                       key={idx}
                       className={`inline-block px-3.5 py-1 rounded-full text-xs font-semibold tracking-[1px] uppercase transition-all duration-300 ${TAG_COLORS[idx % 4]}`}
@@ -428,9 +447,9 @@ export default function NotationJury() {
                 {film.title_original}
               </h1>
 
-              {film.title_french && film.title_french !== film.title_original && (
+              {film.title_english && film.title_english !== film.title_original && (
                 <p className="font-rajdhani text-[1.1rem] font-light italic tracking-[1px] text-[#9b8ec4]">
-                  {film.title_french}
+                  {film.title_english}
                 </p>
               )}
 
@@ -475,9 +494,9 @@ export default function NotationJury() {
 
             {/* Details */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {film.director_name && (
+              {directorName && (
                 <InfoCard icon={User} iconColor="#7b2fff" label="Réalisateur">
-                  <p className="font-rajdhani text-[17px] font-semibold text-[#f0eaff]">{film.director_name}</p>
+                  <p className="font-rajdhani text-[17px] font-semibold text-[#f0eaff]">{directorName}</p>
                 </InfoCard>
               )}
 
@@ -485,20 +504,20 @@ export default function NotationJury() {
                 <p className="font-rajdhani text-[17px] font-semibold text-[#f0eaff]">{duration}</p>
               </InfoCard>
 
-              {film.director_email && (
+              {directorEmail && (
                 <InfoCard icon={Mail} iconColor="#e040fb" label="Contact">
                   <a
-                    href={`mailto:${film.director_email}`}
+                    href={`mailto:${directorEmail}`}
                     className="block font-rajdhani text-sm font-semibold text-[#80c8ff] hover:text-[#b0d8ff] truncate transition-colors duration-200 no-underline"
                   >
-                    {film.director_email}
+                    {directorEmail}
                   </a>
                 </InfoCard>
               )}
 
-              {film.location && (
+              {location && (
                 <InfoCard icon={MapPin} iconColor="#ffd740" label="Localisation">
-                  <p className="font-rajdhani text-[17px] font-semibold text-[#f0eaff]">{film.location}</p>
+                  <p className="font-rajdhani text-[17px] font-semibold text-[#f0eaff]">{location}</p>
                 </InfoCard>
               )}
 
