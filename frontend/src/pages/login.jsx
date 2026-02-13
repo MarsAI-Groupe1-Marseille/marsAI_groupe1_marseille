@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const Connexion = () => {
+  const navigate = useNavigate();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
-    motDePasse: ''
+    password: ''
   });
+  const [error, setError] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -15,26 +19,27 @@ const Connexion = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Logique de connexion ici
-    console.log('Login submitted:', formData);
+    try {
+      const user = await login(formData.email, formData.password);
+      console.log('Login successful:', user);
+      // Rediriger selon le rôle
+      user.role === 'admin' ? navigate('/dashboard') : navigate('/');    
+    } catch (error) {
+      setError(error.response?.data?.message || 'Erreur de connexion');
+    }   
+   
   };
 
   const handleGoogleLogin = () => {
-    // Logique de connexion Google
+    window.location.href = "http://localhost:3000/api/auth/google";
     console.log('Google login');
   };
 
-  const handleFacebookLogin = () => {
-    // Logique de connexion Facebook
-    console.log('Facebook login');
-  };
+ 
 
-  const handleAppleLogin = () => {
-    // Logique de connexion Apple
-    console.log('Apple login');
-  };
+  
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -46,7 +51,7 @@ const Connexion = () => {
             {/* Icon and Title */}
             <div className="flex justify-center mb-8">
               <div className="relative">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                <div className="w-16 h-16 bg-linear-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
                   <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
@@ -61,6 +66,11 @@ const Connexion = () => {
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-5">
+              {error && (
+                <div className="p-4 bg-red-900/30 border border-red-700 rounded-lg text-red-300 text-sm">
+                  {error}
+                </div>
+              )}
               {/* Email */}
               <div>
                 <input
@@ -79,9 +89,9 @@ const Connexion = () => {
               <div>
                 <input
                   type="password"
-                  id="motDePasse"
-                  name="motDePasse"
-                  value={formData.motDePasse}
+                  id="password"
+                  name="password"
+                  value={formData.password}
                   onChange={handleChange}
                   className="w-full px-6 py-4 bg-gray-900/40 border border-gray-800 rounded-full focus:outline-none focus:border-purple-500 transition text-white placeholder-gray-500 text-sm"
                   placeholder="Mot de passe :"
@@ -93,7 +103,7 @@ const Connexion = () => {
               <div className="pt-4">
                 <button
                   type="submit"
-                   link to="/pages/register" className="w-full py-4 bg-gradient-to-r from-purple-500 via-purple-600 to-blue-500 hover:from-purple-600 hover:via-purple-700 hover:to-blue-600 rounded-full font-semibold transition text-white shadow-lg shadow-purple-500/50 flex items-center justify-center space-x-2 uppercase tracking-wider"
+                  className="w-full py-4 bg-linear-to-r from-purple-500 via-purple-600 to-blue-500 hover:from-purple-600 hover:via-purple-700 hover:to-blue-600 rounded-full font-semibold transition text-white shadow-lg shadow-purple-500/50 flex items-center justify-center space-x-2 uppercase tracking-wider"
                 >
                   <span>Connexion</span>
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -137,7 +147,7 @@ const Connexion = () => {
 
             {/* Footer Links */}
             <div className="mt-8 text-center space-y-3">
-              <Link to="/mot-de-passe-oublie" className="block text-sm text-gray-400 hover:text-purple-400 transition">
+              <Link to="/forgotpass" className="block text-sm text-gray-400 hover:text-purple-400 transition">
                 Mot de passe oublié ?
               </Link>
             </div>

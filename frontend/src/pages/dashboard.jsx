@@ -72,8 +72,8 @@ const Dashboard = () => {
             {/* Affiche 4 cartes KPI avec le composant Card */}
             <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
                 <Card label="Soumissions" value="435" />
-                <Card label="Score moyen" value="3.5 / 5" />
-                <Card label="Votes totaux" value="10.6k" />
+                <Card label="Approuvés" value="5" />
+                <Card label="Rejetés" value="15" />
                 <Card label="En attente" value="80" />
             </section>
 

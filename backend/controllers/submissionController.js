@@ -4,6 +4,22 @@ const { Op } = require('sequelize');
 const fs = require('fs');
 const crypto = require('crypto'); // C'est natif dans Node.js
 
+// Fonction pour normaliser gallery_urls en array JSON
+const normalizeGalleryUrls = (submission) => {
+  if (submission && submission.gallery_urls) {
+    if (typeof submission.gallery_urls === 'string') {
+      try {
+        submission.gallery_urls = JSON.parse(submission.gallery_urls);
+      } catch (e) {
+        console.warn('Erreur lors du parsing de gallery_urls:', e);
+        submission.gallery_urls = [];
+      }
+    }
+    // Si c'est déjà un array, rien à faire
+  }
+  return submission;
+};
+
 // Création d'une nouvelle soumission (film) avec gestion des fichiers et YouTube
 exports.createSubmission = async (req, res) => {
     // A 'true' POUR TESTER SANS YOUTUBE
@@ -173,12 +189,14 @@ exports.createSubmission = async (req, res) => {
 exports.getAllSubmissions = async (req, res) => {
     try {
         // --- 1. RÉCUPÉRATION DES PARAMÈTRES (QUERY PARAMS) ---
-        // Le front enverra : /api/submissions?page=1&limit=6&search=avatar&genre=SF
+        // Le front enverra : /api/submissions?page=1&limit=6&search=avatar&genre=SF&lang=fr&status=approved
         
         const page = parseInt(req.query.page) || 1;       // Page par défaut : 1
         const limit = parseInt(req.query.limit) || 9;     // Films par page par défaut : 9
         const search = req.query.search || '';            // Recherche titre
         const genre = req.query.genre || '';              // Filtre par genre/thème
+        const status = req.query.status || '';            // Filtre par statut (approved, rejected, submitted)
+        const lang = req.query.lang || 'fr';              // Langue pour le filtre : 'fr' ou 'en'
 
         // Calcul de l'offset (combien de films on saute)
         // Ex: Page 2 avec limite 9 -> on saute les 9 premiers ((2-1) * 9 = 9)
@@ -187,17 +205,21 @@ exports.getAllSubmissions = async (req, res) => {
         // --- 2. CONSTRUCTION DE LA REQUÊTE (WHERE) ---
         const whereCondition = {};
 
-        // Si une recherche textuelle est présente (Titre original ou Anglais)
+        // Si une recherche textuelle est présente
+        // On filtre selon la langue (fr = title_original, en = title_english)
         if (search) {
-            whereCondition[Op.or] = [
-                { title_original: { [Op.like]: `%${search}%` } }, // % permet de chercher "au milieu"
-                { title_english: { [Op.like]: `%${search}%` } }
-            ];
+            const searchField = lang === 'en' ? 'title_english' : 'title_original';
+            whereCondition[searchField] = { [Op.like]: `%${search}%` };
         }
 
         // Si un filtre de genre est présent (ex: "Horreur")
         if (genre) {
             whereCondition.theme_tags = { [Op.like]: `%${genre}%` };
+        }
+
+        // Si un filtre de statut est présent (ex: "approved", "rejected", "submitted")
+        if (status) {
+            whereCondition.approval_status = status;
         }
 
         // --- 3. EXÉCUTION DE LA REQUÊTE ---
@@ -213,6 +235,9 @@ exports.getAllSubmissions = async (req, res) => {
             }],
             distinct: true // Important pour avoir le bon compte avec les includes
         });
+
+        // Normaliser gallery_urls pour chaque film
+        rows.forEach(row => normalizeGalleryUrls(row));
 
         // --- 4. RÉPONSE FORMÉE POUR LE FRONT ---
         res.status(200).json({
@@ -254,9 +279,43 @@ exports.getSubmissionById = async (req, res) => {
             return res.status(404).json({ message: "Film introuvable." });
         }
 
+        // Normaliser gallery_urls pour assurer la cohérence
+        normalizeGalleryUrls(submission);
+
         res.status(200).json(submission);
     } catch (error) {
         console.error(`Erreur récupération film ${id} :`, error);
         res.status(500).json({ message: "Erreur serveur lors de la récupération du détail." });
+    }
+};
+
+/**
+ * 4. RÉCUPÉRER TOUS LES GENRES UNIQUES
+ * Route optimisée pour récupérer uniquement les genres sans pagination
+ */
+exports.getAllGenres = async (req, res) => {
+    try {
+        // Récupère tous les films avec uniquement le champ theme_tags
+        const submissions = await Submission.findAll({
+            attributes: ['theme_tags'],
+            where: {
+                theme_tags: { [Op.ne]: null } // Ignore les valeurs null
+            },
+            raw: true
+        });
+
+        // Utilise flatMap pour extraire et aplatir tous les genres en une seule opération
+        const allGenres = submissions
+            .filter(sub => sub.theme_tags && sub.theme_tags.trim() !== '')
+            .flatMap(sub => sub.theme_tags.split(',').map(tag => tag.trim()))
+            .filter(tag => tag !== '');
+
+        // Élimine les doublons avec Set et trie alphabétiquement
+        const genres = [...new Set(allGenres)].sort();
+
+        res.status(200).json({ genres });
+    } catch (error) {
+        console.error('Erreur récupération genres :', error);
+        res.status(500).json({ message: "Erreur serveur lors de la récupération des genres." });
     }
 };

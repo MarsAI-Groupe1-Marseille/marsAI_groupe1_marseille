@@ -2,7 +2,7 @@ const { google } = require('googleapis');
 const fs = require('fs');
 require('dotenv').config(); // Important pour lire le .env
 
-// On charge les clés depuis le .env (Sécurité 🔒)
+// On charge les clés depuis le .env et on configure l'OAuth2 client
 const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
@@ -23,7 +23,7 @@ exports.uploadVideoToYoutube = async (filePath, title, description) => {
 
     if (!fs.existsSync(filePath)) throw new Error("Fichier introuvable");
 
-    console.log(`📤 Upload vers YouTube : ${title}`);
+    console.log(`Upload vers YouTube : ${title}`);
 
     const response = await youtube.videos.insert({
       part: 'snippet,status',

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axios from '../config/axiosConfig'; 
 import { 
   Share2, Heart, MessageCircle, Play, Info, Globe, Calendar, 
   Film, Users, Zap, Code2, ChevronLeft, Volume2, Maximize2,
@@ -91,19 +91,16 @@ export default function FilmDetail() {
     const fetchFilmDetails = async () => {
       try {
         setLoading(true);
+        const res = await axios.get(`/submissions/${id}`);
+        console.log(res.data);
         
-        // Utilise les données fictives pour le moment (API à implémenter)
-        setFilm(fictionalFilm);
-        setDirector(fictionalDirector);
-        setCollaborators(fictionalCollaborators);
+        // Utilise les vraies données de l'API
+        setFilm(res.data);
+        setDirector(res.data.Director);
+        setCollaborators(res.data.Collaborators || []);
+        
+        // TODO: Implémenter l'API pour les films similaires
         setRelatedFilms(fictionalRelated);
-        
-        // Simule une requête API
-        // const response = await axios.get(`/api/submissions/${id}`);
-        // setFilm(response.data.film);
-        // setDirector(response.data.director);
-        // setCollaborators(response.data.collaborators);
-        // setRelatedFilms(response.data.relatedFilms);
         
         setError(null);
       } catch (err) {
@@ -152,6 +149,41 @@ export default function FilmDetail() {
   const tags = film.theme_tags ? film.theme_tags.split(',').map(tag => tag.trim()) : [];
   const duration = formatDuration(film.duration_seconds);
   const directorName = director ? `${director.first_name} ${director.last_name}` : 'N/A';
+  
+  // Helper pour les URLs d'images
+  const getImageUrl = (path) => {
+    if (!path) return '';
+    if (path.startsWith('http')) return path;
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    return `${baseUrl}${path}`;
+  };
+  
+  // Fonction robuste pour parser gallery_urls (string ou array)
+  const parseGalleryUrls = (galleryData) => {
+    if (!galleryData) return [];
+    // Si c'est déjà un array, retourner directement
+    if (Array.isArray(galleryData)) return galleryData;
+    // Si c'est une string, essayer de la parser
+    if (typeof galleryData === 'string') {
+      try {
+        return JSON.parse(galleryData);
+      } catch (e) {
+        console.error('Erreur lors du parsing de gallery_urls:', e);
+        return [];
+      }
+    }
+    return [];
+  };
+  
+  // Formater le statut d'approbation
+  const formatApprovalStatus = (status) => {
+    const statuses = {
+      'submitted': 'En attente',
+      'approved': 'Approuvé',
+      'rejected': 'Rejeté'
+    };
+    return statuses[status] || status;
+  };
 
   return (
     <div className="film-detail-container">
@@ -166,7 +198,7 @@ export default function FilmDetail() {
             <ChevronLeft className="w-5 h-5" /> Retour à la galerie
           </button>
           <div style={{ color: 'white', fontWeight: '600', fontSize: '0.875rem' }}>Mars AI Festival</div>
-          <button className="login-button">Se connecter</button>
+          
         </div>
       </header>
 
@@ -178,7 +210,7 @@ export default function FilmDetail() {
             {/* IMAGE INTERACTIVE */}
             <div className="film-poster-container">
               <img 
-                src={film.poster_url} 
+                src={getImageUrl(film.poster_url)} 
                 alt={film.title_original}
               />
               
@@ -249,7 +281,7 @@ export default function FilmDetail() {
                   <p className="quick-info-label">
                     <Globe className="w-4 h-4" /> Langue
                   </p>
-                  <p className="quick-info-value">{film.language_main.toUpperCase()}</p>
+                  <p className="quick-info-value">{film.language_main}</p>
                 </div>
                 <div className="quick-info-item">
                   <p className="quick-info-label">
@@ -261,7 +293,9 @@ export default function FilmDetail() {
                   <p className="quick-info-label">
                     <BarChart3 className="w-4 h-4" /> Statut
                   </p>
-                  <p className="quick-info-value success">Approuvé</p>
+                  <p className="quick-info-value" style={{ color: film.approval_status === 'approved' ? '#4ade80' : film.approval_status === 'rejected' ? '#f87171' : '#fbbf24' }}>
+                    {formatApprovalStatus(film.approval_status)}
+                  </p>
                 </div>
               </div>
             </div>
@@ -350,21 +384,31 @@ export default function FilmDetail() {
                   <div key={collab.id} className="team-member">
                     <p className="team-member-role">{collab.role}</p>
                     <p className="team-member-name">{collab.first_name} {collab.last_name}</p>
+                    {collab.email && (
+                      <p className="team-member-info">
+                        <Mail className="w-4 h-4" /> {collab.email}
+                      </p>
+                    )}
+                    {collab.job_title && (
+                      <p className="team-member-info">
+                        <User className="w-4 h-4" /> {collab.job_title}
+                      </p>
+                    )}
                   </div>
                 ))}
               </div>
             </div>
 
             {/* GALERIE */}
-            {film.gallery_urls && film.gallery_urls.length > 0 && (
+            {film.gallery_urls && parseGalleryUrls(film.gallery_urls).length > 0 && (
               <div className="gallery-section">
                 <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <Film className="w-6 h-6" style={{ color: '#ffb3ff' }} /> Galerie
                 </h2>
                 <div className="gallery-grid">
-                  {film.gallery_urls.map((url, idx) => (
+                  {parseGalleryUrls(film.gallery_urls).map((url, idx) => (
                     <div key={idx} className="gallery-item">
-                      <img src={url} alt={`Galerie ${idx + 1}`} />
+                      <img src={getImageUrl(url)} alt={`Galerie ${idx + 1}`} />
                     </div>
                   ))}
                 </div>
@@ -380,18 +424,18 @@ export default function FilmDetail() {
                   <Film className="w-5 h-5" style={{ color: '#ffb3ff' }} /> Films similaires
                 </h3>
                 <div className="related-films-list">
-                  {relatedFilms.map((film) => (
+                  {relatedFilms.map((relatedFilm) => (
                     <div 
-                      key={film.id}
+                      key={relatedFilm.id}
                       className="related-film-card"
-                      onClick={() => navigate(`/film/${film.id}`)}
+                      onClick={() => navigate(`/film/${relatedFilm.id}`)}
                     >
                       <div className="related-film-poster">
-                        <img src={film.poster_url} alt={film.title_original} />
+                        <img src={getImageUrl(relatedFilm.poster_url)} alt={relatedFilm.title_original} />
                       </div>
                       <div className="related-film-info">
-                        <p className="related-film-title">{film.title_original}</p>
-                        <p className="related-film-director">{film.first_name} {film.last_name}</p>
+                        <p className="related-film-title">{relatedFilm.title_original}</p>
+                        <p className="related-film-director">{relatedFilm.first_name} {relatedFilm.last_name}</p>
                       </div>
                     </div>
                   ))}
@@ -414,7 +458,7 @@ export default function FilmDetail() {
             </button>
             <iframe
               className="video-modal-iframe"
-              src={`https://www.youtube.com/embed/${film.youtube_id}`}
+              src={`https://www.youtube.com/embed/${film.youtube_id}?autoplay=1`}
               title="Vidéo du film"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen

@@ -1,32 +1,112 @@
 const sequelize = require('../config/db');
-const User = require('./user');
+
+// Import des modèles
+const User = require('./user'); 
 const Director = require('./Director');
 const Submission = require('./Submission');
 const Collaborator = require('./Collaborator');
+const JuryList = require('./JuryList');
+const JuryEvaluation = require('./JuryEvaluation');
+const ModerationTicket = require('./ModerationTicket');
+const JuryMember = require('./JuryMember');
+const JuryListSubmission = require('./JuryListSubmission');
 
-// --- CORRECTION ICI ---
+// ====================================================
+// DEFINITION DES RELATIONS
+// ====================================================
 
-// 1. Relation Director <-> Submission
+// --- 1. Director <-> Submission ---
 Director.hasMany(Submission, { 
     foreignKey: 'director_id',
-    onDelete: 'CASCADE' // 👈 C'est ça qui manquait ! (Supprime les films si le réal part)
+    onDelete: 'CASCADE'
 });
-
 Submission.belongsTo(Director, { 
     foreignKey: 'director_id'
 });
 
-// 2. Relation Submission <-> Collaborator
+// --- 2. Submission <-> Collaborator ---
 Submission.hasMany(Collaborator, { 
     foreignKey: 'submission_id',
-    onDelete: 'CASCADE' // Pareil ici : si on supprime le film, on vire l'équipe
+    onDelete: 'CASCADE'
 });
-
 Collaborator.belongsTo(Submission, { 
     foreignKey: 'submission_id' 
 });
 
+// --- 3. User (Jury) <-> JuryList (Many-to-Many via JuryMember) ---
+User.belongsToMany(JuryList, { 
+    through: JuryMember,
+    foreignKey: 'user_id',
+    otherKey: 'jury_list_id'
+});
+JuryList.belongsToMany(User, { 
+    through: JuryMember,
+    foreignKey: 'jury_list_id',
+    otherKey: 'user_id'
+});
+
+// --- 4. JuryList <-> Submission (Many-to-Many via JuryListSubmission) ---
+JuryList.belongsToMany(Submission, { 
+    through: JuryListSubmission,
+    foreignKey: 'jury_list_id',
+    otherKey: 'submission_id'
+});
+Submission.belongsToMany(JuryList, { 
+    through: JuryListSubmission,
+    foreignKey: 'submission_id',
+    otherKey: 'jury_list_id'
+});
+
+// --- 5. JuryEvaluation (Le vote d'un User sur une Submission) ---
+User.hasMany(JuryEvaluation, {
+    foreignKey: 'user_id',
+    onDelete: 'CASCADE'
+});
+JuryEvaluation.belongsTo(User, { foreignKey: 'user_id' });
+
+Submission.hasMany(JuryEvaluation, {
+    foreignKey: 'submission_id',
+    onDelete: 'CASCADE'
+});
+JuryEvaluation.belongsTo(Submission, { foreignKey: 'submission_id' });
+
+// --- 6. ModerationTicket (Admin sur Submission) ---
+
+// Relation Côté User (Admin)
+User.hasMany(ModerationTicket, {
+    foreignKey: 'admin_id',
+    as: 'TicketsHandled',
+    onDelete: 'RESTRICT', // <--- CHANGEMENT ICI : On empêche la suppression de l'admin
+    hooks: true 
+});
+
+// Relation Côté Ticket
+ModerationTicket.belongsTo(User, { 
+    foreignKey: 'admin_id',
+    as: 'Admin' 
+});
+
+// Relation Côté Submission (Ça on garde CASCADE, si le film saute, le ticket ne sert plus à rien)
+Submission.hasMany(ModerationTicket, {
+    foreignKey: 'submission_id',
+    onDelete: 'CASCADE'
+});
+
+ModerationTicket.belongsTo(Submission, { 
+    foreignKey: 'submission_id' 
+});
 
 
-
-module.exports = { User, Director, Submission, Collaborator };
+// Export de tous les modèles et de l'instance
+module.exports = { 
+    sequelize,
+    User, 
+    Director, 
+    Submission, 
+    Collaborator,
+    JuryList,
+    JuryEvaluation,
+    ModerationTicket,
+    JuryMember,
+    JuryListSubmission
+};
