@@ -71,11 +71,12 @@ export default function DashboardJury() {
     // On remplace uniquement celui modifié
     // On ferme la modal
     const handleSaveEvaluation = () => {
-        setFilms((prev) =>
-            prev.map((f) => (f.id === selectedFilm.id ? selectedFilm : f))
-        );
-        setSelectedFilm(null);
-    };
+      setPlaylist((prev) => ({...prev, videos: prev.videos.map((v) =>
+      v.id === selectedFilm.id ? selectedFilm : v
+      ),
+    }));
+  setSelectedFilm(null);
+};
     return (
     <div className="min-h-screen bg-black text-white p-6">
       {/* Header */}
