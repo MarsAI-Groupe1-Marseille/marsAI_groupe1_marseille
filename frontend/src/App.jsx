@@ -8,6 +8,7 @@ import FilmDetail from './pages/film_detail.jsx';
 import Dashboard from './pages/dashboard.jsx';
 import DashboardUser from './pages/dashboardUser.jsx';
 import GestionFilms from './pages/gestion_film.jsx';
+import DistributionJury from './pages/distribution_jury.jsx';
 import './App.css'
 import SubmissionForm from './pages/SubmissionForm.jsx';
 import Forgotpass from './pages/forgotpass.jsx';
@@ -33,6 +34,7 @@ function App() {
           <Route path="/dashboardUser" element={<DashboardUser />} />
           <Route path="/notationjury/:id" element={<NotationJury />} />
           <Route path="/gestion-films" element={<GestionFilms />} />
+          <Route path="/distribution_jury" element={<DistributionJury />} />
 
         </Routes>
 
