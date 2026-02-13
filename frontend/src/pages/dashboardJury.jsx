@@ -1,168 +1,235 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { X } from "lucide-react";
 
 export default function DashboardJury() {
-  const [playlists, setPlaylists] = useState([
+  const [selectedPlaylist, setSelectedPlaylist] = useState(null);
+  const sliderRef = useRef(null);
+
+  const playlists = [
     {
       id: 1,
       name: "Sélection Officielle 2026",
-      description: "Films compétition officielle",
-      thumbnail: "/images/playlist1.jpg",
       videos: [
-        { id: 1, title: "Gourou", director: "Yann Gozlan", thumbnail: "/images/video1.jpg", status: "Assigné" },
-        { id: 2, title: "Le Mage Du Kremlin", director: "Olivier Assayas", thumbnail: "/images/video2.jpg", status: "Aimé" },
+        { id: 1, title: "Gourou", director: "Yann Gozlan", thumbnail: "/images/video1.jpg", status: "aimé" },
+        { id: 2, title: "Le Mage Du Kremlin", director: "Olivier Assayas", thumbnail: "/images/video2.jpg", status: "discuter" },
       ],
     },
     {
       id: 2,
       name: "Documentaires",
-      description: "Sélection Documentaire",
-      thumbnail: "/images/playlist2.jpg",
       videos: [
-        { id: 3, title: "Océans Profonds", director: "Luc Jacquet", thumbnail: "/images/video3.jpg", status: "Assigné" },
+        { id: 3, title: "Océans Profonds", director: "Luc Jacquet", thumbnail: "/images/video3.jpg", status: "aimé" },
       ],
     },
     {
       id: 3,
-      name: "Courts métrages",
-      description: "Sélection courts métrages",
-      thumbnail: "/images/playlist3.jpg",
+      name: "Courts Métrages",
       videos: [
-        { id: 4, title: "Évasion", director: "Jean Dupont", thumbnail: "/images/video4.jpg", status: "Détesté" },
-        { id: 5, title: "Mystère", director: "Claire Martin", thumbnail: "/images/video5.jpg", status: "Aimé" },
+        { id: 4, title: "Évasion", director: "Jean Dupont", thumbnail: "/images/video4.jpg", status: "pas" },
       ],
     },
-  ]);
+  ];
 
-  const [selectedPlaylist, setSelectedPlaylist] = useState(null);
+  const gradients = [
+    "from-purple-700 via-indigo-600 to-purple-900",
+    "from-pink-600 via-rose-500 to-red-700",
+    "from-cyan-500 via-blue-600 to-indigo-800",
+  ];
 
-  // --- STATS ---
-  const totalVideos = playlists.reduce((sum, p) => sum + p.videos.length, 0);
-  const liked = playlists.reduce(
-    (sum, p) => sum + p.videos.filter((v) => v.status === "Aimé").length,
-    0
-  );
-  const disliked = playlists.reduce(
-    (sum, p) => sum + p.videos.filter((v) => v.status === "Détesté").length,
-    0
-  );
-  const assigned = playlists.reduce(
-    (sum, p) => sum + p.videos.filter((v) => v.status === "Assigné").length,
-    0
-  );
+  // 🔢 Calcul des statistiques
+  const allVideos = playlists.flatMap(p => p.videos);
+  const liked = allVideos.filter(v => v.status === "aimé").length;
+  const disliked = allVideos.filter(v => v.status === "pas").length;
+  const discussion = allVideos.filter(v => v.status === "discuter").length;
 
   return (
-    <div className="min-h-screen bg-black text-white p-6">
-      {/* Header */}
-      <header className="text-center mb-10">
-        <h1 className="text-4xl font-bold mb-2">Mes Playlists</h1>
-        <p className="text-neutral-400">Cliquez sur une playlist pour voir les vidéos</p>
-      </header>
+    <div className="min-h-screen bg-black text-white relative overflow-hidden">
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10 max-w-5xl mx-auto">
-        <StatCard title="Vidéos assignées" value={assigned} color="bg-blue-600" />
-        <StatCard title="Vidéos aimées" value={liked} color="bg-green-600" />
-        <StatCard title="Vidéos détestées" value={disliked} color="bg-red-600" />
-      </div>
+      {/* Glow background */}
+      <div className="absolute -top-32 -left-32 w-96 h-96 bg-purple-700/20 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-pink-600/20 rounded-full blur-3xl"></div>
 
-      {/* PLAYLISTS GRID */}
-      {!selectedPlaylist && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-          {playlists.map((playlist, i) => (
-            <div
-              key={playlist.id}
-              onClick={() => setSelectedPlaylist(playlist)}
-              className={`cursor-pointer rounded-2xl overflow-hidden transform transition hover:scale-105 border border-neutral-800`}
-              style={{ background: `linear-gradient(135deg, hsl(${i*60},70%,50%), hsl(${i*60+30},80%,60%))` }}
-            >
-              <div className="h-44 w-full overflow-hidden relative">
-                <img
-                  src={playlist.thumbnail}
-                  alt={playlist.name}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-black/30 flex items-center justify-center text-xl font-bold text-white">
-                  {playlist.name}
+      <div className="relative z-10 p-6">
+
+        {/* HEADER */}
+        <header className="text-center mb-12">
+          <h1 className="text-4xl md:text-5xl font-bold mb-3 bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
+            Mes Playlists
+          </h1>
+          <p className="text-neutral-400">
+            Sélectionnez une playlist pour consulter les vidéos
+          </p>
+        </header>
+
+        {/* 🔥 BLOCS STATISTIQUES */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto mb-14">
+
+          <StatCard
+            title="J’aime"
+            value={liked}
+            gradient="from-green-500 to-emerald-600"
+          />
+
+          <StatCard
+            title="J’aime pas"
+            value={disliked}
+            gradient="from-red-500 to-rose-600"
+          />
+
+          <StatCard
+            title="À discuter"
+            value={discussion}
+            gradient="from-yellow-400 to-orange-500"
+          />
+
+        </div>
+
+        {/* PLAYLIST GRID */}
+        {!selectedPlaylist && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {playlists.map((playlist, i) => (
+              <div
+                key={playlist.id}
+                onClick={() => setSelectedPlaylist(playlist)}
+                className={`cursor-pointer rounded-3xl p-1 bg-gradient-to-br ${gradients[i]}
+                transform transition duration-300 hover:scale-105`}
+              >
+                <div className="bg-neutral-900 rounded-3xl p-8 text-center h-40 flex items-center justify-center">
+                  <h2 className="text-xl font-semibold">
+                    {playlist.name}
+                  </h2>
                 </div>
               </div>
-              <div className="p-4">
-                <p className="text-neutral-200">{playlist.videos.length} vidéos</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* MODAL PLAYLIST */}
-      {selectedPlaylist && (
-        <section className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
-          <div className="bg-neutral-900 border border-neutral-800 rounded-2xl w-full max-w-6xl p-6 relative">
-            <button
-              onClick={() => setSelectedPlaylist(null)}
-              className="absolute top-4 right-4 text-neutral-400 hover:text-white z-20"
-            >
-              <X size={28} />
-            </button>
-
-            <h2 className="text-2xl font-bold mb-6">{selectedPlaylist.name}</h2>
-
-            {/* Slider */}
-            <div className="relative group">
-              <div className="flex overflow-x-auto space-x-4 scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-neutral-800">
-                {selectedPlaylist.videos.map((video) => (
-                  <a
-                    key={video.id}
-                    href={`/videos/${video.id}`}
-                    className="flex-shrink-0 w-48 bg-neutral-800 rounded-xl overflow-hidden hover:scale-105 hover:shadow-lg transition transform"
-                  >
-                    <img
-                      src={video.thumbnail}
-                      alt={video.title}
-                      className="w-full h-36 object-cover"
-                    />
-                    <div className="p-3">
-                      <p className="font-semibold">{video.title}</p>
-                      <p className="text-sm text-neutral-400">{video.director}</p>
-                    </div>
-                  </a>
-                ))}
-              </div>
-
-              {/* Chevrons */}
-              <button
-                onClick={() => {
-                  const slider = document.querySelector(".group > .flex.overflow-x-auto");
-                  slider.scrollBy({ left: -300, behavior: "smooth" });
-                }}
-                className="absolute top-1/2 -left-2 -translate-y-1/2 bg-black/50 hover:bg-black/70 p-2 rounded-full hidden group-hover:block z-10"
-              >
-                ◀
-              </button>
-              <button
-                onClick={() => {
-                  const slider = document.querySelector(".group > .flex.overflow-x-auto");
-                  slider.scrollBy({ left: 300, behavior: "smooth" });
-                }}
-                className="absolute top-1/2 -right-2 -translate-y-1/2 bg-black/50 hover:bg-black/70 p-2 rounded-full hidden group-hover:block z-10"
-              >
-                ▶
-              </button>
-            </div>
+            ))}
           </div>
-        </section>
-      )}
+        )}
+
+        {/* MODAL */}
+        {selectedPlaylist && (
+          <section className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
+            
+            <div className="bg-gradient-to-br from-neutral-900 via-purple-900/60 to-black
+            border border-purple-700/40 backdrop-blur-xl 
+            rounded-3xl w-full max-w-6xl p-8 relative animate-scaleIn">
+
+              <button
+                onClick={() => setSelectedPlaylist(null)}
+                className="absolute top-6 right-6 text-neutral-300 hover:text-white"
+              >
+                <X size={28} />
+              </button>
+
+              <h2 className="text-2xl md:text-3xl font-bold mb-8 text-purple-300">
+                {selectedPlaylist.name}
+              </h2>
+
+              {/* SLIDER */}
+              <div className="relative group">
+                <div
+                  ref={sliderRef}
+                  className="flex overflow-x-auto gap-6 scroll-smooth no-scrollbar"
+                >
+                  {selectedPlaylist.videos.map((video) => (
+                    <a
+                      key={video.id}
+                      href={`/videos/${video.id}`}
+                      className="relative flex-shrink-0 w-56 md:w-64 bg-neutral-800 
+                      rounded-2xl overflow-hidden transition 
+                      hover:scale-105 hover:shadow-2xl group"
+                    >
+                      <div className="relative">
+                        <img
+                          src={video.thumbnail}
+                          alt={video.title}
+                          className="w-full h-40 object-cover transition duration-500 group-hover:scale-110"
+                        />
+
+                        <div className="absolute inset-0 bg-black/50 opacity-0 
+                        group-hover:opacity-100 transition duration-300 
+                        flex items-center justify-center">
+
+                          <div className="w-14 h-14 bg-white rounded-full 
+                          flex items-center justify-center text-black text-xl 
+                          shadow-lg transform group-hover:scale-110 transition">
+                            ▶
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="p-4">
+                        <p className="font-semibold truncate">
+                          {video.title}
+                        </p>
+                        <p className="text-sm text-neutral-400">
+                          {video.director}
+                        </p>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+
+                {/* CHEVRONS */}
+                <button
+                  onClick={() =>
+                    sliderRef.current.scrollBy({ left: -300, behavior: "smooth" })
+                  }
+                  className="absolute top-1/2 -left-4 -translate-y-1/2 
+                  bg-black/60 hover:bg-black/80 p-3 rounded-full 
+                  hidden group-hover:block"
+                >
+                  ◀
+                </button>
+
+                <button
+                  onClick={() =>
+                    sliderRef.current.scrollBy({ left: 300, behavior: "smooth" })
+                  }
+                  className="absolute top-1/2 -right-4 -translate-y-1/2 
+                  bg-black/60 hover:bg-black/80 p-3 rounded-full 
+                  hidden group-hover:block"
+                >
+                  ▶
+                </button>
+              </div>
+            </div>
+          </section>
+        )}
+      </div>
+
+      {/* Animations */}
+      <style jsx>{`
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+
+        @keyframes scaleIn {
+          from { transform: scale(0.9); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
+        }
+
+        .animate-fadeIn {
+          animation: fadeIn 0.3s ease-out;
+        }
+
+        .animate-scaleIn {
+          animation: scaleIn 0.3s ease-out;
+        }
+      `}</style>
     </div>
   );
 }
 
-// --- Composants ---
-function StatCard({ title, value, color }) {
+function StatCard({ title, value, gradient }) {
   return (
-    <div className={`p-6 rounded-2xl text-center ${color}`}>
-      <p className="text-sm text-neutral-200">{title}</p>
+    <div className={`p-6 rounded-2xl bg-gradient-to-br ${gradient} text-center shadow-lg hover:scale-105 transition`}>
+      <p className="text-sm opacity-80">{title}</p>
       <h3 className="text-3xl font-bold mt-2">{value}</h3>
     </div>
   );
