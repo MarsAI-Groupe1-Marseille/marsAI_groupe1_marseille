@@ -1,4 +1,5 @@
 import React from "react";
+import {Link } from "react-router-dom";
 import {BarChart3, Layers, TrendingUp, LayoutDashboard, Users, Film} from "lucide-react";
 
 // Permet à construire le graphique en barres pour chaque mois.
@@ -54,6 +55,7 @@ function ActionCard({ title, buttonText, onClick, icon }) {
 }
 
 const Dashboard = () => {
+    
     return (
         <div className="min-h-screen bg-neutral-950 text-white p-8 space-y-10">
             <header>
@@ -124,18 +126,20 @@ const Dashboard = () => {
                 </div>
             </section>
             <section className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+             <Link to="/dashboardUser" className="block">
                 <ActionCard
                     title="Gestion des utilisateurs"
                     buttonText="Voir les utilisateurs"
                     icon={<Users size={28} />}
-                    onClick={() => window.location.href = "/users"}
                 />
+             </Link>
+               <Link to="/gestion-films" className="block">
                 <ActionCard
                     title="Gestion des films"
                     buttonText="Voir les films"
                     icon={<Film size={28} />}
-                    onClick={() => window.location.href = "/movies"}
                 />
+               </Link>
             </section>
 
         </div>
