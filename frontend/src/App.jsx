@@ -10,10 +10,12 @@ import DashboardUser from './pages/dashboardUser.jsx';
 import Header from './components/Header.jsx'; // Import du Header
 import Footer from './components/Footer.jsx'; // Import du Footer
 import GestionFilms from './pages/gestion_film.jsx';
+import DistributionJury from './pages/distribution_jury.jsx';
+import './App.css'
 import SubmissionForm from './pages/SubmissionForm.jsx';
 import Forgotpass from './pages/forgotpass.jsx';
 import ResetPassword from './pages/ResetPassword.jsx';
-import './App.css'
+import NotationJury  from './pages/NotationJury.jsx';
 
 
 function App() { 
@@ -33,7 +35,9 @@ function App() {
 
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboardUser" element={<DashboardUser />} />
+          <Route path="/notationjury/:id" element={<NotationJury />} />
           <Route path="/gestion-films" element={<GestionFilms />} />
+          <Route path="/distribution_jury" element={<DistributionJury />} />
 
         </Routes>
 
