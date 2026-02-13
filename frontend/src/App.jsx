@@ -7,6 +7,8 @@ import Login from './pages/login.jsx';
 import FilmDetail from './pages/film_detail.jsx';
 import Dashboard from './pages/dashboard.jsx';
 import DashboardUser from './pages/dashboardUser.jsx';
+import Header from './components/Header.jsx'; // Import du Header
+import Footer from './components/Footer.jsx'; // Import du Footer
 import GestionFilms from './pages/gestion_film.jsx';
 import DistributionJury from './pages/distribution_jury.jsx';
 import './App.css'
@@ -17,10 +19,11 @@ import NotationJury  from './pages/NotationJury.jsx';
 
 
 function App() { 
-
   return (
-    
-      <div className="App">
+    <div className="App flex flex-col min-h-screen">
+      <Header /> {/* S'affiche sur toutes les pages */}
+      
+      <main className="flex-grow">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/galerie" element={<Galerie />} />
@@ -38,10 +41,12 @@ function App() {
 
         </Routes>
 
-        
+        </main>
+
+        <Footer /> {/* S'affiche sur toutes les pages */}
       </div>
     
   )
 }
 
-export default App
+export default App;
