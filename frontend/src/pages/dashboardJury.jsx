@@ -5,46 +5,41 @@ import { Eye, X, Star, Filter } from "lucide-react";
 
 export default function DashboardJury() {
     //  on stocke : tous les films assignés au jury, leurs informations,leur statut, leur note, leur commentaire
-    const [playlist, setPlaylist] = useState({
+    const [playlists, setPlaylists] = useState([
+    {
     id: 1,
     name: "Sélection Officielle 2026",
-    description: "Playlist assignée par l'administrateur",
+    description: "Films compétition officielle",
+    thumbnail: "/images/playlist1.jpg",
     videos: [
-    {
-      id: 1,
-      title: "Gourou",
-      director: "Yann Gozlan",
-      category: "Court métrage",
-      videoUrl: "/videos/gourou.mp4",
-      status: "À évaluer",
-      rating: null,
-      comment: "",
-    },
-    {
-    id: 2,
-    title: "Le Mage Du Kremlin",
-    director: "Olivier Assayas",
-    category: "Documentaire",
-    videoUrl: "/videos/mage.mp4",
-    status: "Approuvé",
-    rating: 6,
-    comment: "",
-    },
-    {
+      {
+        id: 1,
+        title: "Gourou",
+        director: "Yann Gozlan",
+        duration: "12:30",
+        status: "À évaluer",
+      },
+      {
+        id: 2,
+        title: "Le Mage Du Kremlin",
+        director: "Olivier Assayas",
+        duration: "1:45:00",
+        status: "Approuvé",
+      },
+    ],
+  },
+  {
     id: 3,
-    title: "L'affaire Bojarski",
-    director: "Jean-Paul Salomé",
-    category: "Long métrage",
-    status: "Rejeté",
-    rating: 4,
-    comment: "Manque de rythme.",
-    },
-  ],
-});
+    name: "Documentaires",
+    description: "Sélection Documentaire",
+    thumbnail: "/images/playlist2.jpg",
+    videos: [],
+  },
+]);
     // Ce state sert à : Stocker le film en cours d’évaluation, Ouvrir la modal
     // Quand il est null → modal fermée
     // Quand il contient un film → modal ouverte
-    const [selectedFilm, setSelectedFilm] = useState(null);
+    const [selectedPlaylist, setSelectedPlaylist] = useState(null);
     // NB: Une modal est une fenêtre pop-up qui s’affiche au-dessus du contenu principal pour montrer des informations
     // ou demander une action, comme évaluer un film, sans quitter la page.
 
