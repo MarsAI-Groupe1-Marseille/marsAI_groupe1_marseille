@@ -20,28 +20,35 @@ export default function AdminDashboard() {
         const token = localStorage.getItem('token');
         const userStr = localStorage.getItem('user');
         
+        console.log('Token:', token);
+        console.log('User:', userStr);
+        
         // ✅ VÉRIFICATION LOCALE (Hardcodée)
         if (!token || !userStr) {
           console.log('❌ Pas de token, redirection vers login');
-          window.location.href = '/login';
+          setLoading(false);
+          // window.location.href = '/login';
           return;
         }
 
         const user = JSON.parse(userStr);
+        console.log('User parsed:', user);
         
         // Vérifier que c'est un admin
         if (user.role !== 'admin') {
-          console.log('❌ Pas un admin, redirection vers home');
-          window.location.href = '/';
+          console.log('❌ Pas un admin, redirection vers home. Role:', user.role);
+          setLoading(false);
+          // window.location.href = '/';
           return;
         }
 
-        console.log('✅ Admin vérifié:', user.name);
+        console.log('✅ Admin vérifié:', user.full_name);
         setAdminUser(user);
         setLoading(false);
       } catch (error) {
         console.error('Erreur vérification admin:', error);
-        window.location.href = '/login';
+        setLoading(false);
+        // window.location.href = '/login';
       }
     };
 
@@ -57,12 +64,7 @@ export default function AdminDashboard() {
   }
 
   const tabs = [
-    { id: 0, label: 'Dashboard', icon: '📊' },
-    { id: 1, label: 'Gestion Films', icon: '🎬' },
-    { id: 2, label: 'Jury', icon: '👥' },
-    { id: 3, label: 'Résultats', icon: '🏆' },
-    { id: 4, label: 'Événements', icon: '📅' },
-    { id: 5, label: 'Configuration', icon: '⚙️' }
+    { id: 0, label: 'Jury', icon: '👥' }
   ];
 
   return (
@@ -70,9 +72,9 @@ export default function AdminDashboard() {
       {/* Header */}
       <header className="sticky top-0 z-50 bg-gradient-to-br from-[#0a0e27] to-[#1a1f3a] py-8 px-8 shadow-2xl" style={{boxShadow: '0 0 20px rgba(255, 0, 150, 0.4)'}}>
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <h1 className="text-4xl font-bold tracking-widest" style={{textShadow: '0 4px 20px rgba(255, 0, 150, 0.3)'}}>🎞️ ADMIN MANAGEMENT</h1>
+          <h1 className="text-4xl font-bold tracking-widest" style={{textShadow: '0 4px 20px rgba(255, 0, 150, 0.3)'}}>👥 Gestion des jurys</h1>
           <div className="flex gap-6 items-center">
-            <span className="font-semibold bg-white/20 px-4 py-2 rounded-full text-base">{adminUser?.full_name}</span>
+            <span className="font-semibold bg-white/20 px-4 py-2 rounded-full text-base">{adminUser?.full_name || 'Admin'}</span>
             <button 
               className="bg-black/20 border-2 border-white/50 text-white px-5 py-2 rounded-full font-semibold transition-all hover:bg-black/40 hover:border-white"
               onClick={() => {
@@ -106,12 +108,7 @@ export default function AdminDashboard() {
 
       {/* Content */}
       <main className="max-w-7xl mx-auto py-8 px-8">
-        {activeTab === 0 && <DashboardTab />}
-        {activeTab === 1 && <FilmsTab />}
-        {activeTab === 2 && <JuryTab />}
-        {activeTab === 3 && <ResultsTab />}
-        {activeTab === 4 && <EventsTab />}
-        {activeTab === 5 && <ConfigTab />}
+        {activeTab === 0 && <JuryTab />}
       </main>
     </div>
   );
