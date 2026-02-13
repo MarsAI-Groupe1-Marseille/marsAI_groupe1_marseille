@@ -111,3 +111,21 @@ exports.createJuryList = async (req, res) => {
         res.status(500).json({ message: "Erreur serveur.", error: error.message });
     }
 };
+
+exports.addMovieToPlayList = async (req, res) =>{
+    try {
+        const{jury_list_id ,submission_id} = req.body;
+        if(!jury_list_id || !submission_id){
+            return res.status(400).json({ message: "jury_list_id et submission_id est requis" });
+        }
+        await JuryListSubmission.create({jury_list_id,submission_id});
+        res.status(201).json({ message: "film assigné a la playlist avec id:"+jury_list_id+" "+" créée avec succès." });
+            
+        
+    } catch (error) {
+         console.error("Erreur lors lors de l'assignation ddu film a la playlist :", error);
+        res.status(500).json({ message: "Erreur serveur.", error: error.message });
+        
+    }
+
+};

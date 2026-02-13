@@ -19,6 +19,11 @@ router.post('/jury-list',
     checkRole('admin'),
     adminController.createJuryList
 );
+// route qui assigne un film a une play list
+router.post('/assigne-film',
+    verifyToken,
+    checkRole('admin'),
+    adminController.addMovieToPlayList);
 
 
 
