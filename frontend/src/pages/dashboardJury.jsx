@@ -1,263 +1,131 @@
 "use client";
 
 import { useState } from "react";
-import { Eye, X, Star, Filter } from "lucide-react";
 
 export default function DashboardJury() {
-    //  on stocke : tous les films assignés au jury, leurs informations,leur statut, leur note, leur commentaire
-    const [playlists, setPlaylists] = useState([
+
+  const [playlists] = useState([
     {
-    id: 1,
-    name: "Sélection Officielle 2026",
-    description: "Films compétition officielle",
-    thumbnail: "/images/playlist1.jpg",
-    videos: [
-      {
-        id: 1,
-        title: "Gourou",
-        director: "Yann Gozlan",
-        duration: "12:30",
-        status: "À évaluer",
-      },
-      {
-        id: 2,
-        title: "Le Mage Du Kremlin",
-        director: "Olivier Assayas",
-        duration: "1:45:00",
-        status: "Approuvé",
-      },
-    ],
-  },
-  {
-    id: 3,
-    name: "Documentaires",
-    description: "Sélection Documentaire",
-    thumbnail: "/images/playlist2.jpg",
-    videos: [],
-  },
-]);
-    // Ce state sert à : Stocker le film en cours d’évaluation, Ouvrir la modal
-    // Quand il est null → modal fermée
-    // Quand il contient un film → modal ouverte
-    const [selectedPlaylist, setSelectedPlaylist] = useState(null);
-    // NB: Une modal est une fenêtre pop-up qui s’affiche au-dessus du contenu principal pour montrer des informations
-    // ou demander une action, comme évaluer un film, sans quitter la page.
+      id: 1,
+      name: "Sélection Officielle 2026",
+      description: "Films compétition officielle",
+      thumbnail: "/images/playlist1.jpg",
+      videos: [
+        {
+          id: 1,
+          title: "Gourou",
+          director: "Yann Gozlan",
+          duration: "12:30",
+          status: "À évaluer",
+        },
+        {
+          id: 2,
+          title: "Le Mage Du Kremlin",
+          director: "Olivier Assayas",
+          duration: "1:45:00",
+          status: "Approuvé",
+        },
+      ],
+    },
+    {
+      id: 3,
+      name: "Documentaires",
+      description: "Sélection Documentaire",
+      thumbnail: "/images/playlist2.jpg",
+      videos: [],
+    },
+  ]);
 
-    // Permet de filtrer les films
-    const [activeFilter, setActiveFilter] = useState("Tous");
+  const [selectedPlaylist, setSelectedPlaylist] = useState(null);
 
-    // Permet de filtrer les films par statut : "Tous", "À évaluer", "Approuvé", "Rejeté"
-    // Si un statut change → les stats se mettent à jour automatiquement.
-
-    const stats = {
-        total: playlist.videos.length,
-        viewed: playlist.videos.filter((v) => v.status !== "À évaluer").length,
-        approved: playlist.videos.filter((v) => v.status === "Approuvé").length,
-        rejected: playlist.videos.filter((v) => v.status === "Rejeté").length,
-};
-    // Si filtre = "Tous" → on affiche tout
-    // Sinon → on affiche seulement les films correspondant au statut
-    const filteredVideos =
-        activeFilter === "Tous"
-        ? playlist.videos
-        : playlist.videos.filter((v) => v.status === activeFilter);
-
-    // On parcourt tous les films
-    // On remplace uniquement celui modifié
-    // On ferme la modal
-    const handleSaveEvaluation = () => {
-      setPlaylist((prev) => ({...prev, videos: prev.videos.map((v) =>
-      v.id === selectedFilm.id ? selectedFilm : v
-      ),
-    }));
-  setSelectedFilm(null);
-};
-    return (
+  return (
     <div className="min-h-screen bg-black text-white p-6">
+
       {/* Header */}
       <header className="flex flex-col md:flex-row md:items-center md:justify-between mb-10 gap-6">
         <div>
           <h1 className="text-3xl font-bold">Dashboard Jury</h1>
           <p className="text-neutral-400 mt-1">
-            Gestion et évaluation des films assignés
+            Playlists assignées par l'administrateur
           </p>
         </div>
-        <section className="flex items-center gap-4 bg-neutral-900 border border-neutral-800 px-4 py-3 rounded-2xl">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-r from-violet-500 to-pink-500 flex items-center justify-center font-bold">
-            J
-          </div>
-          <div>
-            <p className="text-sm font-semibold">Jury Member</p>
-            <p className="text-xs text-neutral-400">jury@festival.com</p>
-          </div>
-        </section>
       </header>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-        <Stats title="Films assignés" value={stats.total} />
-        <Stats title="Films vus" value={stats.viewed} />
-        <Stats title="Approuvés" value={stats.approved} />
-        <Stats title="Rejetés" value={stats.rejected} />
-      </div>
+      {/* CONTENU PRINCIPAL */}
+      {!selectedPlaylist ? (
 
-      {/* Filtres */}
-      <div className="flex flex-wrap gap-3 mb-6">
-        {["Tous", "À évaluer", "Approuvé", "Rejeté"].map((filter) => (
-          <button
-            key={filter}
-            onClick={() => setActiveFilter(filter)}
-            className={`px-4 py-2 rounded-xl text-sm flex items-center gap-2 border transition ${
-              activeFilter === filter
-                ? "bg-gradient-to-r from-violet-500 to-pink-500 border-transparent"
-                : "bg-neutral-900 border-neutral-800 hover:bg-neutral-800"
-            }`}
-          >
-            <Filter size={14} /> {filter}
-          </button>
-        ))}
-      </div>
+        // PLAYLISTS
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 
-      {/* Liste des videos */}
-      <div className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden">
-        {filteredVideos.map((video) => (
-          <VideoRow
-            key={video.id}
-            video={video}
-            onEvaluate={() => setSelectedFilm(video)}
-          />
-        ))}
-      </div>
-
-      {/* Modal d'évaluation */}
-      {selectedFilm && (
-        <section className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
-          <div className="bg-neutral-900 border border-neutral-800 rounded-2xl w-full max-w-2xl p-6 relative">
-            <button
-              onClick={() => setSelectedFilm(null)}
-              className="absolute top-4 right-4 text-neutral-400 hover:text-white"
+          {playlists.map((playlist) => (
+            <div
+              key={playlist.id}
+              onClick={() => setSelectedPlaylist(playlist)}
+              className="cursor-pointer bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden hover:scale-105 transition"
             >
-              <X size={20} />
-            </button>
+              <div className="h-40 bg-gradient-to-r from-violet-600 to-pink-600 flex items-center justify-center text-xl font-bold">
+                {playlist.name}
+              </div>
 
-            <h2 className="text-xl font-semibold mb-6">
-              Évaluation : {selectedFilm.title}
-            </h2>
-
-            <div className="mb-4">
-              <label className="block text-sm text-neutral-400 mb-2">
-                Note (/10)
-              </label>
-              <input
-                type="number"
-                min="1"
-                max="10"
-                value={selectedFilm.rating || ""}
-                onChange={(e) =>
-                  setSelectedFilm({
-                    ...selectedFilm,
-                    rating: Number(e.target.value),
-                  })
-                }
-                className="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-violet-500"
-              />
+              <div className="p-4">
+                <p className="font-semibold">{playlist.name}</p>
+                <p className="text-sm text-neutral-400">
+                  {playlist.videos.length} vidéos
+                </p>
+              </div>
             </div>
+          ))}
 
-            <div className="flex flex-wrap gap-3">
-              <button
-                onClick={() =>
-                  setSelectedFilm({ ...selectedFilm, status: "Approuvé" })
-                }
-                className="px-4 py-2 bg-green-600 rounded-lg w-full sm:w-auto"
+        </div>
+
+      ) : (
+
+        // VIDEOS DE LA PLAYLIST
+        <div>
+
+          <button
+            onClick={() => setSelectedPlaylist(null)}
+            className="mb-6 px-4 py-2 bg-neutral-800 rounded-lg"
+          >
+            ← Retour aux playlists
+          </button>
+
+          <h2 className="text-2xl font-bold mb-6">
+            {selectedPlaylist.name}
+          </h2>
+
+          <div className="space-y-4">
+            {selectedPlaylist.videos.map((video) => (
+              <div
+                key={video.id}
+                className="flex items-center gap-4 bg-neutral-900 border border-neutral-800 rounded-xl p-4 hover:bg-neutral-800 transition"
               >
-                Approuver
-              </button>
-              <button
-                onClick={() =>
-                  setSelectedFilm({ ...selectedFilm, status: "Rejeté" })
-                }
-                className="px-4 py-2 bg-red-600 rounded-lg w-full sm:w-auto"
-              >
-                Rejeter
-              </button>
-              <button
-                onClick={handleSaveEvaluation}
-                className="px-4 py-2 bg-gradient-to-r from-violet-500 to-pink-500 rounded-lg w-full sm:w-auto"
-              >
-                Enregistrer
-              </button>
-            </div>
+                <div className="w-40 h-24 bg-neutral-700 rounded-lg flex items-center justify-center">
+                  Thumbnail
+                </div>
+
+                <div className="flex-1">
+                  <p className="font-semibold">{video.title}</p>
+                  <p className="text-sm text-neutral-400">
+                    {video.director}
+                  </p>
+                </div>
+
+                <a
+                  href={`/videos/${video.id}`}
+                  className="px-4 py-2 bg-gradient-to-r from-violet-500 to-pink-500 rounded-lg text-sm"
+                >
+                  Voir
+                </a>
+
+              </div>
+            ))}
           </div>
-        </section>
+
+        </div>
+
       )}
+
     </div>
   );
 }
-
-// --- Composants ---
-function Stats({ title, value }) {
-  return (
-    <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
-      <p className="text-sm text-neutral-400">{title}</p>
-      <h3 className="text-3xl font-bold mt-2">{value}</h3>
-    </div>
-  );
-}
-
-function VideoRow({ video, onEvaluate }) {
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-6 gap-4 items-center p-4 border-b border-neutral-800 hover:bg-neutral-800 transition">
-      
-      <div className="lg:col-span-2">
-        <p className="font-semibold">{video.title}</p>
-        <p className="text-sm text-neutral-400">{video.director}</p>
-      </div>
-
-      <div className="text-sm text-neutral-400">
-        {video.category}
-      </div>
-
-      <StatusBadge status={video.status} />
-
-      <div className="text-sm font-medium">
-        {video.rating !== null ? `${video.rating}/10` : "-"}
-      </div>
-
-      <div className="flex flex-wrap gap-2 justify-start lg:justify-end">
-
-        {/* Redirection vers la page détails : */}
-        <a
-          href={`/videos/${video.id}`}
-          className="px-3 py-2 bg-neutral-800 rounded-lg hover:bg-neutral-700 text-sm"
-        >
-          Voir détails
-        </a>
-
-        <button
-          onClick={onEvaluate}
-          className="px-3 py-2 bg-gradient-to-r from-violet-500 to-pink-500 rounded-lg text-sm"
-        >
-          Évaluer
-        </button>
-
-      </div>
-    </div>
-  );
-}
-
-function StatusBadge({ status }) {
-  const styles = {
-    "À évaluer": "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
-    Approuvé: "bg-green-500/20 text-green-400 border-green-500/30",
-    Rejeté: "bg-red-500/20 text-red-400 border-red-500/30",
-  };
-  return (
-    <span className={`text-xs px-2 py-1 rounded-full border ${styles[status]}`}>
-      {status}
-    </span>
-  );
-}
-
-      
-                        
- 
