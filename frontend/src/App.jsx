@@ -8,7 +8,7 @@ import FilmDetail from './pages/film_detail.jsx';
 import Dashboard from './pages/dashboard.jsx';
 import SubmissionForm from './pages/SubmissionForm.jsx';
 import Header from './components/Header.jsx'; // Import du Header
-// import Footer from './components/Footer.jsx'; // Import du Footer
+import Footer from './components/Footer.jsx'; // Import du Footer
 import './App.css';
 
 function App() { 
@@ -16,7 +16,7 @@ function App() {
     <div className="App flex flex-col min-h-screen">
       <Header /> {/* S'affiche sur toutes les pages */}
       
-      <main className="flex-grow App">
+      <main className="flex-grow">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/galerie" element={<Galerie />} />
@@ -27,7 +27,7 @@ function App() {
         </Routes>
       </main>
 
-      {/* <Footer /> S'affiche sur toutes les pages */}
+      <Footer /> {/* S'affiche sur toutes les pages */}
     </div>
   )
 }
