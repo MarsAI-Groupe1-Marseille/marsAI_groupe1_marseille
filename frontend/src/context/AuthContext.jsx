@@ -9,16 +9,33 @@ export const AuthProvider = ({ children }) => {
 
   // Récupérer l'user depuis localStorage au montage
   useEffect(() => {
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (error) {
-        console.error('Erreur parsing user:', error);
-        localStorage.removeItem('user');
+    const initAuth = async () => {
+      const savedUser = localStorage.getItem('user');
+      if (savedUser) {
+        try {
+          setUser(JSON.parse(savedUser));
+          setLoading(false);
+          return;
+        } catch (error) {
+          console.error('Erreur parsing user:', error);
+          localStorage.removeItem('user');
+        }
       }
-    }
-    setLoading(false);
+
+      try {
+        const response = await axios.get('/auth/me');
+        if (response?.data) {
+          localStorage.setItem('user', JSON.stringify(response.data));
+          setUser(response.data);
+        }
+      } catch (error) {
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initAuth();
   }, []);
 
   const login = async (email, password) => {

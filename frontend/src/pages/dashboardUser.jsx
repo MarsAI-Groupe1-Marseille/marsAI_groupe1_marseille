@@ -311,10 +311,10 @@ export default function UsersDashboard() {
                 </form>
             )}
             <section className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden">
-                <div className="grid grid-cols-4 gap-4 p-4 text-sm text-neutral-400 border-b border-neutral-800">
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 p-4 text-sm text-neutral-400 border-b border-neutral-800">
                     <span>Utilisateur</span>
-                    <span>Rôle</span>
-                    <span className="col-span-2 text-right">Actions</span>
+                    <span className="text-left sm:text-center">Rôle</span>
+                    <span className="col-span-1 sm:col-span-2 text-left sm:text-right">Actions</span>
                 </div>
 
                 {usersList.map((user) => (

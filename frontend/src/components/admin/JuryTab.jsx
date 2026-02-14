@@ -28,6 +28,7 @@ const INITIAL_JURY_MEMBERS = [
     rejected: 3,
     pending: 0
   }
+  
 ];
 
 export default function JuryTab() {

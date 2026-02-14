@@ -61,20 +61,8 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-neutral-950 text-white">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-neutral-950 border-b border-neutral-800 py-6 px-8 shadow-lg">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-violet-400">👥 Gestion des jurys</h1>
-          <div className="flex gap-6 items-center">
-            <span className="text-sm text-neutral-400 bg-neutral-900 px-4 py-2 rounded-lg">{adminUser?.full_name || 'Admin'}</span>
-            <button 
-              className="bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 text-white px-4 py-2 rounded-lg font-semibold transition"
-              onClick={() => {
-                localStorage.removeItem('token');
-                window.location.href = '/';
-              }}
-            >
-              Déconnexion
-            </button>
-          </div>
+        <div className="max-w-7xl mx-auto flex justify-center items-center">
+          <h1 className="text-3xl font-bold text-violet-400">👥 Gestion des jurys</h1>         
         </div>
       </header>
 
