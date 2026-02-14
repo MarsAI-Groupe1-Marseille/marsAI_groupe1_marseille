@@ -109,7 +109,7 @@ const Galerie = () => {
         // Construction des paramètres de requête
         const params = new URLSearchParams({
           page: currentPage,
-          limit: 8, // Nombre de films par page
+          limit: 12, // Nombre de films par page
           lang: language // Langue pour le filtre
         })
         
