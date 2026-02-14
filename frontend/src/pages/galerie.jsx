@@ -282,7 +282,13 @@ const Galerie = () => {
                 {/* AFFICHAGE DU POSTER - TOUJOURS AFFICHER LE CONTENEUR */}
                 <div className="film-poster">
                   <img 
-                    src={film.poster_url ? `${import.meta.env.VITE_API_URL}${film.poster_url}` : "https://placehold.co/300x450?text=Pas+d'affiche"} 
+                    src={
+                    film.poster_url 
+                      ? (film.poster_url.startsWith('http') 
+                          ? film.poster_url 
+                          : `${import.meta.env.VITE_API_URL}${film.poster_url}`)
+                      : "https://placehold.co/300x450?text=Pas+d'affiche"
+                  }
                     alt={film.title_original} 
                     onError={(e) => {
                       // Image de remplacement si le poster ne charge pas
