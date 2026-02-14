@@ -41,22 +41,50 @@ const storage = multerS3({
     }
 });
 
-// 3. FILTRE DES FICHIERS (On garde ta logique actuelle 🛡️)
+// 3. FILTRE DES FICHIERS (On garde ta logique actuelle )
 const fileFilter = (req, file, cb) => {
+    // Liste précise des types MIME autorisés par le client
+    const allowedVideoTypes = [
+        'video/mp4', 
+        'video/quicktime',     // Pour le .MOV
+        'video/x-msvideo',     // Pour le .AVI
+        'video/x-matroska'     // Optionnel: .MKV (souvent utilisé en IA)
+    ];
+    
+    const allowedImageTypes = [
+        'image/jpeg', 
+        'image/jpg', 
+        'image/png', 
+        'image/webp'
+    ];
+
+    // A. Validation Vidéos
     if (file.fieldname === 'video_file') {
-        if (file.mimetype.startsWith('video/')) cb(null, true);
-        else cb(new Error('Format vidéo invalide.'), false);
+        if (allowedVideoTypes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Format vidéo invalide (MP4, MOV, AVI acceptés).'), false);
+        }
     } 
+    // B. Validation Images (Poster, Galerie, Avatar)
     else if (file.fieldname === 'poster_file' || file.fieldname === 'gallery_files' || file.fieldname === 'avatar') {
-        if (file.mimetype.startsWith('image/')) cb(null, true);
-        else cb(new Error('Format image invalide.'), false);
+        if (allowedImageTypes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Format image invalide (JPG, PNG, WEBP acceptés).'), false);
+        }
     }
+    // C. Validation Sous-titres
     else if (file.fieldname === 'subtitle_file') {
-        if (file.originalname.match(/\.(srt|vtt|txt)$/)) cb(null, true);
-        else cb(new Error('Format sous-titre invalide.'), false);
+        // Pour les sous-titres, l'extension est plus fiable que le mimetype
+        if (file.originalname.match(/\.(srt|vtt|txt)$/)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Format sous-titre invalide (SRT, VTT, TXT acceptés).'), false);
+        }
     } 
     else {
-        cb(null, true);
+        cb(new Error('Champ de fichier non autorisé.'), false);
     }
 };
 

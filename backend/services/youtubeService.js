@@ -83,3 +83,46 @@ exports.uploadVideoToYoutube = async (s3Key, title, description) => {
         throw error;
     }
 };
+
+/**
+ * Upload des sous-titres pour une vidéo déjà existante sur YouTube
+ */
+exports.uploadSubtitlesToYoutube = async (youtubeId, s3Key, language = 'fr') => {
+    try {
+        const youtube = google.youtube({ version: 'v3', auth: oauth2Client });
+
+        const getObjectParams = {
+            Bucket: process.env.SCALEWAY_BUCKET_NAME,
+            Key: s3Key,
+        };
+
+        const { Body } = await s3Client.send(new GetObjectCommand(getObjectParams));
+
+        // On force un code ISO propre (ex: si on reçoit 'Francais', on met 'fr')
+        // YouTube est très strict : 'fr', 'en', 'es', etc.
+        const isoLanguage = language.toLowerCase().substring(0, 2); 
+
+        console.log(`Envoi des sous-titres (${isoLanguage}) pour la vidéo : ${youtubeId}`);
+
+        await youtube.captions.insert({
+            part: 'snippet',
+            requestBody: {
+                snippet: {
+                    videoId: youtubeId,
+                    language: isoLanguage, // Utilise 'fr' au lieu de 'Francais'
+                    name: 'Original',      // Un nom simple sans caractères spéciaux
+                    isDefault: true
+                }
+            },
+            media: {
+                mimeType: 'text/vtt', // Ou 'application/octet-stream' si c'est du .srt
+                body: Body
+            }
+        });
+
+        console.log("Sous-titres ajoutés avec succès sur YouTube !");
+    } catch (error) {
+        console.error("Erreur lors de l'ajout des sous-titres :", 
+            error.response?.data?.error || error.message);
+    }
+};

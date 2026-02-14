@@ -1,5 +1,5 @@
 const { Submission, Director, Collaborator } = require('../models');
-const { uploadVideoToYoutube } = require('../services/youtubeService');
+const { uploadVideoToYoutube,uploadSubtitlesToYoutube } = require('../services/youtubeService');
 const { Op } = require('sequelize'); 
 const fs = require('fs');
 const crypto = require('crypto'); // C'est natif dans Node.js
@@ -78,6 +78,19 @@ exports.createSubmission = async (req, res) => {
                 req.body.title_original, 
                 req.body.synopsis_original
             );
+
+            // SI un fichier de sous-titres a été fourni, on l'envoie
+            if (subtitleFile && youtubeId) {
+                // On l'envoie de manière asynchrone (sans attendre pour ne pas ralentir la réponse client)
+                // Ou avec un petit délai car YouTube a besoin de quelques secondes pour créer l'entrée vidéo
+                setTimeout(async () => {
+                    try {
+                        await uploadSubtitlesToYoutube(youtubeId, subtitleFile.key, req.body.language_main || 'fr');
+                    } catch (err) {
+                        console.error("Échec envoi sous-titres:", err);
+                    }
+                }, 5000); // 5 secondes de délai par sécurité
+}
         }
 
         // --- ÉTAPE 3 : PRÉPARATION GALERIE ---
