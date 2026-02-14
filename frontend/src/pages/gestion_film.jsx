@@ -482,7 +482,13 @@ export default function GestionFilms() {
                           <div className="w-16 h-20 rounded overflow-hidden bg-neutral-800 flex items-center justify-center">
                             {f.posterUrl ? (
                               <img 
-                                src={`http://localhost:3000${f.posterUrl}`} 
+                                src={
+                                f.posterUrl 
+                                  ? (f.posterUrl.startsWith('http') 
+                                      ? f.posterUrl 
+                                      : `${import.meta.env.VITE_API_URL}${f.posterUrl}`)
+                                  : "https://placehold.co/300x450?text=Pas+d'affiche"
+                              } 
                                 alt={f.titre}
                                 className="w-full h-full object-cover"
                                 onError={(e) => {
