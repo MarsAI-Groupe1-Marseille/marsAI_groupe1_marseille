@@ -12,35 +12,7 @@ const Home = () => {
     return (
         <div className="min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-violet-950 selection:text-white">
 
-            {/* --- NAV BAR SIMPLE --- */}
-            <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-slate-950/80 backdrop-blur-md">
-                {/* On utilise max-w-7xl pour s'aligner exactement sur tes sections du bas */}
-                <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-
-                    {/* LOGO */}
-                    <div className="flex-shrink-0 text-xl font-black text-white tracking-tighter">
-                        MARS <span className="text-violet-500">AI</span>
-                    </div>
-
-                    {/* LIENS - Centrés ou à droite selon ton choix */}
-                    <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-400">
-                        <a href="#accueil" className="hover:text-white transition">Accueil</a>
-                        <a href="#categories" className="hover:text-white transition">Catégories</a>
-                        <a href="#awards" className="hover:text-white transition">Awards</a>
-                        <a href="#partenaires" className="hover:text-white transition">Partenaires</a>
-                    </div>
-
-                    {/* BOUTON ACTION */}
-                    <div className="flex-shrink-0">
-                        <button className="bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-lg text-sm font-semibold transition border border-white/10">
-                            Connexion
-                        </button>
-                    </div>
-
-                </div>
-            </nav>
-
-            <main className="pt-20">
+              <main className="pt-20">
                 {/* HERO SECTION */}
                 <section id="accueil" className="relative py-32 lg:py-48 flex flex-col items-center text-center px-4 overflow-hidden">
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-orange-600/20 rounded-full blur-[100px] -z-10"></div>
