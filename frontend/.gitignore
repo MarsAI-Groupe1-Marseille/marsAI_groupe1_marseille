@@ -11,6 +11,17 @@ node_modules
 dist
 dist-ssr
 *.local
+.env
+.env.example
+.env.*.local
+.cache
+.next
+.gitkeep
+
+# Environment variables
+.env
+.env.local
+.env.*.local
 
 # Editor directories and files
 .vscode/*
