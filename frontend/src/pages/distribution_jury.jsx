@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Shield, Mail } from 'lucide-react';
 
 // Import du composant Jury
 import JuryTab from '../components/admin/JuryTab';
@@ -59,15 +60,38 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-neutral-950 text-white">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-neutral-950 border-b border-neutral-800 py-6 px-8 shadow-lg">
-        <div className="max-w-7xl mx-auto flex justify-center items-center">
-          <h1 className="text-3xl font-bold text-violet-400">👥 Gestion des jurys</h1>         
-        </div>
-      </header>
-
       {/* Content */}
-      <main className="max-w-7xl mx-auto py-8 px-8">
+      <main className="p-9 min-h-screen">
+        {/* Top Bar */}
+        <div className="flex items-center justify-between mb-7">
+          <div className="flex items-center gap-2">
+            <Shield size={16} className="text-violet-400" />
+            <span className="text-xs text-neutral-400 uppercase tracking-widest font-semibold">
+              Back-Office Officiel
+            </span>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="text-right">
+              <div className="text-sm font-bold text-neutral-200 uppercase tracking-wide">{adminUser?.full_name || 'Administrateur'}</div>
+              <div className="flex items-center gap-1 text-xs text-neutral-400">
+                <Mail size={12} />
+                {adminUser?.email || 'admin@email.com'}
+              </div>
+            </div>
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-600 to-violet-800 flex items-center justify-center font-bold text-sm shadow-lg border border-violet-500/50">
+              {adminUser?.full_name?.charAt(0).toUpperCase() || 'A'}
+            </div>
+          </div>
+        </div>
+
+        {/* Page Title */}
+        <div className="mb-8">
+          <span className="text-xs text-violet-400 uppercase tracking-widest font-bold">Admin Management</span>
+          <h1 className="text-5xl font-bold text-white mb-2">GESTION DES JURYS</h1>
+          <p className="text-neutral-400 text-sm">Gérez les lots de visionnage pour chaque membre du comité.</p>
+        </div>
+
+        {/* Content */}
         <JuryTab />
       </main>
     </div>
