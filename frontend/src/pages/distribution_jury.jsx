@@ -87,7 +87,7 @@ export default function AdminDashboard() {
         {/* Page Title */}
         <div className="mb-8">
           <span className="text-xs text-violet-400 uppercase tracking-widest font-bold">Admin Management</span>
-          <h1 className="text-5xl font-bold text-white mb-2">GESTION DES JURYS</h1>
+          <h1 className="text-5xl font-bold text-white mb-2">GESTION JURYS</h1>
           <p className="text-neutral-400 text-sm">Gérez les lots de visionnage pour chaque membre du comité.</p>
         </div>
 

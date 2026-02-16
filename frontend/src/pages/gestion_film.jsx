@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import axios from '../config/axiosConfig';
-import { Search, ChevronRight, ChevronLeft, Check, X, Clock, Globe, Users, LayoutDashboard, Film as FilmIcon, BarChart3, Calendar, Settings } from "lucide-react";
+import { Search, ChevronRight, ChevronLeft, Check, X, Clock, Globe, Users, LayoutDashboard, Film as FilmIcon, BarChart3, Calendar, Settings, Shield, Mail } from "lucide-react";
 
 /* ─────────────────────────── DONNÉES ─────────────────────────── */
 const INITIAL_FILMS = [
@@ -233,7 +233,20 @@ export default function GestionFilms() {
   const [selectedFilm, setSelectedFilm] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [toast, setToast]         = useState({ visible: false, msg: "", color: "#4f8ef7" });
+  const [adminUser, setAdminUser] = useState(null);
   const toastTimer                = useRef(null);
+
+  // Récupérer l'admin user depuis localStorage
+  useEffect(() => {
+    try {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        setAdminUser(JSON.parse(userStr));
+      }
+    } catch (error) {
+      console.error('Erreur récupération admin:', error);
+    }
+  }, []);
 
   // Debounce pour la recherche
   useEffect(() => {
@@ -376,15 +389,23 @@ export default function GestionFilms() {
 
         {/* Top Bar */}
         <div className="flex items-center justify-between mb-7">
-          <span className="text-xs text-neutral-400 uppercase tracking-widest">
-            Back-Office Officiel
-          </span>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Shield size={16} className="text-violet-400" />
+            <span className="text-xs text-neutral-400 uppercase tracking-widest font-semibold">
+              Back-Office Officiel
+            </span>
+          </div>
+          <div className="flex items-center gap-4">
             <div className="text-right">
-              <div className="text-sm font-bold text-neutral-200 uppercase tracking-wide">Administrateur</div>
-              <div className="text-xs text-violet-400">admin@email.com</div>
+              <div className="text-sm font-bold text-neutral-200 uppercase tracking-wide">{adminUser?.full_name || 'Administrateur'}</div>
+              <div className="flex items-center gap-1 text-xs text-neutral-400">
+                <Mail size={12} />
+                {adminUser?.email || 'admin@email.com'}
+              </div>
             </div>
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-600 to-violet-800 flex items-center justify-center font-bold text-sm">A</div>
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-600 to-violet-800 flex items-center justify-center font-bold text-sm shadow-lg border border-violet-500/50">
+              {adminUser?.full_name?.charAt(0).toUpperCase() || 'A'}
+            </div>
           </div>
         </div>
 
