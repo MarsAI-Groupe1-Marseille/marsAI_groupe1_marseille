@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Plus, Trash2, Save, Sparkles } from "lucide-react";
+import { Plus, Trash2, Save, Sparkles, ChevronLeft, ChevronRight, X } from "lucide-react";
 
 /**
  * ============================================================
@@ -25,6 +25,31 @@ export default function CompetitionAnimation() {
     { id: 3, title: "Le Dernier Algorithme", duration: "25 min" },
     { id: 4, title: "L'Aube des IA", duration: "14 min" },
     { id: 5, title: "Deepfake History", duration: "22 min" },
+    { id: 6, title: "Neural Dreams", duration: "18 min" },
+    { id: 7, title: "Code Noir", duration: "20 min" },
+    { id: 8, title: "Digital Soul", duration: "16 min" },
+    { id: 9, title: "Quantum Leap", duration: "23 min" },
+    { id: 10, title: "Synthétique", duration: "17 min" },
+    { id: 11, title: "Virtual Reality", duration: "19 min" },
+    { id: 12, title: "Binary Heart", duration: "21 min" },
+    { id: 13, title: "Algorithm's End", duration: "24 min" },
+    { id: 14, title: "Future Memories", duration: "13 min" },
+    { id: 15, title: "Electric Dreams", duration: "26 min" },
+    { id: 16, title: "Neon Genesis", duration: "15 min" },
+    { id: 17, title: "Data Fortress", duration: "28 min" },
+    { id: 18, title: "Cloud Nine", duration: "11 min" },
+    { id: 19, title: "Silicon Valley", duration: "19 min" },
+    { id: 20, title: "Pixel Paradise", duration: "22 min" },
+    { id: 21, title: "Hologram Heart", duration: "17 min" },
+    { id: 22, title: "Tech Noir", duration: "25 min" },
+    { id: 23, title: "Cyber Ghost", duration: "20 min" },
+    { id: 24, title: "Digital Sunrise", duration: "14 min" },
+    { id: 25, title: "Machine Learning", duration: "23 min" },
+    { id: 26, title: "Virtual Worlds", duration: "27 min" },
+    { id: 27, title: "Synthetic Love", duration: "18 min" },
+    { id: 28, title: "Code Genesis", duration: "21 min" },
+    { id: 29, title: "Digital Evolution", duration: "16 min" },
+    { id: 30, title: "The Last Server", duration: "29 min" },
   ]);
 
   // ========================================================================
@@ -47,6 +72,31 @@ export default function CompetitionAnimation() {
     { id: 3, name: "Alice Wonder", role: "Critique" },
     { id: 4, name: "Bob Sponge", role: "Monteur" },
     { id: 5, name: "Claire Dupré", role: "Directrice Photo" },
+    { id: 6, name: "Marc Verdier", role: "Scénariste" },
+    { id: 7, name: "Nathalie Blanc", role: "Sound Designer" },
+    { id: 8, name: "Pierre Noir", role: "Colour Grader" },
+    { id: 9, name: "Elisabeth Rouge", role: "Compositeur" },
+    { id: 10, name: "Thomas Vert", role: "Directeur Artistique" },
+    { id: 11, name: "Isabelle Gris", role: "Productrice Exécutive" },
+    { id: 12, name: "Laurent Bleu", role: "Chef Opérateur" },
+    { id: 13, name: "Véronique Orange", role: "Montreuse" },
+    { id: 14, name: "Nicolas Jaune", role: "Directeur Animation" },
+    { id: 15, name: "Marie Violet", role: "Superviseuse VFX" },
+    { id: 16, name: "Antoine Rose", role: "Producteur Délégué" },
+    { id: 17, name: "Charlotte Turquoise", role: "Réalisatrice VFX" },
+    { id: 18, name: "David Indigo", role: "Directeur Technique" },
+    { id: 19, name: "Sandrine Marron", role: "Modératrice" },
+    { id: 20, name: "Fabrice Beige", role: "Consultant Créatif" },
+    { id: 21, name: "Coralie Magenta", role: "Responsable Post-Production" },
+    { id: 22, name: "Olivier Crimson", role: "Directeur de Production" },
+    { id: 23, name: "Amélie Khaki", role: "Responsable Casting" },
+    { id: 24, name: "Raphaël Cyan", role: "Expert Animation" },
+    { id: 25, name: "Sylvie Pourpre", role: "Consultante Qualité" },
+    { id: 26, name: "Benoît Gris Bleu", role: "Directeur Musical" },
+    { id: 27, name: "Emmanuelle Corail", role: "Responsable Édition" },
+    { id: 28, name: "Frédéric Or", role: "Chef de Plateau" },
+    { id: 29, name: "Valérie Argent", role: "Directrice Exécutive" },
+    { id: 30, name: "Xavier Bronze", role: "Expert Certification" },
   ]);
 
   
@@ -58,6 +108,32 @@ export default function CompetitionAnimation() {
     { id: 1, name: "Alice Wonder", role: "Expert Animation" },
     { id: 2, name: "Bob Sponge", role: "Critique Cinéma" },
   ]);
+
+  // ========================================================================
+  // ÉTAT 5: PAGINATION
+  // ========================================================================
+  // Gestion de la pagination pour films et jurés
+  const itemsPerPage = 6;
+  const [currentPageFilmsAvailable, setCurrentPageFilmsAvailable] = useState(0);
+  const [currentPageFilmsSelected, setCurrentPageFilmsSelected] = useState(0);
+  const [currentPageJurorsAvailable, setCurrentPageJurorsAvailable] = useState(0);
+  const [currentPageJurorsAssigned, setCurrentPageJurorsAssigned] = useState(0);
+
+  // ========================================================================
+  // FONCTION: paginate() - Utilitaire pour calculer les items paginés
+  // ========================================================================
+  // Retourne une slice des items selon la page actuelle et le nombre par page
+  const paginate = (dataArray, pageNumber) => {
+    const startIdx = pageNumber * itemsPerPage;
+    return dataArray.slice(startIdx, startIdx + itemsPerPage);
+  };
+
+  // ========================================================================
+  // FONCTION: getTotalPages() - Calcule le nombre total de pages
+  // ========================================================================
+  const getTotalPages = (dataArray) => {
+    return Math.ceil(dataArray.length / itemsPerPage);
+  };
 
   // ========================================================================
   // FONCTION: handleAddFilm()
@@ -131,10 +207,29 @@ export default function CompetitionAnimation() {
     <div className="min-h-screen bg-neutral-950 py-10 px-6">
       <div className="max-w-7xl mx-auto space-y-10">
         {/* HEADER SECTION */}
-        <header>
-          <span className="text-xs text-neutral-400 uppercase tracking-widest">
-            Espace Administrateur
-          </span>
+        <header className="bg-neutral-900 border border-neutral-800 rounded-xl p-8">
+          {/* Titre avec émoji */}
+          <div className="flex items-center gap-4 mb-3">
+            <span className="text-5xl">🎬</span>
+            <h1 className="text-4xl font-bold text-white">Compétition Animation</h1>
+          </div>
+          
+          {/* Sous-titre */}
+          <p className="text-neutral-400 mb-6 ml-16">
+            Gérez les films sélectionnés et les jurés assignés pour cette catégorie
+          </p>
+          
+          {/* Boutons d'action */}
+          <div className="flex gap-4 ml-16">
+            <button className="flex items-center gap-2 px-6 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-200 rounded-lg font-medium transition">
+              <X size={18} />
+              Annuler
+            </button>
+            <button className="flex items-center gap-2 px-6 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-lg font-medium transition">
+              <Save size={18} />
+              Sauvegarder
+            </button>
+          </div>
         </header>
 
         
@@ -165,8 +260,8 @@ export default function CompetitionAnimation() {
                 <div className="border border-neutral-800 rounded-lg bg-neutral-800/50 divide-y divide-neutral-700 overflow-hidden">
                   {/* SI des films sont disponibles, afficher chacun */}
                   {films.length > 0 ? (
-                    // .map() = boucle sur chaque film du tableau
-                    films.map((film) => (
+                    // .map() = boucle sur chaque film du tableau paginé
+                    paginate(films, currentPageFilmsAvailable).map((film) => (
                       // Key = identifiant unique pour React (id du film)
                       <div
                         key={film.id}
@@ -196,6 +291,28 @@ export default function CompetitionAnimation() {
                     </div>
                   )}
                 </div>
+                {/* PAGINATION pour Films Disponibles */}
+                {films.length > itemsPerPage && (
+                  <div className="mt-4 flex items-center justify-between">
+                    <button
+                      onClick={() => setCurrentPageFilmsAvailable(Math.max(0, currentPageFilmsAvailable - 1))}
+                      disabled={currentPageFilmsAvailable === 0}
+                      className="p-2 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition"
+                    >
+                      <ChevronLeft size={18} />
+                    </button>
+                    <span className="text-neutral-400 text-sm">
+                      Page {currentPageFilmsAvailable + 1} / {getTotalPages(films)}
+                    </span>
+                    <button
+                      onClick={() => setCurrentPageFilmsAvailable(Math.min(getTotalPages(films) - 1, currentPageFilmsAvailable + 1))}
+                      disabled={currentPageFilmsAvailable >= getTotalPages(films) - 1}
+                      className="p-2 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition"
+                    >
+                      <ChevronRight size={18} />
+                    </button>
+                  </div>
+                )}
               </div>
 
 {/* ============================================================
@@ -210,8 +327,8 @@ export default function CompetitionAnimation() {
                 <div className="border border-neutral-800 rounded-lg bg-neutral-800/50 divide-y divide-neutral-700 overflow-hidden">
                   {/* SI des films sont sélectionnés, afficher chacun */}
                   {selectedFilms.length > 0 ? (
-                    // .map() = boucle sur chaque film sélectionné
-                    selectedFilms.map((film) => (
+                    // .map() = boucle sur chaque film sélectionné paginé
+                    paginate(selectedFilms, currentPageFilmsSelected).map((film) => (
                       <div
                         key={film.id}
                         className="flex items-center justify-between px-4 py-3 hover:bg-neutral-700 transition group"
@@ -238,6 +355,28 @@ export default function CompetitionAnimation() {
                     </div>
                   )}
                 </div>
+                {/* PAGINATION pour Films Sélectionnés */}
+                {selectedFilms.length > itemsPerPage && (
+                  <div className="mt-4 flex items-center justify-between">
+                    <button
+                      onClick={() => setCurrentPageFilmsSelected(Math.max(0, currentPageFilmsSelected - 1))}
+                      disabled={currentPageFilmsSelected === 0}
+                      className="p-2 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition"
+                    >
+                      <ChevronLeft size={18} />
+                    </button>
+                    <span className="text-neutral-400 text-sm">
+                      Page {currentPageFilmsSelected + 1} / {getTotalPages(selectedFilms)}
+                    </span>
+                    <button
+                      onClick={() => setCurrentPageFilmsSelected(Math.min(getTotalPages(selectedFilms) - 1, currentPageFilmsSelected + 1))}
+                      disabled={currentPageFilmsSelected >= getTotalPages(selectedFilms) - 1}
+                      className="p-2 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition"
+                    >
+                      <ChevronRight size={18} />
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -269,8 +408,8 @@ export default function CompetitionAnimation() {
                 <div className="border border-neutral-800 rounded-lg bg-neutral-800/50 divide-y divide-neutral-700 overflow-hidden">
                   {/* SI des jurés disponibles existent */}
                   {jurors.length > 0 ? (
-                    // Boucle sur chaque juré non assigné
-                    jurors.map((juror) => (
+                    // Boucle sur chaque juré non assigné paginé
+                    paginate(jurors, currentPageJurorsAvailable).map((juror) => (
                       <div
                         key={juror.id}
                         className="flex items-center justify-between px-4 py-3 hover:bg-neutral-700 transition group"
@@ -307,6 +446,28 @@ export default function CompetitionAnimation() {
                     </div>
                   )}
                 </div>
+                {/* PAGINATION pour Jurés Disponibles */}
+                {jurors.length > itemsPerPage && (
+                  <div className="mt-4 flex items-center justify-between">
+                    <button
+                      onClick={() => setCurrentPageJurorsAvailable(Math.max(0, currentPageJurorsAvailable - 1))}
+                      disabled={currentPageJurorsAvailable === 0}
+                      className="p-2 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition"
+                    >
+                      <ChevronLeft size={18} />
+                    </button>
+                    <span className="text-neutral-400 text-sm">
+                      Page {currentPageJurorsAvailable + 1} / {getTotalPages(jurors)}
+                    </span>
+                    <button
+                      onClick={() => setCurrentPageJurorsAvailable(Math.min(getTotalPages(jurors) - 1, currentPageJurorsAvailable + 1))}
+                      disabled={currentPageJurorsAvailable >= getTotalPages(jurors) - 1}
+                      className="p-2 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition"
+                    >
+                      <ChevronRight size={18} />
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* ============================================================
@@ -321,8 +482,8 @@ export default function CompetitionAnimation() {
                 <div className="border border-neutral-800 rounded-lg bg-neutral-800/50 divide-y divide-neutral-700 overflow-hidden">
                   {/* SI des jurés assignés existent */}
                   {assignedJurors.length > 0 ? (
-                    // Boucle sur chaque juré assigné
-                    assignedJurors.map((juror) => (
+                    // Boucle sur chaque juré assigné paginé
+                    paginate(assignedJurors, currentPageJurorsAssigned).map((juror) => (
                       <div
                         key={juror.id}
                         className="flex items-center justify-between px-4 py-3 hover:bg-neutral-700 transition group"
@@ -356,6 +517,113 @@ export default function CompetitionAnimation() {
                       Aucun juré assigné
                     </div>
                   )}
+                </div>
+                {/* PAGINATION pour Jurés Assignés */}
+                {assignedJurors.length > itemsPerPage && (
+                  <div className="mt-4 flex items-center justify-between">
+                    <button
+                      onClick={() => setCurrentPageJurorsAssigned(Math.max(0, currentPageJurorsAssigned - 1))}
+                      disabled={currentPageJurorsAssigned === 0}
+                      className="p-2 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition"
+                    >
+                      <ChevronLeft size={18} />
+                    </button>
+                    <span className="text-neutral-400 text-sm">
+                      Page {currentPageJurorsAssigned + 1} / {getTotalPages(assignedJurors)}
+                    </span>
+                    <button
+                      onClick={() => setCurrentPageJurorsAssigned(Math.min(getTotalPages(assignedJurors) - 1, currentPageJurorsAssigned + 1))}
+                      disabled={currentPageJurorsAssigned >= getTotalPages(assignedJurors) - 1}
+                      className="p-2 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition"
+                    >
+                      <ChevronRight size={18} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ============================================================
+            PAGINATION GLOBALE EN BAS
+            ============================================================ */}
+        <section className="bg-neutral-900 border border-neutral-800 rounded-xl p-8 mt-10">
+          <div className="space-y-6">
+            {/* Titre */}
+            <h3 className="text-lg font-semibold text-white">Résumé de la Pagination</h3>
+            
+            {/* Grille 2x2 des états de pagination */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Films Disponibles */}
+              <div className="bg-neutral-800/50 border border-neutral-700 rounded-lg p-4">
+                <div className="text-neutral-400 text-sm mb-2">Films Disponibles</div>
+                <div className="flex items-center justify-between">
+                  <span className="text-2xl font-bold text-violet-400">{films.length}</span>
+                  <span className="text-neutral-500">
+                    Page {currentPageFilmsAvailable + 1} / {getTotalPages(films)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Films Sélectionnés */}
+              <div className="bg-neutral-800/50 border border-neutral-700 rounded-lg p-4">
+                <div className="text-neutral-400 text-sm mb-2">Films Sélectionnés</div>
+                <div className="flex items-center justify-between">
+                  <span className="text-2xl font-bold text-green-400">{selectedFilms.length}</span>
+                  <span className="text-neutral-500">
+                    Page {currentPageFilmsSelected + 1} / {getTotalPages(selectedFilms)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Jurés Disponibles */}
+              <div className="bg-neutral-800/50 border border-neutral-700 rounded-lg p-4">
+                <div className="text-neutral-400 text-sm mb-2">Jurés Disponibles</div>
+                <div className="flex items-center justify-between">
+                  <span className="text-2xl font-bold text-blue-400">{jurors.length}</span>
+                  <span className="text-neutral-500">
+                    Page {currentPageJurorsAvailable + 1} / {getTotalPages(jurors)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Jurés Assignés */}
+              <div className="bg-neutral-800/50 border border-neutral-700 rounded-lg p-4">
+                <div className="text-neutral-400 text-sm mb-2">Jurés Assignés</div>
+                <div className="flex items-center justify-between">
+                  <span className="text-2xl font-bold text-emerald-400">{assignedJurors.length}</span>
+                  <span className="text-neutral-500">
+                    Page {currentPageJurorsAssigned + 1} / {getTotalPages(assignedJurors)}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Barre de progression globale */}
+            <div className="mt-8 pt-6 border-t border-neutral-700">
+              <div className="text-neutral-400 text-sm mb-3">Progression Globale</div>
+              <div className="space-y-2">
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-neutral-400 w-32">Total Films:</span>
+                  <div className="flex-1 bg-neutral-700 rounded-full h-2 overflow-hidden">
+                    <div 
+                      className="bg-violet-500 h-full transition-all duration-300"
+                      style={{width: `${(films.length + selectedFilms.length) / 60 * 100}%`}}
+                    ></div>
+                  </div>
+                  <span className="text-sm text-neutral-300 w-12">{films.length + selectedFilms.length}/60</span>
+                </div>
+                
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-neutral-400 w-32">Total Jurés:</span>
+                  <div className="flex-1 bg-neutral-700 rounded-full h-2 overflow-hidden">
+                    <div 
+                      className="bg-emerald-500 h-full transition-all duration-300"
+                      style={{width: `${(jurors.length + assignedJurors.length) / 60 * 100}%`}}
+                    ></div>
+                  </div>
+                  <span className="text-sm text-neutral-300 w-12">{jurors.length + assignedJurors.length}/60</span>
                 </div>
               </div>
             </div>
