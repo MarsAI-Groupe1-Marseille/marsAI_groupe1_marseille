@@ -12,15 +12,13 @@ export default function AdminDashboard() {
   useEffect(() => {
     const verifyAdmin = async () => {
       try {
-        const token = localStorage.getItem('token');
         const userStr = localStorage.getItem('user');
         
-        console.log('Token:', token);
         console.log('User:', userStr);
         
         // ✅ VÉRIFICATION LOCALE (Hardcodée)
-        if (!token || !userStr) {
-          console.log('❌ Pas de token, redirection vers login');
+        if (!userStr) {
+          console.log('❌ Pas d\'utilisateur, redirection vers login');
           setLoading(false);
           // window.location.href = '/login';
           return;

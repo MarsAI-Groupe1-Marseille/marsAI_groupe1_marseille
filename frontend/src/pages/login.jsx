@@ -33,8 +33,9 @@ const Connexion = () => {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = "http://localhost:3000/api/auth/google";
-    console.log('Google login');
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    window.location.href = `${apiUrl}/api/auth/google`;
+    console.log('Google login redirect to:', `${apiUrl}/api/auth/google`);
   };
 
  

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import axios from '../config/axiosConfig';
 
 const SubmissionForm = () => {
   const [formData, setFormData] = useState({
@@ -93,7 +93,7 @@ const SubmissionForm = () => {
     data.append('director_social_links', JSON.stringify({ instagram: '', linkedin: '' }));
 
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/submissions`, data, {
+      const response = await axios.post('/submissions', data, {
         headers: { 'Content-Type': 'multipart/form-data' },
         onUploadProgress: (progressEvent) => {
           const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);

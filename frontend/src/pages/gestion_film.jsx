@@ -310,10 +310,10 @@ export default function GestionFilms() {
 
       const response = await axios.get('/submissions', { params });
       
-      const mappedFilms = response.data.data.map(mapFilmData);
+      const mappedFilms = (response.data.data || []).map(mapFilmData);
       setFilms(mappedFilms);
-      setTotalPages(response.data.totalPages);
-      setTotalFilms(response.data.totalItems);
+      setTotalPages(response.data.totalPages || 1);
+      setTotalFilms(response.data.totalItems || 0);
     } catch (error) {
       console.error("Erreur lors de la récupération des films:", error);
       showToast("Erreur lors du chargement des films", "#f05a5a");
