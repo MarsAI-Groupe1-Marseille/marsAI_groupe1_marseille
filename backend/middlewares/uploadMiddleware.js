@@ -1,65 +1,100 @@
+const { S3Client } = require('@aws-sdk/client-s3');
 const multer = require('multer');
+const multerS3 = require('multer-s3');
 const path = require('path');
-const fs = require('fs');
 
-// S'assurer que le dossier d'upload existe, sinon on le crée
-const uploadDir = 'uploads/';
-if (!fs.existsSync(uploadDir)){
-    fs.mkdirSync(uploadDir, { recursive: true });
-}
 
-// 1. CONFIGURATION DU STOCKAGE
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir); // Tous les fichiers vont dans 'uploads/'
-  },
-  filename: (req, file, cb) => {
-    // On nettoie le nom du fichier (enlève les espaces) et on ajoute un timestamp
-    const name = file.originalname.split(' ').join('_').replace(/\.[^/.]+$/, "");
-    const extension = path.extname(file.originalname);
-    cb(null, name + '_' + Date.now() + extension);
-  }
+
+
+// 1. CONFIGURATION DU CLIENT SCALEWAY S3
+const s3 = new S3Client({
+    endpoint: process.env.SCALEWAY_ENDPOINT,
+    region: process.env.SCALEWAY_REGION,
+    credentials: {
+        accessKeyId: process.env.SCALEWAY_ACCESS_KEY,
+        secretAccessKey: process.env.SCALEWAY_SECRET_KEY,
+    }
 });
 
-// 2. FILTRE DES FICHIERS (SÉCURITÉ) 🛡️
+// 2. CONFIGURATION DU STOCKAGE S3
+const storage = multerS3({
+    s3: s3,
+    bucket: process.env.SCALEWAY_BUCKET_NAME,
+    acl: 'public-read', // Permet de lire les images via URL sans signature (OK pour posters/galerie)
+    contentType: multerS3.AUTO_CONTENT_TYPE, // Détecte automatiquement le type MIME (image/jpeg, etc.)
+    key: (req, file, cb) => {
+        // Organisation par dossier dans le bucket
+        let folder = process.env.SCALEWAY_FOLDER || 'uploads';
+        
+        if (file.fieldname === 'video_file') folder += '/videos';
+        else if (file.fieldname === 'poster_file') folder += '/posters';
+        else if (file.fieldname === 'gallery_files') folder += '/gallery';
+        else if (file.fieldname === 'subtitle_file') folder += '/subtitles';
+        else if (file.fieldname === 'avatar') folder += '/avatars';
+
+        // Nettoyage du nom de fichier
+        const name = file.originalname.split(' ').join('_').replace(/\.[^/.]+$/, "");
+        const extension = path.extname(file.originalname);
+        const fileName = `${folder}/${name}_${Date.now()}${extension}`;
+        
+        cb(null, fileName);
+    }
+});
+
+// 3. FILTRE DES FICHIERS (On garde ta logique actuelle )
 const fileFilter = (req, file, cb) => {
-  // A. Vidéos
-  if (file.fieldname === 'video_file') {
-    if (file.mimetype === 'video/mp4' || file.mimetype === 'video/quicktime' || file.mimetype === 'video/x-msvideo') {
-      cb(null, true);
-    } else {
-      cb(new Error('Format vidéo invalide (MP4, MOV, AVI acceptés).'), false);
+    // Liste précise des types MIME autorisés par le client
+    const allowedVideoTypes = [
+        'video/mp4', 
+        'video/quicktime',     // Pour le .MOV
+        'video/x-msvideo',     // Pour le .AVI
+        'video/x-matroska'     // Optionnel: .MKV (souvent utilisé en IA)
+    ];
+    
+    const allowedImageTypes = [
+        'image/jpeg', 
+        'image/jpg', 
+        'image/png', 
+        'image/webp'
+    ];
+
+    // A. Validation Vidéos
+    if (file.fieldname === 'video_file') {
+        if (allowedVideoTypes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Format vidéo invalide (MP4, MOV, AVI acceptés).'), false);
+        }
+    } 
+    // B. Validation Images (Poster, Galerie, Avatar)
+    else if (file.fieldname === 'poster_file' || file.fieldname === 'gallery_files' || file.fieldname === 'avatar') {
+        if (allowedImageTypes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Format image invalide (JPG, PNG, WEBP acceptés).'), false);
+        }
     }
-  } 
-  // B. Images (Affiche + Galerie)
-  else if (file.fieldname === 'poster_file' || file.fieldname === 'gallery_files') {
-    if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png' || file.mimetype === 'image/webp' || file.mimetype === 'image/jpg') {
-      cb(null, true);
-    } else {
-      cb(new Error('Format image invalide (JPG, PNG, WEBP acceptés).'), false);
+    // C. Validation Sous-titres
+    else if (file.fieldname === 'subtitle_file') {
+        // Pour les sous-titres, l'extension est plus fiable que le mimetype
+        if (file.originalname.match(/\.(srt|vtt|txt)$/)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Format sous-titre invalide (SRT, VTT, TXT acceptés).'), false);
+        }
+    } 
+    else {
+        cb(new Error('Champ de fichier non autorisé.'), false);
     }
-  }
-  // C. Sous-titres
-  else if (file.fieldname === 'subtitle_file') {
-    // Les sous-titres sont souvent 'application/x-subrip', 'text/vtt' ou simplement 'text/plain'
-    if (file.originalname.match(/\.(srt|vtt|txt)$/)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Format sous-titre invalide (SRT, VTT acceptés).'), false);
-    }
-  } 
-  else {
-    cb(new Error('Champ de fichier inconnu.'), false);
-  }
 };
 
-// 3. INITIALISATION
+// 4. INITIALISATION
 const upload = multer({
-  storage: storage,
-  fileFilter: fileFilter,
-  limits: {
-    fileSize: 1024 * 1024 * 500 // Limite globale à 500MB (à ajuster selon besoin)
-  }
+    storage: storage,
+    fileFilter: fileFilter,
+    limits: {
+        fileSize: 1024 * 1024 * 500 // 500MB
+    }
 });
 
 module.exports = upload;

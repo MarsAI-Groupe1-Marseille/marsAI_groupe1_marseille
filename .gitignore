@@ -1,0 +1,6 @@
+<<<<<<< 4-création-footer
+/.vscode/
+=======
+node_modules/
+.env
+>>>>>>> main
