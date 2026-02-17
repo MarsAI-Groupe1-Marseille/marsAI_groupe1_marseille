@@ -17,6 +17,7 @@ import SubmissionForm from './pages/SubmissionForm.jsx';
 import Forgotpass from './pages/forgotpass.jsx';
 import ResetPassword from './pages/ResetPassword.jsx';
 import NotationJury  from './pages/NotationJury.jsx';
+import Configuration from './pages/Configuration.jsx';
 import NotFound from './pages/NotFound.jsx';
 import { useAuth } from './context/AuthContext.jsx';
 
@@ -30,6 +31,7 @@ function App() {
     "/dashboardUser",
     "/gestion-films",
     "/distribution_jury",
+    "/Configuration",
   ];
 
   const isPrivateRoute =
@@ -96,6 +98,14 @@ function App() {
             element={(
               <ProtectedRoute allowedRoles={["admin", "moderator"]}>
                 <DistributionJury />
+              </ProtectedRoute>
+            )}
+          />
+           <Route
+            path="/configuration"
+            element={(
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <Configuration />
               </ProtectedRoute>
             )}
           />
