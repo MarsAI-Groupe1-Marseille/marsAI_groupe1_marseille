@@ -19,6 +19,7 @@ import ResetPassword from './pages/ResetPassword.jsx';
 import NotationJury  from './pages/NotationJury.jsx';
 import Configuration from './pages/Configuration.jsx';
 import NotFound from './pages/NotFound.jsx';
+import CompetitionAnimation from './pages/competition_animation.jsx';
 import { useAuth } from './context/AuthContext.jsx';
 
 
@@ -32,6 +33,7 @@ function App() {
     "/gestion-films",
     "/distribution_jury",
     "/Configuration",
+    "/competition-animation",
   ];
 
   const isPrivateRoute =
@@ -106,6 +108,14 @@ function App() {
             element={(
               <ProtectedRoute allowedRoles={["admin"]}>
                 <Configuration />
+              </ProtectedRoute>
+            )}
+          />
+          <Route
+            path="/competition-animation"
+            element={(
+              <ProtectedRoute allowedRoles={["admin", "moderator"]}>
+                <CompetitionAnimation />
               </ProtectedRoute>
             )}
           />
