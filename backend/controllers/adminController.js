@@ -111,7 +111,7 @@ exports.createJuryList = async (req, res) => {
         res.status(500).json({ message: "Erreur serveur.", error: error.message });
     }
 };
-
+// Fonction pour ajouter un film à une liste de jury
 exports.addMovieToPlayList = async (req, res) =>{
     try {
         const{jury_list_id ,submission_id} = req.body;
@@ -142,7 +142,7 @@ exports.addMovieToPlayList = async (req, res) =>{
     }
 
 };
-
+// Fonction pour assigner un jury à une liste de jury
 exports.assignedJuryToPlaylist = async (req, res) =>{
     try {
         const{jury_list_id , user_id } = req.body;
