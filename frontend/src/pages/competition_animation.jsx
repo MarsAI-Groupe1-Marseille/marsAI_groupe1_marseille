@@ -136,3 +136,64 @@ export default function CompetitionAnimation() {
             Espace Administrateur
           </span>
         </header>
+
+        
+        {/* ============================================================
+            SECTION 1: GESTION DES FILMS
+            ============================================================
+            Deux colonnes: Films disponibles vs Films sélectionnés
+        */}
+        <section className="mb-8">
+          {/* Card principal avec header dégradé */}
+          <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
+            {/* Header avec fond dégradé violet (from-violet-600 to-violet-800) */}
+            <div className="bg-gradient-to-r from-violet-600 to-violet-800 px-8 py-4">
+              {/* Titre blanc de la section */}
+              <h2 className="text-lg font-bold text-white">1. Sélection des Films</h2>
+            </div>
+            {/* Grille 2 colonnes (1 colonne sur petit écran, 2 sur large) */}
+            <div className="p-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* ============================================================
+                  COLONNE GAUCHE: FILMS DISPONIBLES
+                  ============================================================ */}
+              <div>
+                {/* Titre avec le nombre de films disponibles */}
+                <h3 className="text-md font-semibold text-white mb-4">
+                  Films Disponibles ({films.length})
+                </h3>
+                {/* Conteneur liste: bordure grise, fond semi-transparent, bord inférieur entre items */}
+                <div className="border border-neutral-800 rounded-lg bg-neutral-800/50 divide-y divide-neutral-700 overflow-hidden">
+                  {/* SI des films sont disponibles, afficher chacun */}
+                  {films.length > 0 ? (
+                    // .map() = boucle sur chaque film du tableau
+                    films.map((film) => (
+                      // Key = identifiant unique pour React (id du film)
+                      <div
+                        key={film.id}
+                        className="flex items-center justify-between px-4 py-3 hover:bg-neutral-700 transition cursor-pointer group"
+                      >
+                        {/* Texte: titre + durée */}
+                        <div className="flex-1">
+                          {/* Titre du film en gras */}
+                          <div className="font-medium text-neutral-100">{film.title}</div>
+                          {/* Durée en petit texte gris */}
+                          <div className="text-xs text-neutral-500 mt-1">{film.duration}</div>
+                        </div>
+                        {/* Bouton "+ " pour ajouter le film */}
+                        <button
+                          onClick={() => handleAddFilm(film)}
+                          className="ml-4 p-2 hover:bg-violet-600 rounded text-neutral-400 hover:text-white transition"
+                        >
+                          {/* Icône "+" de lucide-react (18px) */}
+                          <Plus size={18} />
+                        </button>
+                      </div>
+                    ))
+                  ) : (
+                    // SI aucun film disponible, afficher message vide
+                    <div className="px-4 py-6 text-center text-neutral-500">
+                      Tous les films sont sélectionnés
+                    </div>
+                  )}
+                </div>
+              </div>
