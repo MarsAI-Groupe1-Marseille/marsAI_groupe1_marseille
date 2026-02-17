@@ -355,28 +355,26 @@ export default function CompetitionAnimation() {
                     </div>
                   )}
                 </div>
-                {/* PAGINATION pour Films Sélectionnés */}
-                {selectedFilms.length > itemsPerPage && (
-                  <div className="mt-4 flex items-center justify-between">
-                    <button
-                      onClick={() => setCurrentPageFilmsSelected(Math.max(0, currentPageFilmsSelected - 1))}
-                      disabled={currentPageFilmsSelected === 0}
-                      className="p-2 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition"
-                    >
-                      <ChevronLeft size={18} />
-                    </button>
-                    <span className="text-neutral-400 text-sm">
-                      Page {currentPageFilmsSelected + 1} / {getTotalPages(selectedFilms)}
-                    </span>
-                    <button
-                      onClick={() => setCurrentPageFilmsSelected(Math.min(getTotalPages(selectedFilms) - 1, currentPageFilmsSelected + 1))}
-                      disabled={currentPageFilmsSelected >= getTotalPages(selectedFilms) - 1}
-                      className="p-2 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition"
-                    >
-                      <ChevronRight size={18} />
-                    </button>
-                  </div>
-                )}
+                {/* PAGINATION pour Films Sélectionnés - TOUJOURS VISIBLE */}
+                <div className="mt-4 flex items-center justify-between">
+                  <button
+                    onClick={() => setCurrentPageFilmsSelected(Math.max(0, currentPageFilmsSelected - 1))}
+                    disabled={currentPageFilmsSelected === 0}
+                    className="p-2 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition"
+                  >
+                    <ChevronLeft size={18} />
+                  </button>
+                  <span className="text-neutral-400 text-sm">
+                    Page {currentPageFilmsSelected + 1} / {getTotalPages(selectedFilms)}
+                  </span>
+                  <button
+                    onClick={() => setCurrentPageFilmsSelected(Math.min(getTotalPages(selectedFilms) - 1, currentPageFilmsSelected + 1))}
+                    disabled={currentPageFilmsSelected >= getTotalPages(selectedFilms) - 1}
+                    className="p-2 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition"
+                  >
+                    <ChevronRight size={18} />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -518,28 +516,26 @@ export default function CompetitionAnimation() {
                     </div>
                   )}
                 </div>
-                {/* PAGINATION pour Jurés Assignés */}
-                {assignedJurors.length > itemsPerPage && (
-                  <div className="mt-4 flex items-center justify-between">
-                    <button
-                      onClick={() => setCurrentPageJurorsAssigned(Math.max(0, currentPageJurorsAssigned - 1))}
-                      disabled={currentPageJurorsAssigned === 0}
-                      className="p-2 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition"
-                    >
-                      <ChevronLeft size={18} />
-                    </button>
-                    <span className="text-neutral-400 text-sm">
-                      Page {currentPageJurorsAssigned + 1} / {getTotalPages(assignedJurors)}
-                    </span>
-                    <button
-                      onClick={() => setCurrentPageJurorsAssigned(Math.min(getTotalPages(assignedJurors) - 1, currentPageJurorsAssigned + 1))}
-                      disabled={currentPageJurorsAssigned >= getTotalPages(assignedJurors) - 1}
-                      className="p-2 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition"
-                    >
-                      <ChevronRight size={18} />
-                    </button>
-                  </div>
-                )}
+                {/* PAGINATION pour Jurés Assignés - TOUJOURS VISIBLE */}
+                <div className="mt-4 flex items-center justify-between">
+                  <button
+                    onClick={() => setCurrentPageJurorsAssigned(Math.max(0, currentPageJurorsAssigned - 1))}
+                    disabled={currentPageJurorsAssigned === 0}
+                    className="p-2 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition"
+                  >
+                    <ChevronLeft size={18} />
+                  </button>
+                  <span className="text-neutral-400 text-sm">
+                    Page {currentPageJurorsAssigned + 1} / {getTotalPages(assignedJurors)}
+                  </span>
+                  <button
+                    onClick={() => setCurrentPageJurorsAssigned(Math.min(getTotalPages(assignedJurors) - 1, currentPageJurorsAssigned + 1))}
+                    disabled={currentPageJurorsAssigned >= getTotalPages(assignedJurors) - 1}
+                    className="p-2 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition"
+                  >
+                    <ChevronRight size={18} />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -548,87 +544,17 @@ export default function CompetitionAnimation() {
         {/* ============================================================
             PAGINATION GLOBALE EN BAS
             ============================================================ */}
-        <section className="bg-neutral-900 border border-neutral-800 rounded-xl p-8 mt-10">
-          <div className="space-y-6">
-            {/* Titre */}
-            <h3 className="text-lg font-semibold text-white">Résumé de la Pagination</h3>
-            
-            {/* Grille 2x2 des états de pagination */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Films Disponibles */}
-              <div className="bg-neutral-800/50 border border-neutral-700 rounded-lg p-4">
-                <div className="text-neutral-400 text-sm mb-2">Films Disponibles</div>
-                <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold text-violet-400">{films.length}</span>
-                  <span className="text-neutral-500">
-                    Page {currentPageFilmsAvailable + 1} / {getTotalPages(films)}
-                  </span>
-                </div>
-              </div>
-
-              {/* Films Sélectionnés */}
-              <div className="bg-neutral-800/50 border border-neutral-700 rounded-lg p-4">
-                <div className="text-neutral-400 text-sm mb-2">Films Sélectionnés</div>
-                <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold text-green-400">{selectedFilms.length}</span>
-                  <span className="text-neutral-500">
-                    Page {currentPageFilmsSelected + 1} / {getTotalPages(selectedFilms)}
-                  </span>
-                </div>
-              </div>
-
-              {/* Jurés Disponibles */}
-              <div className="bg-neutral-800/50 border border-neutral-700 rounded-lg p-4">
-                <div className="text-neutral-400 text-sm mb-2">Jurés Disponibles</div>
-                <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold text-blue-400">{jurors.length}</span>
-                  <span className="text-neutral-500">
-                    Page {currentPageJurorsAvailable + 1} / {getTotalPages(jurors)}
-                  </span>
-                </div>
-              </div>
-
-              {/* Jurés Assignés */}
-              <div className="bg-neutral-800/50 border border-neutral-700 rounded-lg p-4">
-                <div className="text-neutral-400 text-sm mb-2">Jurés Assignés</div>
-                <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold text-emerald-400">{assignedJurors.length}</span>
-                  <span className="text-neutral-500">
-                    Page {currentPageJurorsAssigned + 1} / {getTotalPages(assignedJurors)}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Barre de progression globale */}
-            <div className="mt-8 pt-6 border-t border-neutral-700">
-              <div className="text-neutral-400 text-sm mb-3">Progression Globale</div>
-              <div className="space-y-2">
-                <div className="flex items-center gap-3">
-                  <span className="text-sm text-neutral-400 w-32">Total Films:</span>
-                  <div className="flex-1 bg-neutral-700 rounded-full h-2 overflow-hidden">
-                    <div 
-                      className="bg-violet-500 h-full transition-all duration-300"
-                      style={{width: `${(films.length + selectedFilms.length) / 60 * 100}%`}}
-                    ></div>
-                  </div>
-                  <span className="text-sm text-neutral-300 w-12">{films.length + selectedFilms.length}/60</span>
-                </div>
-                
-                <div className="flex items-center gap-3">
-                  <span className="text-sm text-neutral-400 w-32">Total Jurés:</span>
-                  <div className="flex-1 bg-neutral-700 rounded-full h-2 overflow-hidden">
-                    <div 
-                      className="bg-emerald-500 h-full transition-all duration-300"
-                      style={{width: `${(jurors.length + assignedJurors.length) / 60 * 100}%`}}
-                    ></div>
-                  </div>
-                  <span className="text-sm text-neutral-300 w-12">{jurors.length + assignedJurors.length}/60</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+        <div className="flex items-center justify-center gap-4 mt-10">
+          <button className="p-2 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white transition">
+            <ChevronLeft size={24} />
+          </button>
+          <span className="text-neutral-400 text-sm px-4">
+            Page 1 / 4
+          </span>
+          <button className="p-2 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white transition">
+            <ChevronRight size={24} />
+          </button>
+        </div>
       </div>
     </div>
   );
