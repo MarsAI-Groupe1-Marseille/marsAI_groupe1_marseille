@@ -1,5 +1,5 @@
 // 1. On importe les modèles nécessaires
-const { sequelize, Submission, ModerationTicket, Director, JuryList, JuryListSubmission } = require('../models');
+const { sequelize, Submission, ModerationTicket, Director, JuryList, JuryListSubmission, JuryMember } = require('../models');
 // 2. On importe le service d'emailing pour envoyer les notifications aux réalisateurs
 const emailService = require('../services/emailService');
 
@@ -130,14 +130,18 @@ exports.addMovieToPlayList = async (req, res) =>{
 
 };
 
-exports.assignedJuryToPLaylist = async (req, res) =>{
+exports.assignedJuryToPlaylist = async (req, res) =>{
     try {
         const{jury_list_id , user_id } = req.body;
         if(!jury_list_id || !user_id){
-            return res.status(400).json({ message: "message: "jurylist_id et submission_id est requis" });
+            return res.status(400).json({ message: "message: "+jury_list_id+" "+" et "+user_id+" "+" est requis" });
         }
+        await JuryMember.create({jury_list_id,user_id});
+        res.status(201).json({ message: "jury avec id:"+user_id+" "+" assigné a la playlist avec id:"+jury_list_id+" "+" créée avec succès." });
+        
     }
     catch(error){
+        console.log('Erreur lors de l\'assignation du jury à la playlist :', error);
 
     }
 };
