@@ -65,6 +65,13 @@ const AdminHeader = () => {
           >
             Jury
           </Link>
+          <Link
+            to="/Configuration"
+            className="mars-btn mars-glow inline-flex items-center justify-center"
+            aria-label="Distribution jury"
+          >
+            Config
+          </Link>
           <button
             type="button"
             onClick={handleLogout}
