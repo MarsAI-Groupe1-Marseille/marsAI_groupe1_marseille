@@ -197,3 +197,171 @@ export default function CompetitionAnimation() {
                   )}
                 </div>
               </div>
+
+{/* ============================================================
+                  COLONNE DROITE: FILMS SÉLECTIONNÉS
+                  ============================================================ */}
+              <div>
+                {/* Titre avec nombre de films sélectionnés */}
+                <h3 className="text-md font-semibold text-white mb-4">
+                  Films Sélectionnés ({selectedFilms.length})
+                </h3>
+                {/* Conteneur liste: même style que la colonne gauche */}
+                <div className="border border-neutral-800 rounded-lg bg-neutral-800/50 divide-y divide-neutral-700 overflow-hidden">
+                  {/* SI des films sont sélectionnés, afficher chacun */}
+                  {selectedFilms.length > 0 ? (
+                    // .map() = boucle sur chaque film sélectionné
+                    selectedFilms.map((film) => (
+                      <div
+                        key={film.id}
+                        className="flex items-center justify-between px-4 py-3 hover:bg-neutral-700 transition group"
+                      >
+                        {/* Texte: titre + durée (même que colonne gauche) */}
+                        <div className="flex-1">
+                          <div className="font-medium text-neutral-100">{film.title}</div>
+                          <div className="text-xs text-neutral-500 mt-1">{film.duration}</div>
+                        </div>
+                        {/* Bouton "X" (Trash icon) pour retirer le film */}
+                        <button
+                          onClick={() => handleRemoveFilm(film.id)}
+                          className="ml-4 p-2 hover:bg-red-900/30 rounded text-neutral-400 hover:text-red-400 transition"
+                        >
+                          {/* Icône "Trash" de lucide-react (18px) = symbole suppression */}
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    ))
+                  ) : (
+                    // SI aucun film sélectionné, afficher message vide
+                    <div className="px-4 py-6 text-center text-neutral-500">
+                      Aucun film sélectionné
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ============================================================
+            SECTION 2: GESTION DES JURÉS
+            ============================================================
+            Même structure que Section 1 mais pour les jurés
+        */}
+        <section>
+          {/* Card principal avec header dégradé (même style que Section 1) */}
+          <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
+            {/* Header dégradé violet */}
+            <div className="bg-gradient-to-r from-violet-600 to-violet-800 px-8 py-4">
+              <h2 className="text-lg font-bold text-white">2. Assignation des Jurés</h2>
+            </div>
+            {/* Grille 2 colonnes (responsive: 1 mobile, 2 desktop) */}
+            <div className="p-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* ============================================================
+                  COLONNE GAUCHE: JURÉS DISPONIBLES
+                  ============================================================ */}
+              <div>
+                {/* Titre avec compteur */}
+                <h3 className="text-md font-semibold text-white mb-4">
+                  Membres Disponibles ({jurors.length})
+                </h3>
+                {/* Conteneur liste */}
+                <div className="border border-neutral-800 rounded-lg bg-neutral-800/50 divide-y divide-neutral-700 overflow-hidden">
+                  {/* SI des jurés disponibles existent */}
+                  {jurors.length > 0 ? (
+                    // Boucle sur chaque juré non assigné
+                    jurors.map((juror) => (
+                      <div
+                        key={juror.id}
+                        className="flex items-center justify-between px-4 py-3 hover:bg-neutral-700 transition group"
+                      >
+                        {/* Flex container pour avatar + infos */}
+                        <div className="flex items-center gap-3 flex-1">
+                          {/* Avatar circulaire: dégradé violet avec initiale du nom */}
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-violet-700 flex items-center justify-center text-white font-semibold text-sm">
+                            {/* Prendre la 1ère lettre du nom (juror.name[0]) */}
+                            {juror.name[0]}
+                          </div>
+                          {/* Infos texte: nom + rôle */}
+                          <div>
+                            {/* Nom du juré en blanc */}
+                            <div className="font-medium text-neutral-100">{juror.name}</div>
+                            {/* Rôle/fonction en gris clair */}
+                            <div className="text-xs text-neutral-500">{juror.role}</div>
+                          </div>
+                        </div>
+                        {/* Bouton "+" pour assigner le juré */}
+                        <button
+                          onClick={() => handleAddJuror(juror)}
+                          className="ml-4 p-2 hover:bg-violet-600 rounded text-neutral-400 hover:text-white transition"
+                        >
+                          {/* Icône "+" */}
+                          <Plus size={18} />
+                        </button>
+                      </div>
+                    ))
+                  ) : (
+                    // Message si tous les jurés sont déjà assignés
+                    <div className="px-4 py-6 text-center text-neutral-500">
+                      Tous les jurés sont assignés
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* ============================================================
+                  COLONNE DROITE: JURÉS ASSIGNÉS
+                  ============================================================ */}
+              <div>
+                {/* Titre avec compteur */}
+                <h3 className="text-md font-semibold text-white mb-4">
+                  Jurés Assignés ({assignedJurors.length})
+                </h3>
+                {/* Conteneur liste */}
+                <div className="border border-neutral-800 rounded-lg bg-neutral-800/50 divide-y divide-neutral-700 overflow-hidden">
+                  {/* SI des jurés assignés existent */}
+                  {assignedJurors.length > 0 ? (
+                    // Boucle sur chaque juré assigné
+                    assignedJurors.map((juror) => (
+                      <div
+                        key={juror.id}
+                        className="flex items-center justify-between px-4 py-3 hover:bg-neutral-700 transition group"
+                      >
+                        {/* Flex container pour avatar + infos (même que colonne gauche) */}
+                        <div className="flex items-center gap-3 flex-1">
+                          {/* Avatar circulaire: dégradé VERT (au lieu de violet) pour montrer qu'il est assigné */}
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center text-white font-semibold text-sm">
+                            {/* Initiale du nom */}
+                            {juror.name[0]}
+                          </div>
+                          {/* Infos: nom + rôle assigné */}
+                          <div>
+                            <div className="font-medium text-neutral-100">{juror.name}</div>
+                            <div className="text-xs text-neutral-500">{juror.role}</div>
+                          </div>
+                        </div>
+                        {/* Bouton "X" pour désassigner le juré */}
+                        <button
+                          onClick={() => handleRemoveJuror(juror.id)}
+                          className="ml-4 p-2 hover:bg-red-900/30 rounded text-neutral-400 hover:text-red-400 transition"
+                        >
+                          {/* Icône "Trash" = supprimer l'assignation */}
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    ))
+                  ) : (
+                    // Message si aucun juré assigné
+                    <div className="px-4 py-6 text-center text-neutral-500">
+                      Aucun juré assigné
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}
