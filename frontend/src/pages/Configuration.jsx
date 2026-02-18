@@ -439,14 +439,22 @@ const Configuration = () => {
     fetchPlaylists()
   }, [])
 
-  const handleDelete = (id) => {
-    // TODO: DELETE /api/playlists/:id
-    setPlaylists(prev => prev.filter(p => p.id !== id))
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`/admin/jury-list/${id}`)
+      setPlaylists(prev => prev.filter(p => p.id !== id))
+    } catch (error) {
+      console.error('Erreur suppression playlist :', error)
+    }
   }
 
-  const handleDeleteMany = (ids) => {
-    // TODO: DELETE /api/playlists { ids }
-    setPlaylists(prev => prev.filter(p => !ids.includes(p.id)))
+  const handleDeleteMany = async (ids) => {
+    try {
+      await axios.delete('/admin/jury-lists', { data: { ids } })
+      setPlaylists(prev => prev.filter(p => !ids.includes(p.id)))
+    } catch (error) {
+      console.error('Erreur suppression playlists :', error)
+    }
   }
 
   return (
