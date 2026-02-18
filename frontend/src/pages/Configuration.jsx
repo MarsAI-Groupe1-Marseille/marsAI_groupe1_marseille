@@ -1,12 +1,6 @@
-import { useState } from 'react'
-
-// ─── Mock Data ───────────────────────────────────────────────────────────────
-
-const MOCK_PLAYLISTS = [
-  { id: 1, name: "Sélection Officielle 2025",  films: 5, jury: 2, status: "active" },
-  { id: 2, name: "Compétition Internationale", films: 4, jury: 5, status: "draft"  },
-  { id: 3, name: "Courts Métrages",            films: 6, jury: 1, status: "draft"  },
-]
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import axios from '../config/axiosConfig.js'
 
 // ─── Icônes SVG ──────────────────────────────────────────────────────────────
 
@@ -95,10 +89,20 @@ const IconTrash = ({ size = 13 }) => (
 const NewPlaylistModal = ({ onClose, onCreate }) => {
   const [name, setName] = useState('')
 
-  const handleSubmit = () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault()
     if (!name.trim()) return
-    // TODO: POST /api/playlists { name }
-    onCreate({ id: Date.now(), name: name.trim(), films: 0, jury: 0, status: 'draft' })
+    const { data } = await axios.post('/admin/jury-list', { name: name.trim() }) 
+    const created = data.juryList
+    console.log("Playlist créée :", name.trim())
+
+    onCreate({
+      id: created?.id || Date.now(),
+      name: created?.name || name.trim(),
+      films: 0,
+      jury: 0,
+      status: 'draft'
+    })
     onClose()
   }
 
@@ -413,17 +417,46 @@ const AssignCard = ({ onClick }) => (
 // ─── Page Configuration ──────────────────────────────────────────────────────
 
 const Configuration = () => {
-  const [playlists, setPlaylists] = useState(MOCK_PLAYLISTS)
+  const navigate = useNavigate()
+  const [playlists, setPlaylists] = useState([])
   const [showModal, setShowModal] = useState(false)
 
-  const handleDelete = (id) => {
-    // TODO: DELETE /api/playlists/:id
-    setPlaylists(prev => prev.filter(p => p.id !== id))
+  useEffect(() => {
+    const fetchPlaylists = async () => {
+      try {
+        const { data } = await axios.get('/admin/jury-lists')
+        const normalized = (data.playlists || []).map(pl => ({
+          id: pl.id,
+          name: pl.name,
+          films: pl.filmsCount || 0,
+          jury: pl.juryCount || 0,
+          status: pl.status || 'draft'
+        }))
+        setPlaylists(normalized)
+      } catch (error) {
+        console.error('Erreur chargement playlists :', error)
+      }
+    }
+
+    fetchPlaylists()
+  }, [])
+
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`/admin/jury-list/${id}`)
+      setPlaylists(prev => prev.filter(p => p.id !== id))
+    } catch (error) {
+      console.error('Erreur suppression playlist :', error)
+    }
   }
 
-  const handleDeleteMany = (ids) => {
-    // TODO: DELETE /api/playlists { ids }
-    setPlaylists(prev => prev.filter(p => !ids.includes(p.id)))
+  const handleDeleteMany = async (ids) => {
+    try {
+      await axios.delete('/admin/jury-lists', { data: { ids } })
+      setPlaylists(prev => prev.filter(p => !ids.includes(p.id)))
+    } catch (error) {
+      console.error('Erreur suppression playlists :', error)
+    }
   }
 
   return (
@@ -445,7 +478,7 @@ const Configuration = () => {
             onDelete={handleDelete}
             onDeleteMany={handleDeleteMany}
           />
-          <AssignCard onClick={() => { /* navigate('/admin/assign') */ }} />
+          <AssignCard onClick={() => navigate('/jury-assignment')} />
         </div>
 
       </div>

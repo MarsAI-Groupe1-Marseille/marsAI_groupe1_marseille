@@ -104,10 +104,56 @@ exports.createJuryList = async (req, res) => {
             return res.status(400).json({ message: "Le nom de la liste de jury est requis." });
         }
         // Création de la liste de jury dans la base de données
-        await JuryList.create({ name });
-        res.status(201).json({ message: "Liste de jury créée avec succès." });
+        const juryList = await JuryList.create({ name });
+        res.status(201).json({
+            message: "Liste de jury créée avec succès.",
+            juryList
+        });
     } catch (error) {
         console.error("Erreur lors de la création de la liste de jury :", error);
+        res.status(500).json({ message: "Erreur serveur.", error: error.message });
+    }
+};
+
+// Fonction pour récupérer les playlists avec films et jurys assignés
+exports.getJuryListsWithAssignments = async (req, res) => {
+    try {
+        const juryLists = await JuryList.findAll({
+            include: [
+                {
+                    model: Submission,
+                    attributes: ['id', 'title_original', 'duration_seconds'],
+                    through: { attributes: [] }
+                },
+                {
+                    model: User,
+                    attributes: ['id', 'full_name', 'email', 'role'],
+                    through: { attributes: [] },
+                    where: { role: 'jury' },
+                    required: false
+                }
+            ],
+            order: [['created_at', 'DESC']]
+        });
+
+        const payload = juryLists.map(list => {
+            const filmsCount = list.Submissions ? list.Submissions.length : 0;
+            const juryCount = list.Users ? list.Users.length : 0;
+
+            return {
+                id: list.id,
+                name: list.name,
+                status: filmsCount > 0 ? 'active' : 'draft',
+                filmsCount,
+                juryCount,
+                films: list.Submissions || [],
+                jury: list.Users || []
+            };
+        });
+
+        res.status(200).json({ playlists: payload });
+    } catch (error) {
+        console.error("Erreur lors de la récupération des playlists :", error);
         res.status(500).json({ message: "Erreur serveur.", error: error.message });
     }
 };
@@ -173,6 +219,110 @@ exports.assignedJuryToPlaylist = async (req, res) =>{
     }
     catch(error){
         console.error('Erreur lors de l\'assignation du jury à la playlist :', error);
+        res.status(500).json({ message: "Erreur serveur.", error: error.message });
+    }
+};
+
+// Fonction pour retirer un film d'une playlist
+exports.removeMovieFromPlaylist = async (req, res) => {
+    try {
+        const { jury_list_id, submission_id } = req.body;
+
+        if (!jury_list_id || !submission_id) {
+            return res.status(400).json({ message: "jury_list_id et submission_id sont requis" });
+        }
+
+        const deletedCount = await JuryListSubmission.destroy({
+            where: { jury_list_id, submission_id }
+        });
+
+        if (!deletedCount) {
+            return res.status(404).json({ message: "Aucune assignation trouvée." });
+        }
+
+        res.status(200).json({ message: "Film retiré de la playlist." });
+    } catch (error) {
+        console.error("Erreur lors du retrait du film :", error);
+        res.status(500).json({ message: "Erreur serveur.", error: error.message });
+    }
+};
+
+// Fonction pour retirer un jury d'une playlist
+exports.removeJuryFromPlaylist = async (req, res) => {
+    try {
+        const { jury_list_id, user_id } = req.body;
+
+        if (!jury_list_id || !user_id) {
+            return res.status(400).json({ message: "jury_list_id et user_id sont requis" });
+        }
+
+        const deletedCount = await JuryMember.destroy({
+            where: { jury_list_id, user_id }
+        });
+
+        if (!deletedCount) {
+            return res.status(404).json({ message: "Aucune assignation trouvée." });
+        }
+
+        res.status(200).json({ message: "Jury retiré de la playlist." });
+    } catch (error) {
+        console.error("Erreur lors du retrait du jury :", error);
+        res.status(500).json({ message: "Erreur serveur.", error: error.message });
+    }
+};
+
+// Supprimer une playlist (avec ses liaisons)
+exports.deleteJuryList = async (req, res) => {
+    const transaction = await sequelize.transaction();
+
+    try {
+        const { id } = req.params;
+
+        if (!id) {
+            await transaction.rollback();
+            return res.status(400).json({ message: "L'id de la playlist est requis." });
+        }
+
+        const juryList = await JuryList.findByPk(id);
+        if (!juryList) {
+            await transaction.rollback();
+            return res.status(404).json({ message: "Playlist introuvable." });
+        }
+
+        await JuryListSubmission.destroy({ where: { jury_list_id: id }, transaction });
+        await JuryMember.destroy({ where: { jury_list_id: id }, transaction });
+        await JuryList.destroy({ where: { id }, transaction });
+
+        await transaction.commit();
+        return res.status(200).json({ message: "Playlist supprimée." });
+    } catch (error) {
+        await transaction.rollback();
+        console.error("Erreur lors de la suppression de la playlist :", error);
+        res.status(500).json({ message: "Erreur serveur.", error: error.message });
+    }
+};
+
+// Supprimer plusieurs playlists (avec leurs liaisons)
+exports.deleteManyJuryLists = async (req, res) => {
+    const transaction = await sequelize.transaction();
+
+    try {
+        const { ids } = req.body;
+
+        if (!Array.isArray(ids) || ids.length === 0) {
+            await transaction.rollback();
+            return res.status(400).json({ message: "La liste des ids est requise." });
+        }
+
+        await JuryListSubmission.destroy({ where: { jury_list_id: ids }, transaction });
+        await JuryMember.destroy({ where: { jury_list_id: ids }, transaction });
+        const deletedCount = await JuryList.destroy({ where: { id: ids }, transaction });
+
+        await transaction.commit();
+        return res.status(200).json({ message: "Playlists supprimées.", deletedCount });
+    } catch (error) {
+        await transaction.rollback();
+        console.error("Erreur lors de la suppression des playlists :", error);
         res.status(500).json({ message: "Erreur serveur.", error: error.message });
     }
 };
