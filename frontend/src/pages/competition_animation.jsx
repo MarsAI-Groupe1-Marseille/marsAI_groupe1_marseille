@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Plus, Trash2, Save, Sparkles, ChevronLeft, ChevronRight, X } from "lucide-react";
+import axios from "../config/axiosConfig.js";
 
 /**
  * ============================================================
@@ -16,123 +17,119 @@ import { Plus, Trash2, Save, Sparkles, ChevronLeft, ChevronRight, X } from "luci
 
 export default function CompetitionAnimation() {
   // ========================================================================
-  // ÉTAT 1: Liste des FILMS DISPONIBLES (non encore sélectionnés)
+  // ÉTATS: Données provenant de la base
   // ========================================================================
-  // Chaque film a: id (unique), title (nom), duration (durée)
-  const [films, setFilms] = useState([
-    { id: 1, title: "Cyber Punk City", duration: "12 min" },
-    { id: 2, title: "Mars 2050", duration: "15 min" },
-    { id: 3, title: "Le Dernier Algorithme", duration: "25 min" },
-    { id: 4, title: "L'Aube des IA", duration: "14 min" },
-    { id: 5, title: "Deepfake History", duration: "22 min" },
-    { id: 6, title: "Neural Dreams", duration: "18 min" },
-    { id: 7, title: "Code Noir", duration: "20 min" },
-    { id: 8, title: "Digital Soul", duration: "16 min" },
-    { id: 9, title: "Quantum Leap", duration: "23 min" },
-    { id: 10, title: "Synthétique", duration: "17 min" },
-    { id: 11, title: "Virtual Reality", duration: "19 min" },
-    { id: 12, title: "Binary Heart", duration: "21 min" },
-    { id: 13, title: "Algorithm's End", duration: "24 min" },
-    { id: 14, title: "Future Memories", duration: "13 min" },
-    { id: 15, title: "Electric Dreams", duration: "26 min" },
-    { id: 16, title: "Neon Genesis", duration: "15 min" },
-    { id: 17, title: "Data Fortress", duration: "28 min" },
-    { id: 18, title: "Cloud Nine", duration: "11 min" },
-    { id: 19, title: "Silicon Valley", duration: "19 min" },
-    { id: 20, title: "Pixel Paradise", duration: "22 min" },
-    { id: 21, title: "Hologram Heart", duration: "17 min" },
-    { id: 22, title: "Tech Noir", duration: "25 min" },
-    { id: 23, title: "Cyber Ghost", duration: "20 min" },
-    { id: 24, title: "Digital Sunrise", duration: "14 min" },
-    { id: 25, title: "Machine Learning", duration: "23 min" },
-    { id: 26, title: "Virtual Worlds", duration: "27 min" },
-    { id: 27, title: "Synthetic Love", duration: "18 min" },
-    { id: 28, title: "Code Genesis", duration: "21 min" },
-    { id: 29, title: "Digital Evolution", duration: "16 min" },
-    { id: 30, title: "The Last Server", duration: "29 min" },
-  ]);
-
-  // ========================================================================
-  // ÉTAT 2: Liste des FILMS SÉLECTIONNÉS (choisis pour la compétition)
-  // ========================================================================
-  // Même structure que films[] (id, title, duration)
-  const [selectedFilms, setSelectedFilms] = useState([
-    { id: 1, title: "L'Aube des IA", duration: "14 min" },
-    { id: 2, title: "Deepfake History", duration: "22 min" },
-    { id: 3, title: "Mars 2050", duration: "15 min" },
-  ]);
-
-  // ========================================================================
-  // ÉTAT 3: Liste des JURÉS DISPONIBLES (non assignés à cette compétition)
-  // ========================================================================
-  // Chaque juré a: id (unique), name (nom), role (fonction)
-  const [jurors, setJurors] = useState([
-    { id: 1, name: "Jean Dupont", role: "Producteur" },
-    { id: 2, name: "Sophie Martin", role: "Réalisatrice" },
-    { id: 3, name: "Alice Wonder", role: "Critique" },
-    { id: 4, name: "Bob Sponge", role: "Monteur" },
-    { id: 5, name: "Claire Dupré", role: "Directrice Photo" },
-    { id: 6, name: "Marc Verdier", role: "Scénariste" },
-    { id: 7, name: "Nathalie Blanc", role: "Sound Designer" },
-    { id: 8, name: "Pierre Noir", role: "Colour Grader" },
-    { id: 9, name: "Elisabeth Rouge", role: "Compositeur" },
-    { id: 10, name: "Thomas Vert", role: "Directeur Artistique" },
-    { id: 11, name: "Isabelle Gris", role: "Productrice Exécutive" },
-    { id: 12, name: "Laurent Bleu", role: "Chef Opérateur" },
-    { id: 13, name: "Véronique Orange", role: "Montreuse" },
-    { id: 14, name: "Nicolas Jaune", role: "Directeur Animation" },
-    { id: 15, name: "Marie Violet", role: "Superviseuse VFX" },
-    { id: 16, name: "Antoine Rose", role: "Producteur Délégué" },
-    { id: 17, name: "Charlotte Turquoise", role: "Réalisatrice VFX" },
-    { id: 18, name: "David Indigo", role: "Directeur Technique" },
-    { id: 19, name: "Sandrine Marron", role: "Modératrice" },
-    { id: 20, name: "Fabrice Beige", role: "Consultant Créatif" },
-    { id: 21, name: "Coralie Magenta", role: "Responsable Post-Production" },
-    { id: 22, name: "Olivier Crimson", role: "Directeur de Production" },
-    { id: 23, name: "Amélie Khaki", role: "Responsable Casting" },
-    { id: 24, name: "Raphaël Cyan", role: "Expert Animation" },
-    { id: 25, name: "Sylvie Pourpre", role: "Consultante Qualité" },
-    { id: 26, name: "Benoît Gris Bleu", role: "Directeur Musical" },
-    { id: 27, name: "Emmanuelle Corail", role: "Responsable Édition" },
-    { id: 28, name: "Frédéric Or", role: "Chef de Plateau" },
-    { id: 29, name: "Valérie Argent", role: "Directrice Exécutive" },
-    { id: 30, name: "Xavier Bronze", role: "Expert Certification" },
-  ]);
-
-  
-  // ========================================================================
-  // ÉTAT 4: Liste des JURÉS ASSIGNÉS (assignés à cette compétition)
-  // ========================================================================
-  // Même structure que jurors[] (id, name, role)
-  const [assignedJurors, setAssignedJurors] = useState([
-    { id: 1, name: "Alice Wonder", role: "Expert Animation" },
-    { id: 2, name: "Bob Sponge", role: "Critique Cinéma" },
-  ]);
+  const [playlists, setPlaylists] = useState([]);
+  const [currentPlaylistId, setCurrentPlaylistId] = useState(null);
+  const [allFilms, setAllFilms] = useState([]);
+  const [allJurors, setAllJurors] = useState([]);
+  const [films, setFilms] = useState([]);
+  const [selectedFilms, setSelectedFilms] = useState([]);
+  const [jurors, setJurors] = useState([]);
+  const [assignedJurors, setAssignedJurors] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   // ========================================================================
   // ÉTAT 5: PAGINATION
   // ========================================================================
   // Gestion de la pagination pour films et jurés
   const itemsPerPage = 6;
+  const playlistsPerPage = 6;
+  const [currentPagePlaylists, setCurrentPagePlaylists] = useState(0);
   const [currentPageFilmsAvailable, setCurrentPageFilmsAvailable] = useState(0);
   const [currentPageFilmsSelected, setCurrentPageFilmsSelected] = useState(0);
   const [currentPageJurorsAvailable, setCurrentPageJurorsAvailable] = useState(0);
   const [currentPageJurorsAssigned, setCurrentPageJurorsAssigned] = useState(0);
 
+  const formatDuration = (seconds) => {
+    if (!seconds) return "Durée inconnue";
+    const minutes = Math.max(1, Math.round(seconds / 60));
+    return `${minutes} min`;
+  };
+
+  const mapFilmFromSubmission = (submission) => ({
+    id: submission.id,
+    title: submission.title_original,
+    durationSeconds: submission.duration_seconds || 0,
+    duration: formatDuration(submission.duration_seconds)
+  });
+
+  const mapJurorFromUser = (user) => ({
+    id: user.id,
+    name: user.full_name || user.email || "Jury",
+    role: user.role || "jury",
+    email: user.email
+  });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [playlistsRes, submissionsRes, usersRes] = await Promise.all([
+          axios.get("/admin/jury-lists"),
+          axios.get("/submissions", {
+            params: { status: "approved", page: 1, limit: 1000, lang: "fr" }
+          }),
+          axios.get("/users")
+        ]);
+
+        const playlistData = playlistsRes.data.playlists || [];
+        const approvedFilms = (submissionsRes.data.data || []).map(mapFilmFromSubmission);
+        const juryUsers = (usersRes.data || [])
+          .filter(user => user.role === "jury")
+          .map(mapJurorFromUser);
+
+        setPlaylists(playlistData);
+        setAllFilms(approvedFilms);
+        setAllJurors(juryUsers);
+        setCurrentPlaylistId(playlistData[0]?.id || null);
+      } catch (error) {
+        console.error("Erreur chargement competition animation :", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    const currentPlaylist = playlists.find(pl => pl.id === currentPlaylistId);
+    const playlistFilms = (currentPlaylist?.films || []).map(film => ({
+      id: film.id,
+      title: film.title_original || film.title || "Sans titre",
+      durationSeconds: film.duration_seconds || 0,
+      duration: formatDuration(film.duration_seconds)
+    }));
+    const playlistJurors = (currentPlaylist?.jury || []).map(mapJurorFromUser);
+
+    const selectedFilmIds = new Set(playlistFilms.map(film => film.id));
+    const selectedJurorIds = new Set(playlistJurors.map(juror => juror.id));
+
+    setSelectedFilms(playlistFilms);
+    setAssignedJurors(playlistJurors);
+    setFilms(allFilms.filter(film => !selectedFilmIds.has(film.id)));
+    setJurors(allJurors.filter(juror => !selectedJurorIds.has(juror.id)));
+
+    setCurrentPageFilmsAvailable(0);
+    setCurrentPageFilmsSelected(0);
+    setCurrentPageJurorsAvailable(0);
+    setCurrentPageJurorsAssigned(0);
+  }, [currentPlaylistId, playlists, allFilms, allJurors]);
+
   // ========================================================================
   // FONCTION: paginate() - Utilitaire pour calculer les items paginés
   // ========================================================================
   // Retourne une slice des items selon la page actuelle et le nombre par page
-  const paginate = (dataArray, pageNumber) => {
-    const startIdx = pageNumber * itemsPerPage;
-    return dataArray.slice(startIdx, startIdx + itemsPerPage);
+  const paginate = (dataArray, pageNumber, perPage = itemsPerPage) => {
+    const startIdx = pageNumber * perPage;
+    return dataArray.slice(startIdx, startIdx + perPage);
   };
 
   // ========================================================================
   // FONCTION: getTotalPages() - Calcule le nombre total de pages
   // ========================================================================
-  const getTotalPages = (dataArray) => {
-    return Math.ceil(dataArray.length / itemsPerPage);
+  const getTotalPages = (dataArray, perPage = itemsPerPage) => {
+    return Math.ceil(dataArray.length / perPage);
   };
 
   // ========================================================================
@@ -140,13 +137,26 @@ export default function CompetitionAnimation() {
   // ========================================================================
   // Ajoute un film de la liste "Disponibles" vers "Sélectionnés"
   // Paramètre: film = l'objet film à ajouter
-  const handleAddFilm = (film) => {
-    // Vérifier que le film n'est pas déjà dans selectedFilms (éviter les doublons)
-    if (!selectedFilms.find(f => f.id === film.id)) {
-      // Ajouter le film à selectedFilms (utiliser spread operator [...])
-      setSelectedFilms([...selectedFilms, film]);
-      // Retirer le film de la liste des films disponibles
-      setFilms(films.filter(f => f.id !== film.id));
+  const handleAddFilm = async (film) => {
+    if (!currentPlaylistId || selectedFilms.find(f => f.id === film.id)) return;
+
+    try {
+      await axios.post("/admin/assigne-film", {
+        jury_list_id: currentPlaylistId,
+        submission_id: film.id
+      });
+
+      setPlaylists(prev => prev.map(pl => {
+        if (pl.id !== currentPlaylistId) return pl;
+        const nextFilms = [...(pl.films || []), {
+          id: film.id,
+          title_original: film.title,
+          duration_seconds: film.durationSeconds || 0
+        }];
+        return { ...pl, films: nextFilms };
+      }));
+    } catch (error) {
+      console.error("Erreur assignation film :", error);
     }
   };
 
@@ -156,15 +166,21 @@ export default function CompetitionAnimation() {
   // ========================================================================
   // Retire un film de "Sélectionnés" et le remet dans "Disponibles"
   // Paramètre: filmId = l'ID du film à retirer
-  const handleRemoveFilm = (filmId) => {
-    // Chercher le film dans selectedFilms par son ID
-    const film = selectedFilms.find(f => f.id === filmId);
-    // Si le film existe
-    if (film) {
-      // Retirer le film de selectedFilms
-      setSelectedFilms(selectedFilms.filter(f => f.id !== filmId));
-      // Le remettre dans la liste des films disponibles
-      setFilms([...films, film]);
+  const handleRemoveFilm = async (filmId) => {
+    if (!currentPlaylistId) return;
+
+    try {
+      await axios.delete("/admin/assigne-film", {
+        data: { jury_list_id: currentPlaylistId, submission_id: filmId }
+      });
+
+      setPlaylists(prev => prev.map(pl => {
+        if (pl.id !== currentPlaylistId) return pl;
+        const nextFilms = (pl.films || []).filter(film => film.id !== filmId);
+        return { ...pl, films: nextFilms };
+      }));
+    } catch (error) {
+      console.error("Erreur retrait film :", error);
     }
   };
 
@@ -173,13 +189,27 @@ export default function CompetitionAnimation() {
   // ========================================================================
   // Ajoute un juré de "Disponibles" vers "Assignés"
   // Paramètre: juror = l'objet juré à assigner
-  const handleAddJuror = (juror) => {
-    // Vérifier que le juré n'est pas déjà assigné (éviter les doublons)
-    if (!assignedJurors.find(j => j.id === juror.id)) {
-      // Ajouter le juré à assignedJurors
-      setAssignedJurors([...assignedJurors, juror]);
-      // Retirer le juré de la liste des jurés disponibles
-      setJurors(jurors.filter(j => j.id !== juror.id));
+  const handleAddJuror = async (juror) => {
+    if (!currentPlaylistId || assignedJurors.find(j => j.id === juror.id)) return;
+
+    try {
+      await axios.post("/admin/assigne-jury", {
+        jury_list_id: currentPlaylistId,
+        user_id: juror.id
+      });
+
+      setPlaylists(prev => prev.map(pl => {
+        if (pl.id !== currentPlaylistId) return pl;
+        const nextJurors = [...(pl.jury || []), {
+          id: juror.id,
+          full_name: juror.name,
+          email: juror.email,
+          role: "jury"
+        }];
+        return { ...pl, jury: nextJurors };
+      }));
+    } catch (error) {
+      console.error("Erreur assignation jury :", error);
     }
   };
 
@@ -188,21 +218,29 @@ export default function CompetitionAnimation() {
   // ========================================================================
   // Retire un juré de "Assignés" et le remet dans "Disponibles"
   // Paramètre: jurorId = l'ID du juré à retirer
-  const handleRemoveJuror = (jurorId) => {
-    // Chercher le juré dans assignedJurors par son ID
-    const juror = assignedJurors.find(j => j.id === jurorId);
-    // Si le juré existe
-    if (juror) {
-      // Retirer le juré de assignedJurors
-      setAssignedJurors(assignedJurors.filter(j => j.id !== jurorId));
-      // Le remettre dans la liste des jurés disponibles
-      setJurors([...jurors, juror]);
+  const handleRemoveJuror = async (jurorId) => {
+    if (!currentPlaylistId) return;
+
+    try {
+      await axios.delete("/admin/assigne-jury", {
+        data: { jury_list_id: currentPlaylistId, user_id: jurorId }
+      });
+
+      setPlaylists(prev => prev.map(pl => {
+        if (pl.id !== currentPlaylistId) return pl;
+        const nextJurors = (pl.jury || []).filter(juror => juror.id !== jurorId);
+        return { ...pl, jury: nextJurors };
+      }));
+    } catch (error) {
+      console.error("Erreur retrait jury :", error);
     }
   };
 
   // ========================================================================
   // RENDU JSX: Retourner la structure HTML/React de la page
   // ========================================================================
+  const currentPlaylist = playlists.find(pl => pl.id === currentPlaylistId);
+
   return (
     <div className="min-h-screen bg-neutral-950 py-10 px-6">
       <div className="max-w-7xl mx-auto space-y-10">
@@ -218,6 +256,9 @@ export default function CompetitionAnimation() {
           <p className="text-neutral-400 mb-6 ml-16">
             Gérez les films sélectionnés et les jurés assignés pour cette catégorie
           </p>
+          <div className="text-sm text-neutral-500 mb-6 ml-16">
+            Playlist active : {currentPlaylist?.name || "Aucune sélection"}
+          </div>
           
           {/* Boutons d'action */}
           <div className="flex gap-4 ml-16">
@@ -231,6 +272,65 @@ export default function CompetitionAnimation() {
             </button>
           </div>
         </header>
+
+        {/* ============================================================
+            SECTION 0: LISTE DES PLAYLISTS
+            ============================================================ */}
+        <section className="mb-8">
+          <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
+            <div className="bg-gradient-to-r from-violet-600 to-violet-800 px-8 py-4">
+              <h2 className="text-lg font-bold text-white">Playlists disponibles</h2>
+            </div>
+            <div className="p-8">
+              {isLoading ? (
+                <div className="text-neutral-400">Chargement des playlists...</div>
+              ) : playlists.length === 0 ? (
+                <div className="text-neutral-500">Aucune playlist disponible.</div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {paginate(playlists, currentPagePlaylists, playlistsPerPage).map((playlist) => (
+                    <button
+                      key={playlist.id}
+                      onClick={() => setCurrentPlaylistId(playlist.id)}
+                      className="text-left border rounded-lg p-4 transition"
+                      style={{
+                        borderColor: playlist.id === currentPlaylistId ? "rgba(139,92,246,0.8)" : "rgba(255,255,255,0.08)",
+                        background: playlist.id === currentPlaylistId ? "rgba(139,92,246,0.1)" : "rgba(255,255,255,0.03)"
+                      }}
+                    >
+                      <div className="text-white font-semibold truncate">{playlist.name}</div>
+                      <div className="text-xs text-neutral-400 mt-1">
+                        {playlist.films?.length || 0} films · {playlist.jury?.length || 0} jurys
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {playlists.length > playlistsPerPage && (
+                <div className="mt-6 flex items-center justify-between">
+                  <button
+                    onClick={() => setCurrentPagePlaylists(Math.max(0, currentPagePlaylists - 1))}
+                    disabled={currentPagePlaylists === 0}
+                    className="p-2 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition"
+                  >
+                    <ChevronLeft size={18} />
+                  </button>
+                  <span className="text-neutral-400 text-sm">
+                    Page {currentPagePlaylists + 1} / {getTotalPages(playlists, playlistsPerPage)}
+                  </span>
+                  <button
+                    onClick={() => setCurrentPagePlaylists(Math.min(getTotalPages(playlists, playlistsPerPage) - 1, currentPagePlaylists + 1))}
+                    disabled={currentPagePlaylists >= getTotalPages(playlists, playlistsPerPage) - 1}
+                    className="p-2 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition"
+                  >
+                    <ChevronRight size={18} />
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
 
         
         {/* ============================================================
@@ -541,20 +641,6 @@ export default function CompetitionAnimation() {
           </div>
         </section>
 
-        {/* ============================================================
-            PAGINATION GLOBALE EN BAS
-            ============================================================ */}
-        <div className="flex items-center justify-center gap-4 mt-10">
-          <button className="p-2 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white transition">
-            <ChevronLeft size={24} />
-          </button>
-          <span className="text-neutral-400 text-sm px-4">
-            Page 1 / 4
-          </span>
-          <button className="p-2 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white transition">
-            <ChevronRight size={24} />
-          </button>
-        </div>
       </div>
     </div>
   );

@@ -43,11 +43,23 @@ router.post('/assigne-film',
     checkRole('admin'),
     adminController.addMovieToPlayList);
 
+// route qui retire un film d'une play list
+router.delete('/assigne-film',
+    verifyToken,
+    checkRole('admin'),
+    adminController.removeMovieFromPlaylist);
+
 // route qui assigne les jurys aux films
 router.post('/assigne-jury',
     verifyToken,
     checkRole('admin'),
     adminController.assignedJuryToPlaylist);
+
+// route qui retire un jury d'une playlist
+router.delete('/assigne-jury',
+    verifyToken,
+    checkRole('admin'),
+    adminController.removeJuryFromPlaylist);
 
 module.exports = router;
 

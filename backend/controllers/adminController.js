@@ -122,12 +122,12 @@ exports.getJuryListsWithAssignments = async (req, res) => {
             include: [
                 {
                     model: Submission,
-                    attributes: ['id', 'title_original'],
+                    attributes: ['id', 'title_original', 'duration_seconds'],
                     through: { attributes: [] }
                 },
                 {
                     model: User,
-                    attributes: ['id', 'full_name', 'email'],
+                    attributes: ['id', 'full_name', 'email', 'role'],
                     through: { attributes: [] },
                     where: { role: 'jury' },
                     required: false
@@ -219,6 +219,54 @@ exports.assignedJuryToPlaylist = async (req, res) =>{
     }
     catch(error){
         console.error('Erreur lors de l\'assignation du jury à la playlist :', error);
+        res.status(500).json({ message: "Erreur serveur.", error: error.message });
+    }
+};
+
+// Fonction pour retirer un film d'une playlist
+exports.removeMovieFromPlaylist = async (req, res) => {
+    try {
+        const { jury_list_id, submission_id } = req.body;
+
+        if (!jury_list_id || !submission_id) {
+            return res.status(400).json({ message: "jury_list_id et submission_id sont requis" });
+        }
+
+        const deletedCount = await JuryListSubmission.destroy({
+            where: { jury_list_id, submission_id }
+        });
+
+        if (!deletedCount) {
+            return res.status(404).json({ message: "Aucune assignation trouvée." });
+        }
+
+        res.status(200).json({ message: "Film retiré de la playlist." });
+    } catch (error) {
+        console.error("Erreur lors du retrait du film :", error);
+        res.status(500).json({ message: "Erreur serveur.", error: error.message });
+    }
+};
+
+// Fonction pour retirer un jury d'une playlist
+exports.removeJuryFromPlaylist = async (req, res) => {
+    try {
+        const { jury_list_id, user_id } = req.body;
+
+        if (!jury_list_id || !user_id) {
+            return res.status(400).json({ message: "jury_list_id et user_id sont requis" });
+        }
+
+        const deletedCount = await JuryMember.destroy({
+            where: { jury_list_id, user_id }
+        });
+
+        if (!deletedCount) {
+            return res.status(404).json({ message: "Aucune assignation trouvée." });
+        }
+
+        res.status(200).json({ message: "Jury retiré de la playlist." });
+    } catch (error) {
+        console.error("Erreur lors du retrait du jury :", error);
         res.status(500).json({ message: "Erreur serveur.", error: error.message });
     }
 };

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import axios from '../config/axiosConfig.js'
 
 // ─── Icônes SVG ──────────────────────────────────────────────────────────────
@@ -416,6 +417,7 @@ const AssignCard = ({ onClick }) => (
 // ─── Page Configuration ──────────────────────────────────────────────────────
 
 const Configuration = () => {
+  const navigate = useNavigate()
   const [playlists, setPlaylists] = useState([])
   const [showModal, setShowModal] = useState(false)
 
@@ -476,7 +478,7 @@ const Configuration = () => {
             onDelete={handleDelete}
             onDeleteMany={handleDeleteMany}
           />
-          <AssignCard onClick={() => { /* navigate('/admin/assign') */ }} />
+          <AssignCard onClick={() => navigate('/competition-animation')} />
         </div>
 
       </div>
