@@ -12,6 +12,7 @@ const User = sequelize.define('User', {
     defaultValue: 'jury' 
   },
   invite_token: { type: DataTypes.STRING },
+  invite_token_expires_at: { type: DataTypes.DATE },
   google_id: { type: DataTypes.STRING }
 }, {
   tableName: 'users',

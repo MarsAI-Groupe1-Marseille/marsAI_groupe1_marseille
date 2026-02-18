@@ -56,11 +56,51 @@ exports.createUser = async (req, res) => {
     }
 };
 
-// Réinitialiser le mot de passe avec un token d'invitation
+// Demande de réinitialisation de mot de passe (Oubli de mot de passe)
+exports.forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({ error: "L'email est requis." });
+        }
+
+        // Chercher l'utilisateur par email
+        const user = await User.findOne({ where: { email } });
+        if (!user) {
+            // Pour des raisons de sécurité, on ne révèle pas si l'email existe ou non
+            return res.status(200).json({ message: "Si cet email existe, un lien de réinitialisation a été envoyé." });
+        }
+
+        // Générer un token unique
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
+
+        // Mettre à jour l'utilisateur avec le token (utiliser l'instance directement)
+        user.invite_token = resetToken;
+        user.invite_token_expires_at = expiresAt;
+        await user.save();
+
+        // Construire le lien de réinitialisation
+        const resetLink = `http://localhost:5173/reset-password?token=${resetToken}`;
+
+        // Envoyer l'email avec le lien
+        await emailService.sendResetPasswordEmail(email, user.full_name || 'utilisateur', resetLink);
+
+        res.status(200).json({ 
+            message: "Si cet email existe, un lien de réinitialisation a été envoyé." 
+        });
+
+    } catch (error) {
+        console.error("Erreur forgotPassword :", error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Réinitialiser le mot de passe avec un token (depuis forgotpass)
 exports.resetPassword = async (req, res) => {
     try {
-        // Récupération du token et du nouveau mot de passe depuis le corps de la requête
-        const { token, new_password, specialite } = req.body;
+        const { token, new_password } = req.body;
 
         // Validation des paramètres
         if (!token || !new_password) {
@@ -73,51 +113,18 @@ exports.resetPassword = async (req, res) => {
             return res.status(404).json({ error: "Token invalide ou expiré." });
         }
 
+        if (user.invite_token_expires_at && user.invite_token_expires_at < new Date()) {
+            return res.status(404).json({ error: "Token invalide ou expiré." });
+        }
+
         // Hasher le nouveau mot de passe
         const password_hash = await bcrypt.hash(new_password, 10);
 
-        let specialiteValue;
-        let hasSpecialite = false;
-        if (specialite !== undefined) {
-            hasSpecialite = true;
-            if (Array.isArray(specialite)) {
-                specialiteValue = specialite;
-            } else if (typeof specialite === 'string') {
-                try {
-                    const parsed = JSON.parse(specialite);
-                    if (Array.isArray(parsed)) {
-                        specialiteValue = parsed;
-                    } else if (typeof parsed === 'string') {
-                        specialiteValue = parsed.split(',');
-                    }
-                } catch (e) {
-                    specialiteValue = specialite.split(',');
-                }
-            }
-
-            if (Array.isArray(specialiteValue)) {
-                specialiteValue = specialiteValue.map((item) => String(item).trim()).filter(Boolean);
-                if (specialiteValue.length === 0) {
-                    specialiteValue = null;
-                }
-            }
-        }
-
-        const updateData = {
-            password_hash,
-            invite_token: null
-        };
-
-        if (req.file && req.file.location) {
-            updateData.avatar_url = req.file.location;
-        }
-
-        if (hasSpecialite) {
-            updateData.specialite = specialiteValue || null;
-        }
-
-        // Mettre à jour l'utilisateur et invalider le token
-        await User.update(updateData, { where: { invite_token: token } });
+        // Mettre à jour l'utilisateur : définir le mot de passe et invalider le token
+        await User.update(
+            { password_hash, invite_token: null, invite_token_expires_at: null },
+            { where: { invite_token: token } }
+        );
 
         res.status(200).json({ message: "Mot de passe réinitialisé avec succès." });
     } catch (error) {
