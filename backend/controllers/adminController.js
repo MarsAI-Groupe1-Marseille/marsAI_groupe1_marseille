@@ -104,10 +104,56 @@ exports.createJuryList = async (req, res) => {
             return res.status(400).json({ message: "Le nom de la liste de jury est requis." });
         }
         // Création de la liste de jury dans la base de données
-        await JuryList.create({ name });
-        res.status(201).json({ message: "Liste de jury créée avec succès." });
+        const juryList = await JuryList.create({ name });
+        res.status(201).json({
+            message: "Liste de jury créée avec succès.",
+            juryList
+        });
     } catch (error) {
         console.error("Erreur lors de la création de la liste de jury :", error);
+        res.status(500).json({ message: "Erreur serveur.", error: error.message });
+    }
+};
+
+// Fonction pour récupérer les playlists avec films et jurys assignés
+exports.getJuryListsWithAssignments = async (req, res) => {
+    try {
+        const juryLists = await JuryList.findAll({
+            include: [
+                {
+                    model: Submission,
+                    attributes: ['id', 'title_original'],
+                    through: { attributes: [] }
+                },
+                {
+                    model: User,
+                    attributes: ['id', 'full_name', 'email'],
+                    through: { attributes: [] },
+                    where: { role: 'jury' },
+                    required: false
+                }
+            ],
+            order: [['created_at', 'DESC']]
+        });
+
+        const payload = juryLists.map(list => {
+            const filmsCount = list.Submissions ? list.Submissions.length : 0;
+            const juryCount = list.Users ? list.Users.length : 0;
+
+            return {
+                id: list.id,
+                name: list.name,
+                status: filmsCount > 0 ? 'active' : 'draft',
+                filmsCount,
+                juryCount,
+                films: list.Submissions || [],
+                jury: list.Users || []
+            };
+        });
+
+        res.status(200).json({ playlists: payload });
+    } catch (error) {
+        console.error("Erreur lors de la récupération des playlists :", error);
         res.status(500).json({ message: "Erreur serveur.", error: error.message });
     }
 };

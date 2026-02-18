@@ -19,6 +19,12 @@ router.post('/jury-list',
     checkRole('admin'),
     adminController.createJuryList
 );
+// route pour afficher les playlists avec films et jurys assignés
+router.get('/jury-lists',
+    verifyToken,
+    checkRole('admin'),
+    adminController.getJuryListsWithAssignments
+);
 // route qui assigne un film a une play list
 router.post('/assigne-film',
     verifyToken,

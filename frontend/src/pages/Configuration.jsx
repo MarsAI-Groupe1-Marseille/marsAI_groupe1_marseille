@@ -1,13 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import axios from '../config/axiosConfig.js'
-
-// ─── Mock Data ───────────────────────────────────────────────────────────────
-
-const MOCK_PLAYLISTS = [
-  { id: 1, name: "Sélection Officielle 2025",  films: 5, jury: 2, status: "active" },
-  { id: 2, name: "Compétition Internationale", films: 4, jury: 5, status: "draft"  },
-  { id: 3, name: "Courts Métrages",            films: 6, jury: 1, status: "draft"  },
-]
 
 // ─── Icônes SVG ──────────────────────────────────────────────────────────────
 
@@ -99,10 +91,17 @@ const NewPlaylistModal = ({ onClose, onCreate }) => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!name.trim()) return
-    await axios.post('/admin/jury-list', { name: name.trim() }) 
+    const { data } = await axios.post('/admin/jury-list', { name: name.trim() }) 
+    const created = data.juryList
     console.log("Playlist créée :", name.trim())
-    
-    onCreate({ id: Date.now(), name: name.trim(), films: 0, jury: 0, status: 'draft' })
+
+    onCreate({
+      id: created?.id || Date.now(),
+      name: created?.name || name.trim(),
+      films: 0,
+      jury: 0,
+      status: 'draft'
+    })
     onClose()
   }
 
@@ -417,8 +416,28 @@ const AssignCard = ({ onClick }) => (
 // ─── Page Configuration ──────────────────────────────────────────────────────
 
 const Configuration = () => {
-  const [playlists, setPlaylists] = useState(MOCK_PLAYLISTS)
+  const [playlists, setPlaylists] = useState([])
   const [showModal, setShowModal] = useState(false)
+
+  useEffect(() => {
+    const fetchPlaylists = async () => {
+      try {
+        const { data } = await axios.get('/admin/jury-lists')
+        const normalized = (data.playlists || []).map(pl => ({
+          id: pl.id,
+          name: pl.name,
+          films: pl.filmsCount || 0,
+          jury: pl.juryCount || 0,
+          status: pl.status || 'draft'
+        }))
+        setPlaylists(normalized)
+      } catch (error) {
+        console.error('Erreur chargement playlists :', error)
+      }
+    }
+
+    fetchPlaylists()
+  }, [])
 
   const handleDelete = (id) => {
     // TODO: DELETE /api/playlists/:id
