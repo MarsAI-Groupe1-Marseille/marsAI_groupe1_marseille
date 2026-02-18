@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import axios from '../config/axiosConfig.js'
 
 // ─── Mock Data ───────────────────────────────────────────────────────────────
 
@@ -95,9 +96,12 @@ const IconTrash = ({ size = 13 }) => (
 const NewPlaylistModal = ({ onClose, onCreate }) => {
   const [name, setName] = useState('')
 
-  const handleSubmit = () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault()
     if (!name.trim()) return
-    // TODO: POST /api/playlists { name }
+    await axios.post('/admin/jury-list', { name: name.trim() }) 
+    console.log("Playlist créée :", name.trim())
+    
     onCreate({ id: Date.now(), name: name.trim(), films: 0, jury: 0, status: 'draft' })
     onClose()
   }
