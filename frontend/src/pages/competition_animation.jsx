@@ -248,28 +248,16 @@ export default function CompetitionAnimation() {
         <header className="bg-neutral-900 border border-neutral-800 rounded-xl p-8">
           {/* Titre avec émoji */}
           <div className="flex items-center gap-4 mb-3">
-            <span className="text-5xl">🎬</span>
-            <h1 className="text-4xl font-bold text-white">Compétition Animation</h1>
+            <span className="text-5xl">👥</span>
+            <h1 className="text-4xl font-bold text-white">Assignation des Jurys et Films</h1>
           </div>
           
           {/* Sous-titre */}
           <p className="text-neutral-400 mb-6 ml-16">
-            Gérez les films sélectionnés et les jurés assignés pour cette catégorie
+            Gérez les films sélectionnés et les jurés assignés pour cette playlist
           </p>
-          <div className="text-sm text-neutral-500 mb-6 ml-16">
+          <div className="text-lg font-bold text-white mb-6 ml-16">
             Playlist active : {currentPlaylist?.name || "Aucune sélection"}
-          </div>
-          
-          {/* Boutons d'action */}
-          <div className="flex gap-4 ml-16">
-            <button className="flex items-center gap-2 px-6 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-200 rounded-lg font-medium transition">
-              <X size={18} />
-              Annuler
-            </button>
-            <button className="flex items-center gap-2 px-6 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-lg font-medium transition">
-              <Save size={18} />
-              Sauvegarder
-            </button>
           </div>
         </header>
 

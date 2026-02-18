@@ -478,7 +478,7 @@ const Configuration = () => {
             onDelete={handleDelete}
             onDeleteMany={handleDeleteMany}
           />
-          <AssignCard onClick={() => navigate('/competition-animation')} />
+          <AssignCard onClick={() => navigate('/jury-assignment')} />
         </div>
 
       </div>

@@ -33,7 +33,7 @@ function App() {
     "/gestion-films",
     "/distribution_jury",
     "/Configuration",
-    "/competition-animation",
+    "/jury-assignment",
   ];
 
   const isPrivateRoute =
@@ -112,7 +112,7 @@ function App() {
             )}
           />
           <Route
-            path="/competition-animation"
+            path="/jury-assignment"
             element={(
               <ProtectedRoute allowedRoles={["admin", "moderator"]}>
                 <CompetitionAnimation />
