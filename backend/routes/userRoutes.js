@@ -3,6 +3,7 @@ const router = express.Router();
 const userController = require('../controllers/userController');
 const { verifyToken, checkRole } = require('../middlewares/authMiddleware');
 const { route } = require('./authRoutes');
+const upload = require('../middlewares/uploadMiddleware');
 
 
 // const authMiddleware = require('../middlewares/authMiddleware'); // Vérifie si connecté
@@ -25,6 +26,6 @@ router.delete('/:id',
 // Cette ligne permet à l'Admin de créer et inviter un utilisateur (jury, admin, modérateur)
 router.post('/invite', userController.createUser);
 // Cette ligne permet au jury de définir son mot de passe via le lien magique
-router.post('/reset-password', userController.resetPassword);
+router.post('/reset-password', upload.single('avatar'), userController.resetPassword);
 
 module.exports = router;

@@ -40,7 +40,7 @@ exports.createUser = async (req, res) => {
 
         // 4. Construction du lien magique et envoi de l'email
         // Le lien renvoie vers le frontend avec le token en paramètre.
-        const resetLink = `http://localhost:5173/reset-password?token=${token}`;
+        const resetLink = `http://localhost:5173/active-compte?token=${token}`;
         
         // On appelle le service d'emailing adapté au rôle.
         await emailService.sendUserInvitation(email, full_name, role, resetLink);
@@ -60,7 +60,7 @@ exports.createUser = async (req, res) => {
 exports.resetPassword = async (req, res) => {
     try {
         // Récupération du token et du nouveau mot de passe depuis le corps de la requête
-        const { token, new_password } = req.body;
+        const { token, new_password, specialite } = req.body;
 
         // Validation des paramètres
         if (!token || !new_password) {
@@ -76,11 +76,48 @@ exports.resetPassword = async (req, res) => {
         // Hasher le nouveau mot de passe
         const password_hash = await bcrypt.hash(new_password, 10);
 
+        let specialiteValue;
+        let hasSpecialite = false;
+        if (specialite !== undefined) {
+            hasSpecialite = true;
+            if (Array.isArray(specialite)) {
+                specialiteValue = specialite;
+            } else if (typeof specialite === 'string') {
+                try {
+                    const parsed = JSON.parse(specialite);
+                    if (Array.isArray(parsed)) {
+                        specialiteValue = parsed;
+                    } else if (typeof parsed === 'string') {
+                        specialiteValue = parsed.split(',');
+                    }
+                } catch (e) {
+                    specialiteValue = specialite.split(',');
+                }
+            }
+
+            if (Array.isArray(specialiteValue)) {
+                specialiteValue = specialiteValue.map((item) => String(item).trim()).filter(Boolean);
+                if (specialiteValue.length === 0) {
+                    specialiteValue = null;
+                }
+            }
+        }
+
+        const updateData = {
+            password_hash,
+            invite_token: null
+        };
+
+        if (req.file && req.file.location) {
+            updateData.avatar_url = req.file.location;
+        }
+
+        if (hasSpecialite) {
+            updateData.specialite = specialiteValue || null;
+        }
+
         // Mettre à jour l'utilisateur et invalider le token
-        await User.update(
-            { password_hash, invite_token: null },
-            { where: { invite_token: token } }
-        );
+        await User.update(updateData, { where: { invite_token: token } });
 
         res.status(200).json({ message: "Mot de passe réinitialisé avec succès." });
     } catch (error) {

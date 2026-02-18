@@ -15,7 +15,7 @@ import DistributionJury from './pages/distribution_jury.jsx';
 import './App.css'
 import SubmissionForm from './pages/SubmissionForm.jsx';
 import Forgotpass from './pages/forgotpass.jsx';
-import ResetPassword from './pages/ResetPassword.jsx';
+import ActiveCompte from './pages/ActiveCompte.jsx';
 import NotationJury  from './pages/NotationJury.jsx';
 import Configuration from './pages/Configuration.jsx';
 import NotFound from './pages/NotFound.jsx';
@@ -60,7 +60,7 @@ function App() {
           <Route path="/galerie/:id" element={<FilmDetail />} />
           <Route path="/login" element={<Login />} />
           <Route path='/submission' element ={<SubmissionForm/>}/>
-          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/active-compte" element={<ActiveCompte />} />
           <Route path="/forgotpass" element={<Forgotpass />} />
 
           <Route

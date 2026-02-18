@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import axios from '../config/axiosConfig';
 
-const ResetPassword = () => {
+const ActiveCompte = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [avatarFile, setAvatarFile] = useState(null);
@@ -68,7 +68,7 @@ const ResetPassword = () => {
 
         {/* Title */}
         <h1 className="text-2xl md:text-3xl font-bold text-center mb-8 tracking-widest text-gray-300">
-            RESET-PASSWORD
+            ACTIVER VOTRE COMPTE
         </h1>
 
         {/* Form */}
@@ -144,4 +144,4 @@ const ResetPassword = () => {
   );
 };
 
-export default ResetPassword
+export default ActiveCompte
