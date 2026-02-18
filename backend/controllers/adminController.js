@@ -222,3 +222,59 @@ exports.assignedJuryToPlaylist = async (req, res) =>{
         res.status(500).json({ message: "Erreur serveur.", error: error.message });
     }
 };
+
+// Supprimer une playlist (avec ses liaisons)
+exports.deleteJuryList = async (req, res) => {
+    const transaction = await sequelize.transaction();
+
+    try {
+        const { id } = req.params;
+
+        if (!id) {
+            await transaction.rollback();
+            return res.status(400).json({ message: "L'id de la playlist est requis." });
+        }
+
+        const juryList = await JuryList.findByPk(id);
+        if (!juryList) {
+            await transaction.rollback();
+            return res.status(404).json({ message: "Playlist introuvable." });
+        }
+
+        await JuryListSubmission.destroy({ where: { jury_list_id: id }, transaction });
+        await JuryMember.destroy({ where: { jury_list_id: id }, transaction });
+        await JuryList.destroy({ where: { id }, transaction });
+
+        await transaction.commit();
+        return res.status(200).json({ message: "Playlist supprimée." });
+    } catch (error) {
+        await transaction.rollback();
+        console.error("Erreur lors de la suppression de la playlist :", error);
+        res.status(500).json({ message: "Erreur serveur.", error: error.message });
+    }
+};
+
+// Supprimer plusieurs playlists (avec leurs liaisons)
+exports.deleteManyJuryLists = async (req, res) => {
+    const transaction = await sequelize.transaction();
+
+    try {
+        const { ids } = req.body;
+
+        if (!Array.isArray(ids) || ids.length === 0) {
+            await transaction.rollback();
+            return res.status(400).json({ message: "La liste des ids est requise." });
+        }
+
+        await JuryListSubmission.destroy({ where: { jury_list_id: ids }, transaction });
+        await JuryMember.destroy({ where: { jury_list_id: ids }, transaction });
+        const deletedCount = await JuryList.destroy({ where: { id: ids }, transaction });
+
+        await transaction.commit();
+        return res.status(200).json({ message: "Playlists supprimées.", deletedCount });
+    } catch (error) {
+        await transaction.rollback();
+        console.error("Erreur lors de la suppression des playlists :", error);
+        res.status(500).json({ message: "Erreur serveur.", error: error.message });
+    }
+};

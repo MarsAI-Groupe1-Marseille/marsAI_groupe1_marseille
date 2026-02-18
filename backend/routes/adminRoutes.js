@@ -25,6 +25,18 @@ router.get('/jury-lists',
     checkRole('admin'),
     adminController.getJuryListsWithAssignments
 );
+// route pour supprimer une playlist
+router.delete('/jury-list/:id',
+    verifyToken,
+    checkRole('admin'),
+    adminController.deleteJuryList
+);
+// route pour supprimer plusieurs playlists
+router.delete('/jury-lists',
+    verifyToken,
+    checkRole('admin'),
+    adminController.deleteManyJuryLists
+);
 // route qui assigne un film a une play list
 router.post('/assigne-film',
     verifyToken,
