@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Plus, Trash2, Save, Sparkles, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { Plus, Trash2, Users, ChevronLeft, ChevronRight } from "lucide-react";
 import axios from "../config/axiosConfig.js";
 
 /**
  * ============================================================
- * COMPOSANT: CompetitionAnimation
+ * COMPOSANT: JuryAssignment
  * ============================================================
  * Cette page permet aux admins/modos de gérer une compétition
  * animée : sélectionner les films à juger et assigner les jurés.
@@ -15,7 +15,7 @@ import axios from "../config/axiosConfig.js";
  * - Section 2: Gestion des jurés (disponibles ↔ assignés)
  */
 
-export default function CompetitionAnimation() {
+export default function JuryAssignment() {
   // ========================================================================
   // ÉTATS: Données provenant de la base
   // ========================================================================
@@ -246,9 +246,9 @@ export default function CompetitionAnimation() {
       <div className="max-w-7xl mx-auto space-y-10">
         {/* HEADER SECTION */}
         <header className="bg-neutral-900 border border-neutral-800 rounded-xl p-8">
-          {/* Titre avec émoji */}
+          {/* Titre avec icone */}
           <div className="flex items-center gap-4 mb-3">
-            <span className="text-5xl">👥</span>
+            <Users className="text-violet-300" size={30} />
             <h1 className="text-4xl font-bold text-white">Assignation des Jurys et Films</h1>
           </div>
           

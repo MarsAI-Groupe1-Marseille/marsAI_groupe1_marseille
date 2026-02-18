@@ -20,7 +20,7 @@ import ResetPassword from './pages/ResetPassword.jsx';
 import NotationJury  from './pages/NotationJury.jsx';
 import Configuration from './pages/Configuration.jsx';
 import NotFound from './pages/NotFound.jsx';
-import CompetitionAnimation from './pages/competition_animation.jsx';
+import JuryAssignment from './pages/jury_assignment.jsx';
 import { useAuth } from './context/AuthContext.jsx';
 
 
@@ -117,7 +117,7 @@ function App() {
             path="/jury-assignment"
             element={(
               <ProtectedRoute allowedRoles={["admin", "moderator"]}>
-                <CompetitionAnimation />
+                <JuryAssignment />
               </ProtectedRoute>
             )}
           />
