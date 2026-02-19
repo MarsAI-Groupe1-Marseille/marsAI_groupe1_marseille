@@ -14,49 +14,49 @@ const Home = () => {
             key: 'sci_fi',
             desc_fr: "Exploration des futurs possibles.", 
             desc_en: "Exploration of possible futures.",
-            image: "/sci-fi.png" 
+            image: "/Gemini_Generated_Image_ScFIction.png" 
         },
         { 
             key: 'horror',
             desc_fr: "Frissons garantis par l'IA.", 
             desc_en: "Guaranteed thrills by AI.",
-            image: "/horror.png" 
+            image: "/Gemini_Generated_Image_Horreur.png" 
         },
         { 
             key: 'action',
             desc_fr: "Adrénaline et cinématiques.", 
             desc_en: "Adrenaline and cinematics.",
-            image: "/action.png" 
+            image: "/Gemini_Generated_Image_Action.png" 
         },
         { 
             key: 'drama',
             desc_fr: "Émotions profondes et récits.", 
             desc_en: "Deep emotions and stories.",
-            image: "/drama.png" 
+            image: "/Gemini_Generated_Image_Drame.png" 
         },
         { 
             key: 'thriller',
             desc_fr: "Enquête approfonfis et suspense.", 
             desc_en: "In-depth investigation and suspense.",
-            image: "/thriller.png"
+            image: "/Gemini_Generated_Image_Thriller.png"
         },
         { 
             key: 'documentary',
             desc_fr: "Reportage et investigation de haut vol.", 
             desc_en: "High-level reporting and investigation.",
-            image: "/documentaire.png"
+            image: "/Gemini_Generated_Image_Documentaire.png"
         },
         { 
             key: 'animation',
             desc_fr: "Technologie et fantaisie.", 
             desc_en: "Technology and fantasy.",
-            image: "/animation.png"
+            image: "/Gemini_Generated_Image_Animation.png"
         },
         { 
             key: 'history',
             desc_fr: "Revisite les meilleurs moments qui ont marqué l'histoire.", 
             desc_en: "Revisit the best moments that marked history.",
-            image: "/histoire.png"
+            image: "/Gemini_Generated_Image_Histoire.png"
         },
     ];
 
@@ -105,9 +105,8 @@ const Home = () => {
                     zIndex: 1
                   }}
                 >
-                    {/* VIDEO BACKGROUND - SIMPLER APPROACH */}
+                    {/* HERO BACKGROUND - Video */}
                     <video
-                        key="hero-bg-video"
                         autoPlay
                         muted
                         loop
@@ -125,6 +124,19 @@ const Home = () => {
                         <source src="/hero-video.mp4" type="video/mp4" />
                     </video>
 
+                    {/* Gradient overlay for video */}
+                    <div
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: '100%',
+                          height: '100%',
+                          background: 'radial-gradient(ellipse at center, rgba(139, 92, 246, 0.1) 0%, transparent 70%)',
+                          zIndex: 2
+                        }}
+                    />
+
                     {/* DARK OVERLAY */}
                     <div 
                       style={{
@@ -134,7 +146,7 @@ const Home = () => {
                         width: '100%',
                         height: '100%',
                         backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                        zIndex: 2
+                        zIndex: 3
                       }}
                     ></div>
 
@@ -150,7 +162,7 @@ const Home = () => {
                         background: 'radial-gradient(circle, rgba(234, 88, 12, 0.2) 0%, transparent 70%)',
                         borderRadius: '50%',
                         filter: 'blur(100px)',
-                        zIndex: 2,
+                        zIndex: 3,
                         pointerEvents: 'none'
                       }}
                     ></div>
