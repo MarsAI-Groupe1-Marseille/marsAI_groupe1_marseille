@@ -684,8 +684,10 @@ const PlaylistsCard = ({ playlists, onNew, onDelete, onDeleteMany }) => {
   )
 }
 
-const AssignCard = ({ onClick }) => (
-  <div onClick={onClick} className="rounded-2xl p-6 cursor-pointer group transition-all duration-300 relative overflow-hidden flex flex-col"
+const AssignCard = ({ filmsCount, juryCount, onClick }) => (
+  <div
+    onClick={onClick}
+    className="rounded-2xl p-6 cursor-pointer group transition-all duration-300 relative overflow-hidden flex flex-col"
     style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', border: '1px solid rgba(255,255,255,0.08)' }}
     onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(139,92,246,0.45)'}
     onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'}>
@@ -705,11 +707,11 @@ const AssignCard = ({ onClick }) => (
     <div className="flex gap-2 flex-wrap mt-auto">
       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold"
         style={{ background: 'rgba(99,102,241,0.15)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.2)' }}>
-        <IconClapperboard /> 6 films
+        <IconClapperboard /> {filmsCount} film{filmsCount !== 1 ? 's' : ''}
       </span>
       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold"
         style={{ background: 'rgba(168,85,247,0.15)', color: '#c084fc', border: '1px solid rgba(168,85,247,0.2)' }}>
-        <IconUsers /> 5 membres jury
+        <IconUsers /> {juryCount} membre{juryCount !== 1 ? 's' : ''} jury
       </span>
     </div>
   </div>
@@ -720,6 +722,8 @@ const AssignCard = ({ onClick }) => (
 const Configuration = () => {
   const navigate = useNavigate()
   const [playlists, setPlaylists] = useState([])
+  const [filmsCount, setFilmsCount] = useState(0)
+  const [juryCount, setJuryCount] = useState(0)
   const [showModal, setShowModal] = useState(false)
   const [showHomeModal, setShowHomeModal] = useState(false)
   const [activeSections, setActiveSections] = useState(4)
@@ -748,6 +752,32 @@ const Configuration = () => {
     fetchPlaylists()
   }, [])
 
+  useEffect(() => {
+    const fetchFilmsAndJury = async () => {
+      try {
+        const [filmsRes, usersRes] = await Promise.all([
+          axios.get('/submissions'),
+          axios.get('/users')
+        ])
+        console.log('Films response:', filmsRes.data)
+        console.log('Users response:', usersRes.data)
+        
+        // Films retourne { data: [...], totalItems, ... }
+        const films = filmsRes.data?.data || []
+        setFilmsCount(films.length)
+        
+        const allUsers = Array.isArray(usersRes.data) ? usersRes.data : usersRes.data?.users || []
+        const juries = allUsers.filter(u => u.role === 'jury')
+        console.log('Films count:', films.length, 'Jury count:', juries.length)
+        setJuryCount(juries.length)
+      } catch (error) {
+        console.error('Erreur chargement films/jury :', error)
+      }
+    }
+
+    fetchFilmsAndJury()
+  }, [])
+
   const handleDelete = async (id) => {
     try { await axios.delete(`/admin/jury-list/${id}`); setPlaylists(prev => prev.filter(p => p.id !== id)) }
     catch (e) { console.error(e) }
@@ -766,8 +796,13 @@ const Configuration = () => {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 items-stretch" style={{ gridAutoRows: '320px' }}>
           <HomeConfigCard onClick={() => setShowHomeModal(true)} activeSections={activeSections} />
-          <PlaylistsCard playlists={playlists} onNew={() => setShowModal(true)} onDelete={handleDelete} onDeleteMany={handleDeleteMany} />
-          <AssignCard onClick={() => navigate('/jury-assignment')} />
+          <PlaylistsCard
+            playlists={playlists}
+            onNew={() => setShowModal(true)}
+            onDelete={handleDelete}
+            onDeleteMany={handleDeleteMany}
+          />
+          <AssignCard filmsCount={filmsCount} juryCount={juryCount} onClick={() => navigate('/jury-assignment')} />
         </div>
       </div>
 

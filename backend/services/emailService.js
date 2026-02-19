@@ -219,6 +219,56 @@ const emailService = {
         } catch (error) {
             console.error("Erreur mail refus :", error);
         }
+    },
+
+    /**
+     * 6. RÉINITIALISATION DE MOT DE PASSE
+     * Déclenché quand un utilisateur demande réinitialiser son mot de passe
+     */
+    sendResetPasswordEmail: async (email, fullName, resetLink) => {
+        try {
+            await transporter.sendMail({
+                from: process.env.EMAIL_USER,
+                to: email,
+                subject: "Réinitialiser votre mot de passe - Mars'AI",
+                html: `
+                    <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
+                        <h1 style="color: #1976D2;">Réinitialisation de mot de passe</h1>
+                        <p>Bonjour <strong>${fullName}</strong>,</p>
+                        <p>Vous avez demandé la réinitialisation de votre mot de passe Mars'AI.</p>
+                        <p>Cliquez sur le lien ci-dessous pour créer un nouveau mot de passe :</p>
+                        
+                        <div style="margin: 30px 0; padding: 20px; background-color: #f5f5f5; border-radius: 8px;">
+                            <p style="margin: 20px 0;">
+                                <a href="${resetLink}" 
+                                   style="display: inline-block; padding: 12px 24px; background: linear-gradient(135deg, #1976D2, #1565C0); color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                                    Réinitialiser mon mot de passe
+                                </a>
+                            </p>
+                            <p style="margin: 10px 0; font-size: 12px; color: #666;">
+                                Ou copie ce lien dans ton navigateur :<br>
+                                <span style="color: #1976D2; word-break: break-all;">${resetLink}</span>
+                            </p>
+                        </div>
+                        
+                        <p style="color: #C62828; font-weight: bold;">⚠️ Important :</p>
+                        <ul style="color: #666; font-size: 14px;">
+                            <li>Ce lien expire dans 24 heures</li>
+                            <li>Si vous n'avez pas demandé cette réinitialisation, ignorez cet email</li>
+                            <li>Ne partagez jamais ce lien avec d'autres personnes</li>
+                        </ul>
+                        
+                        <p style="margin-top: 30px; color: #666; font-size: 12px; border-top: 1px solid #ddd; padding-top: 20px;">
+                            L'équipe Mars'AI
+                        </p>
+                    </div>
+                `
+            });
+            console.log(`Mail réinitialisation mot de passe envoyé à : ${email}`);
+        } catch (error) {
+            console.error("Erreur mail réinitialisation mot de passe :", error);
+            throw error;
+        }
     }
 
 

@@ -15,11 +15,12 @@ import DistributionJury from './pages/distribution_jury.jsx';
 import './App.css'
 import SubmissionForm from './pages/SubmissionForm.jsx';
 import Forgotpass from './pages/forgotpass.jsx';
+import ActiveCompte from './pages/ActiveCompte.jsx';
 import ResetPassword from './pages/ResetPassword.jsx';
 import NotationJury  from './pages/NotationJury.jsx';
 import Configuration from './pages/Configuration.jsx';
 import NotFound from './pages/NotFound.jsx';
-import CompetitionAnimation from './pages/competition_animation.jsx';
+import JuryAssignment from './pages/jury_assignment.jsx';
 import { useAuth } from './context/AuthContext.jsx';
 
 
@@ -60,6 +61,7 @@ function App() {
           <Route path="/galerie/:id" element={<FilmDetail />} />
           <Route path="/login" element={<Login />} />
           <Route path='/submission' element ={<SubmissionForm/>}/>
+          <Route path="/active-compte" element={<ActiveCompte />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/forgotpass" element={<Forgotpass />} />
 
@@ -115,7 +117,7 @@ function App() {
             path="/jury-assignment"
             element={(
               <ProtectedRoute allowedRoles={["admin", "moderator"]}>
-                <CompetitionAnimation />
+                <JuryAssignment />
               </ProtectedRoute>
             )}
           />
