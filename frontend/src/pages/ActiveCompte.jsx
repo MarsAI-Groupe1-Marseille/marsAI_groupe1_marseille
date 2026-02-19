@@ -39,10 +39,10 @@ const ActiveCompte = () => {
       formData.append('specialite', JSON.stringify(specialiteList));
     }
 
-    await axios.post('/users/reset-password', formData, {
+    await axios.post('/users/active-compte', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
-    alert('Mot de passe réinitialisé avec succès.');
+    alert('Compte activé avec succès.');
     navigate('/login');
   };
 

@@ -131,6 +131,33 @@ exports.resetPassword = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+// Activation du compte après invitation (définition du mot de passe et éventuellement upload d'avatar)
+exports.activateAccount = async (req, res) => {
+    try {
+        const { token, new_password, specialite } = req.body;
+        const avatar = req.file ? req.file.path : null;
+        if (!token || !new_password) {
+            return res.status(400).json({ error: "Le token et le nouveau mot de passe sont requis." });
+        }
+        const user = await User.findOne({ where: { invite_token: token } });
+        if (!user) {
+            return res.status(404).json({ error: "Token invalide ou expiré." });
+        }
+        const password_hash = await bcrypt.hash(new_password, 10);
+        user.password_hash = password_hash;
+        user.invite_token = null;
+        user.invite_token_expires_at = null;
+        user.avatar = avatar;
+        if (specialite) {
+            user.specialite = specialite;
+        }
+        await user.save();
+
+        res.status(200).json({ message: "Compte activé avec succès." });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
 
 
 /**
