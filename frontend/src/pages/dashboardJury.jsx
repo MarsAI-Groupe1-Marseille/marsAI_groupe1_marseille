@@ -1,12 +1,22 @@
+// Indique à Next.js que ce composant s’exécute côté navigateur. Obligatoire car on utilise 
+// Obligatoire ici car on utilise :
+// useState
+// useRef
+// interactions (clic, modal, scroll…)
 "use client";
 
+// useRef : Permet de manipuler directement un élément du DOM comme contrôler le scroll horizontal du slider.
+// X Icone de la fermeture de la modal
 import { useState, useRef } from "react";
 import { X } from "lucide-react";
 
 export default function DashboardJury() {
+  // Gère l’ouverture de la modal.
   const [selectedPlaylist, setSelectedPlaylist] = useState(null);
+  // Référence vers le conteneur scrollable des vidéos.
   const sliderRef = useRef(null);
 
+// On stockes les playlists sous forme de tableau d’objets.
   const playlists = [
     {
       id: 1,
@@ -31,15 +41,20 @@ export default function DashboardJury() {
       ],
     },
   ];
-
+// Tableau de classes Taiwind pour donner une couleur différentes à chaque playlist.
   const gradients = [
     "from-purple-700 via-indigo-600 to-purple-900",
     "from-pink-600 via-rose-500 to-red-700",
     "from-cyan-500 via-blue-600 to-indigo-800",
   ];
 
-  // Calcul des statistiques
+
+// Calcul des statistiques avec flatMap() :
+// Parcourt toutes les playlists
+// Récupère toutes les vidéos
+// Les met dans un seul tableau
   const allVideos = playlists.flatMap(p => p.videos);
+  // Filtre les vidéos selon leur statut et compte le nombre de chaque catégorie
   const liked = allVideos.filter(v => v.status === "aimé").length;
   const disliked = allVideos.filter(v => v.status === "pas").length;
   const discussion = allVideos.filter(v => v.status === "discuter").length;
@@ -52,7 +67,7 @@ export default function DashboardJury() {
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-pink-600/20 rounded-full blur-3xl"></div>
 
       <div className="relative z-10 p-6">
-        
+
         {/* BLOCS STATISTIQUES */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto mb-14">
 
@@ -87,11 +102,13 @@ export default function DashboardJury() {
         </header>
 
         {/* PLAYLIST GRID */}
+        {/* Affichage conditionnel des playlists : Si aucune playlist n'est sélectionnée alors on affiche la grille. */}
         {!selectedPlaylist && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {playlists.map((playlist, i) => (
               <div
                 key={playlist.id}
+                // Lors du clic : On met la playlist dans le state , React re-render, La modal apparaît.
                 onClick={() => setSelectedPlaylist(playlist)}
                 className={`cursor-pointer rounded-3xl p-1 bg-gradient-to-br ${gradients[i]}
                 transform transition duration-300 hover:scale-105`}
@@ -106,7 +123,8 @@ export default function DashboardJury() {
           </div>
         )}
 
-        {/* MODAL */}
+        {/* MODAL */} 
+        {/* Si une playlist existe alors afficher la modal */}
         {selectedPlaylist && (
           <section className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
             
@@ -134,6 +152,7 @@ export default function DashboardJury() {
                   {selectedPlaylist.videos.map((video) => (
                     <a
                       key={video.id}
+                      // Redirection vers la page détails
                       href={`/videos/${video.id}`}
                       className="relative flex-shrink-0 w-56 md:w-64 bg-neutral-800 
                       rounded-2xl overflow-hidden transition 
@@ -173,6 +192,7 @@ export default function DashboardJury() {
                 {/* CHEVRONS */}
                 <button
                   onClick={() =>
+                    // Fait défiler horizontalement de 300px.
                     sliderRef.current.scrollBy({ left: -300, behavior: "smooth" })
                   }
                   className="absolute top-1/2 -left-4 -translate-y-1/2 
@@ -199,7 +219,9 @@ export default function DashboardJury() {
       </div>
 
       {/* Animations */}
+      {/* @keyframes fadeIn et scaleIn Ajoute animation : Apparition douce Zoom léger */}
       <style jsx>{`
+        
         .no-scrollbar::-webkit-scrollbar {
           display: none;
         }
@@ -225,7 +247,7 @@ export default function DashboardJury() {
     </div>
   );
 }
-
+// Composant réutilisable avec Props : title, value et gradient pour personnaliser le contenu et le style de chaque carte statistique.
 function StatCard({ title, value, gradient }) {
   return (
     <div className={`p-6 rounded-2xl bg-gradient-to-br ${gradient} text-center shadow-lg hover:scale-105 transition`}>
