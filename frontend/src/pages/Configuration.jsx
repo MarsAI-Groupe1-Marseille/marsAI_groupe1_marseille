@@ -778,32 +778,6 @@ const Configuration = () => {
     fetchFilmsAndJury()
   }, [])
 
-  useEffect(() => {
-    const fetchFilmsAndJury = async () => {
-      try {
-        const [filmsRes, usersRes] = await Promise.all([
-          axios.get('/submissions'),
-          axios.get('/users')
-        ])
-        console.log('Films response:', filmsRes.data)
-        console.log('Users response:', usersRes.data)
-        
-        // Films retourne { data: [...], totalItems, ... }
-        const films = filmsRes.data?.data || []
-        setFilmsCount(films.length)
-        
-        const allUsers = Array.isArray(usersRes.data) ? usersRes.data : usersRes.data?.users || []
-        const juries = allUsers.filter(u => u.role === 'jury')
-        console.log('Films count:', films.length, 'Jury count:', juries.length)
-        setJuryCount(juries.length)
-      } catch (error) {
-        console.error('Erreur chargement films/jury :', error)
-      }
-    }
-
-    fetchFilmsAndJury()
-  }, [])
-
   const handleDelete = async (id) => {
     try { await axios.delete(`/admin/jury-list/${id}`); setPlaylists(prev => prev.filter(p => p.id !== id)) }
     catch (e) { console.error(e) }
@@ -821,7 +795,7 @@ const Configuration = () => {
           <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>Gérez les paramètres du festival</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 items-stretch" style={{ gridAutoRows: '320px' }}>
-          <HomeConfigCard onClick={() => { /* navigate('/admin/home-config') */ }} />
+          <HomeConfigCard onClick={() => setShowHomeModal(true)} activeSections={activeSections} />
           <PlaylistsCard
             playlists={playlists}
             onNew={() => setShowModal(true)}
