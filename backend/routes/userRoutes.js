@@ -27,6 +27,8 @@ router.delete('/:id',
 router.post('/invite', userController.createUser);
 // Cette ligne permet à l'utilisateur de demander une réinitialisation de mot de passe
 router.post('/forgotpass', userController.forgotPassword);
+// route pour activer le compte et définir le mot de passe (après invitation ou réinitialisation)
+router.post('/active-compte', upload.single('avatar'), userController.activateAccount);
 // Cette ligne permet à l'utilisateur de réinitialiser son mot de passe avec un token
 router.post('/reset-password', userController.resetPassword);
 
