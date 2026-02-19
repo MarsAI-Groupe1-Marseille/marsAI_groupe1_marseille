@@ -20,6 +20,7 @@ import NotationJury  from './pages/NotationJury.jsx';
 import Configuration from './pages/Configuration.jsx';
 import NotFound from './pages/NotFound.jsx';
 import { useAuth } from './context/AuthContext.jsx';
+import JuryPage from './pages/JuryPage.jsx';
 
 
 function App() {
@@ -60,6 +61,8 @@ function App() {
           <Route path='/submission' element ={<SubmissionForm/>}/>
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/forgotpass" element={<Forgotpass />} />
+          <Route path="/jury" element={<JuryPage />} />
+
 
           <Route
             path="/dashboard"
