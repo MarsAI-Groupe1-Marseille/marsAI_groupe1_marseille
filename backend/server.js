@@ -21,6 +21,7 @@ const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const submissionRoutes = require('./routes/submissionRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const juryRoutes = require('./routes/juryRoutes');
 
 
 
@@ -47,7 +48,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);        
 app.use('/api/submissions', submissionRoutes); 
 app.use('/api/admin', adminRoutes); // Routes admin (validation des films, modération, etc.)
-
+app.use('/api/jury', juryRoutes); // Routes jury (votes, évaluations, etc.)
 
 // Servir les fichiers statiques du dossier uploads avec chemin absolu
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
