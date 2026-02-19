@@ -24,6 +24,13 @@ export default function DashboardJury() {
   const [error, setError] = useState(null);
   const [evaluatedVideoIds, setEvaluatedVideoIds] = useState(new Set());
 
+  const resolvePosterUrl = (poster) => {
+    if (!poster) return '/images/placeholder.jpg';
+    if (poster.startsWith('http://') || poster.startsWith('https://')) return poster;
+    const normalized = poster.startsWith('/') ? poster : `/${poster}`;
+    return `http://localhost:3000${normalized}`;
+  };
+
   // Récupérer les playlists et les votes de l'API
   useEffect(() => {
     const fetchData = async () => {
@@ -51,7 +58,7 @@ export default function DashboardJury() {
               id: video.id,
               title: video.title,
               director: video.director?.full_name || 'Réalisateur inconnu',
-              thumbnail: video.poster ? `http://localhost:3000${video.poster}` : '/images/placeholder.jpg',
+              thumbnail: resolvePosterUrl(video.poster),
               youtubeId: video.youtubeId,
               status: 'pas'
             }))
