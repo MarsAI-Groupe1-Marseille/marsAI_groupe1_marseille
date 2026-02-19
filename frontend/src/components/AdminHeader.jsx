@@ -25,6 +25,9 @@ const AdminHeader = () => {
     if (location.pathname.startsWith("/dashboard")) {
       return "bg-gradient-to-r from-violet-900/80 via-fuchsia-900/40 to-neutral-950";
     }
+    if (location.pathname.startsWith("/Configuration")) {
+      return "bg-gradient-to-r from-violet-900/90 via-indigo-950 to-neutral-950";
+    }
     return "bg-neutral-950";
   })();
 

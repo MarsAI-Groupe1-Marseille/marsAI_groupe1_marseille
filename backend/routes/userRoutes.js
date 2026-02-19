@@ -3,6 +3,7 @@ const router = express.Router();
 const userController = require('../controllers/userController');
 const { verifyToken, checkRole } = require('../middlewares/authMiddleware');
 const { route } = require('./authRoutes');
+const upload = require('../middlewares/uploadMiddleware');
 
 
 // const authMiddleware = require('../middlewares/authMiddleware'); // Vérifie si connecté
@@ -24,7 +25,9 @@ router.delete('/:id',
 );
 // Cette ligne permet à l'Admin de créer et inviter un utilisateur (jury, admin, modérateur)
 router.post('/invite', userController.createUser);
-// Cette ligne permet au jury de définir son mot de passe via le lien magique
+// Cette ligne permet à l'utilisateur de demander une réinitialisation de mot de passe
+router.post('/forgotpass', userController.forgotPassword);
+// Cette ligne permet à l'utilisateur de réinitialiser son mot de passe avec un token
 router.post('/reset-password', userController.resetPassword);
 
 module.exports = router;

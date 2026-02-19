@@ -19,8 +19,47 @@ router.post('/jury-list',
     checkRole('admin'),
     adminController.createJuryList
 );
+// route pour afficher les playlists avec films et jurys assignés
+router.get('/jury-lists',
+    verifyToken,
+    checkRole('admin'),
+    adminController.getJuryListsWithAssignments
+);
+// route pour supprimer une playlist
+router.delete('/jury-list/:id',
+    verifyToken,
+    checkRole('admin'),
+    adminController.deleteJuryList
+);
+// route pour supprimer plusieurs playlists
+router.delete('/jury-lists',
+    verifyToken,
+    checkRole('admin'),
+    adminController.deleteManyJuryLists
+);
+// route qui assigne un film a une play list
+router.post('/assigne-film',
+    verifyToken,
+    checkRole('admin'),
+    adminController.addMovieToPlayList);
 
+// route qui retire un film d'une play list
+router.delete('/assigne-film',
+    verifyToken,
+    checkRole('admin'),
+    adminController.removeMovieFromPlaylist);
 
+// route qui assigne les jurys aux films
+router.post('/assigne-jury',
+    verifyToken,
+    checkRole('admin'),
+    adminController.assignedJuryToPlaylist);
+
+// route qui retire un jury d'une playlist
+router.delete('/assigne-jury',
+    verifyToken,
+    checkRole('admin'),
+    adminController.removeJuryFromPlaylist);
 
 module.exports = router;
 
