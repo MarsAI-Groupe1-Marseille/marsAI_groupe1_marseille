@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from '../config/axiosConfig';
 import { Search, ChevronRight, ChevronLeft, Check, X, Clock, Globe, Users, LayoutDashboard, Film as FilmIcon, BarChart3, Calendar, Settings } from "lucide-react";
+import { useLanguage } from '../context/LanguageContext.jsx';
 
 /* ─────────────────────────── DONNÉES ─────────────────────────── */
 const INITIAL_FILMS = [
@@ -222,6 +223,7 @@ function Sidebar({ active }) {
 
 /* ─────────────────────────── COMPOSANT PRINCIPAL ─────────────── */
 export default function GestionFilms() {
+  const { t } = useLanguage();
   const [films, setFilms]         = useState([]);
   const [loading, setLoading]     = useState(false);
   const [totalPages, setTotalPages] = useState(1);
@@ -233,7 +235,30 @@ export default function GestionFilms() {
   const [selectedFilm, setSelectedFilm] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [toast, setToast]         = useState({ visible: false, msg: "", color: "#4f8ef7" });
+  const [adminData, setAdminData] = useState({
+    full_name: "Admin Test",
+    email: "email@exemple.com",
+    job_title: "Directeur",
+    avatar: ""
+  });
   const toastTimer                = useRef(null);
+
+  useEffect(() => {
+    const user = localStorage.getItem('user');
+    if (user) {
+      try {
+        const userData = JSON.parse(user);
+        setAdminData({
+          full_name: userData.full_name || "Admin Test",
+          email: userData.email || "email@exemple.com",
+          job_title: userData.job_title || "Directeur",
+          avatar: userData.avatar || ""
+        });
+      } catch (err) {
+        console.error("Error parsing user data:", err);
+      }
+    }
+  }, []);
 
   // Debounce pour la recherche
   useEffect(() => {
@@ -370,125 +395,135 @@ export default function GestionFilms() {
 
 
   return (
-    <div className="flex min-h-screen bg-neutral-950 text-white">
+    <div className="min-h-screen bg-neutral-950 text-white">
       {/* MAIN */}
-      <main className="flex-1 p-9 min-h-screen">
-
-        {/* Top Bar */}
-        <div className="flex items-center justify-between mb-7">
-          <span className="text-xs text-neutral-400 uppercase tracking-widest">
-            Back-Office Officiel
-          </span>
-          <div className="flex items-center gap-3">
-            <div className="text-right">
-              <div className="text-sm font-bold text-neutral-200 uppercase tracking-wide">Administrateur</div>
-              <div className="text-xs text-violet-400">admin@email.com</div>
-            </div>
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-600 to-violet-800 flex items-center justify-center font-bold text-sm">A</div>
-          </div>
-        </div>
+      <main style={{ maxWidth: '1400px', margin: '0 auto', padding: '32px 16px' }}>
 
         {/* Page Title */}
         <div className="mb-8">
-          <span className="text-xs text-violet-400 uppercase tracking-widest font-bold">Admin Management</span>
-          <h1 className="text-5xl font-bold text-white mb-2">GESTION FILMS</h1>
-          <p className="text-neutral-400 text-sm">Gérez l'intégralité des soumissions, approuvez ou rejetez les films soumis.</p>
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-6 sm:gap-4">
+            {/* Left side - Title and description */}
+            <div className="flex-1">
+              <span className="text-xs text-violet-400 uppercase tracking-widest font-bold">{t('gestion_films_distribution')}</span>
+              <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold text-white mb-2">{t('gestion_films_title')}</h1>
+              <p className="text-xs sm:text-sm text-neutral-400">{t('gestion_films_subtitle')}</p>
+            </div>
+
+            {/* Right side - Admin Profile Card */}
+            <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 sm:min-w-[240px]">
+              {/* Avatar */}
+              <div className="flex justify-center mb-4">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center border border-violet-400 shadow-lg">
+                  <span className="text-white font-bold text-lg">
+                    {adminData.full_name
+                      ? adminData.full_name
+                          .split(' ')
+                          .map(n => n[0])
+                          .join('')
+                          .toUpperCase()
+                      : 'A'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Admin Info */}
+              <div className="text-center space-y-3">
+                <div>
+                  <p className="text-xs text-neutral-500 uppercase tracking-wider font-semibold mb-1">{t('gestion_films_admin_label')}</p>
+                  <p className="text-sm font-semibold text-white">{adminData.full_name}</p>
+                </div>
+                <div className="border-t border-neutral-700 pt-2">
+                  <p className="text-xs text-neutral-500 uppercase tracking-wider font-semibold mb-1">{t('gestion_films_email_label')}</p>
+                  <p className="text-xs text-neutral-300 break-words">{adminData.email}</p>
+                </div>
+                <div className="border-t border-neutral-700 pt-2">
+                  <p className="text-xs text-neutral-500 uppercase tracking-wider font-semibold mb-1">{t('gestion_films_role_label')}</p>
+                  <p className="text-xs text-neutral-300">{adminData.job_title}</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Card */}
         <div className="bg-neutral-900 rounded-xl border border-neutral-800 overflow-hidden shadow-lg">
 
           {/* Search & Filter */}
-          <div className="p-5 border-b border-neutral-800">
-            <div className="flex gap-4 items-end">
+          <div className="p-3 sm:p-5 border-b border-neutral-800">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-stretch sm:items-end">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-500" size={16} />
                 <input
                   value={query}
                   onChange={e => setQuery(e.target.value)}
-                  placeholder="Rechercher un film ou un réalisateur…"
-                  className="w-full border border-neutral-700 rounded-lg pl-9 pr-4 py-2 bg-neutral-800 text-sm text-neutral-200 placeholder-neutral-500 focus:border-violet-500 focus:bg-neutral-800 focus:outline-none transition"
+                  placeholder={t('gestion_films_search')}
+                  className="w-full border border-neutral-700 rounded-lg pl-9 pr-4 py-2 bg-neutral-800 text-xs sm:text-sm text-neutral-200 placeholder-neutral-500 focus:border-violet-500 focus:bg-neutral-800 focus:outline-none transition"
                 />
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => { setStatutFilter(""); setPage(1); }}
-                  className={`px-4 py-2 rounded-lg text-sm font-semibold uppercase tracking-wider transition ${
+                  className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold uppercase tracking-wider transition flex-1 sm:flex-none ${
                     statutFilter === ""
                       ? "bg-violet-600 text-white border border-violet-500"
                       : "bg-neutral-800 text-neutral-400 border border-neutral-700 hover:text-neutral-300"
                   }`}
                 >
-                  Tous
+                  {t('gestion_films_all')}
                 </button>
                 <button
                   onClick={() => { setStatutFilter("valide"); setPage(1); }}
-                  className={`px-4 py-2 rounded-lg text-sm font-semibold uppercase tracking-wider transition ${
+                  className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold uppercase tracking-wider transition flex-1 sm:flex-none ${
                     statutFilter === "valide"
                       ? "bg-green-700 text-white border border-green-600"
                       : "bg-neutral-800 text-neutral-400 border border-neutral-700 hover:text-neutral-300"
                   }`}
                 >
-                  Validé
+                  {t('gestion_films_valid')}
                 </button>
                 <button
                   onClick={() => { setStatutFilter("attente"); setPage(1); }}
-                  className={`px-4 py-2 rounded-lg text-sm font-semibold uppercase tracking-wider transition ${
+                  className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold uppercase tracking-wider transition flex-1 sm:flex-none ${
                     statutFilter === "attente"
                       ? "bg-amber-700 text-white border border-amber-600"
                       : "bg-neutral-800 text-neutral-400 border border-neutral-700 hover:text-neutral-300"
                   }`}
                 >
-                  En attente
+                  {t('gestion_films_pending')}
                 </button>
                 <button
                   onClick={() => { setStatutFilter("refuse"); setPage(1); }}
-                  className={`px-4 py-2 rounded-lg text-sm font-semibold uppercase tracking-wider transition ${
+                  className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold uppercase tracking-wider transition flex-1 sm:flex-none ${
                     statutFilter === "refuse"
                       ? "bg-red-700 text-white border border-red-600"
                       : "bg-neutral-800 text-neutral-400 border border-neutral-700 hover:text-neutral-300"
                   }`}
                 >
-                  Refusé
+                  {t('gestion_films_refused')}
                 </button>
               </div>
             </div>
           </div>
 
           {/* Table */}
-          <div className="overflow-x-auto">
+          <div>
             {loading ? (
               <div className="flex justify-center items-center py-20">
-                <div className="text-neutral-400">Chargement des films...</div>
+                <div className="text-xs sm:text-sm text-neutral-400">{t('gestion_films_loading')}</div>
               </div>
             ) : (
-              <table className="w-full">
-                <thead>
-                  <tr className="bg-neutral-800 border-b border-neutral-700">
-                    {["Affiche", "Titre", "Réalisateur", "Statut", "Date", "Actions", ""].map(h => (
-                      <th key={h} className="text-xs font-bold uppercase text-neutral-400 px-4 py-3 text-left tracking-wider whitespace-nowrap">
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {films.map(f => {
-                    return (
-                      <tr key={f.id} className="border-b border-neutral-800 hover:bg-neutral-800 transition-colors">
-
-                        {/* Affiche */}
-                        <td className="px-4 py-3">
-                          <div className="w-16 h-20 rounded overflow-hidden bg-neutral-800 flex items-center justify-center">
+              <>
+                {/* MOBILE VIEW - CARTES */}
+                <div className="sm:hidden">
+                  <div className="grid grid-cols-1 gap-3">
+                    {films.map(f => (
+                      <div key={f.id} className="bg-neutral-800 border border-neutral-700 rounded-lg p-3 hover:bg-neutral-700 transition-colors">
+                        <div className="flex gap-3">
+                          {/* Affiche */}
+                          <div className="w-12 h-16 rounded overflow-hidden bg-neutral-900 flex-shrink-0 flex items-center justify-center">
                             {f.posterUrl ? (
                               <img 
-                                src={
-                                f.posterUrl 
-                                  ? (f.posterUrl.startsWith('http') 
-                                      ? f.posterUrl 
-                                      : `${import.meta.env.VITE_API_URL}${f.posterUrl}`)
-                                  : "https://placehold.co/300x450?text=Pas+d'affiche"
-                              } 
+                                src={f.posterUrl.startsWith('http') ? f.posterUrl : `${import.meta.env.VITE_API_URL}${f.posterUrl}`}
                                 alt={f.titre}
                                 className="w-full h-full object-cover"
                                 onError={(e) => {
@@ -497,79 +532,166 @@ export default function GestionFilms() {
                                 }}
                               />
                             ) : (
-                              <div className="text-neutral-600 text-2xl">🎬</div>
+                              <div className="text-neutral-600 text-sm">🎬</div>
                             )}
                           </div>
-                        </td>
-
-                        {/* Titre */}
-                        <td className="px-4 py-3">
-                          <div className="font-bold text-sm text-white">{f.titre}</div>
-                          <div className="text-xs text-neutral-400">Film soumis</div>
-                        </td>
-
-                        {/* Réalisateur */}
-                        <td className="px-4 py-3 text-neutral-300 font-medium text-sm">{f.real}</td>
-
-                        {/* Statut */}
-                        <td className="px-4 py-3"><Badge statut={f.statut} /></td>
-
-                        {/* Date */}
-                        <td className="px-4 py-3 text-neutral-400 font-medium text-sm">{f.date}</td>
-
-                        {/* Actions */}
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-2 flex-nowrap">
+                          {/* Contenu */}
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-bold text-xs text-white truncate">{f.titre}</h3>
+                            <p className="text-xs text-neutral-400">{f.real}</p>
+                            <div className="mt-2">
+                              <Badge statut={f.statut} />
+                            </div>
+                          </div>
+                          {/* Actions */}
+                          <div className="flex flex-col gap-1 flex-shrink-0">
                             <button
                               onClick={() => changeStatut(f.id, "valide")}
                               disabled={f.statut === 'valide'}
-                              className="inline-flex items-center gap-1 px-3 py-1 rounded text-xs font-bold uppercase tracking-wider bg-green-900 text-green-200 border border-green-700 hover:bg-green-800 transition whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="inline-flex items-center justify-center px-2 py-1 rounded text-xs font-bold bg-green-900 text-green-200 border border-green-700 hover:bg-green-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                              title="Approuver"
                             >
-                              <Check size={13} /> Approuver
+                              <Check size={14} />
                             </button>
                             <button
                               onClick={() => changeStatut(f.id, "refuse")}
                               disabled={f.statut === 'refuse'}
-                              className="inline-flex items-center gap-1 px-3 py-1 rounded text-xs font-bold uppercase tracking-wider bg-red-900 text-red-200 border border-red-700 hover:bg-red-800 transition whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="inline-flex items-center justify-center px-2 py-1 rounded text-xs font-bold bg-red-900 text-red-200 border border-red-700 hover:bg-red-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                              title="Rejeter"
                             >
-                              <X size={13} /> Rejeter
+                              <X size={14} />
+                            </button>
+                            <button 
+                              onClick={() => { setSelectedFilm(f); setIsModalOpen(true); }}
+                              className="inline-flex items-center justify-center px-2 py-1 rounded border border-neutral-600 bg-neutral-700 text-violet-400 hover:border-violet-500 hover:bg-neutral-600 transition text-xs"
+                              title="Détails"
+                            >
+                              <ChevronRight size={14} />
                             </button>
                           </div>
-                        </td>
-
-                        {/* Détail */}
-                        <td className="px-4 py-3">
-                          <button 
-                            onClick={() => { setSelectedFilm(f); setIsModalOpen(true); }}
-                            className="inline-flex items-center justify-center w-8 h-8 rounded border border-neutral-700 bg-neutral-800 text-violet-400 hover:border-violet-500 hover:bg-neutral-700 transition"
-                          >
-                            <ChevronRight size={16} />
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-
-                  {films.length === 0 && !loading && (
-                    <tr>
-                      <td colSpan={7} className="px-4 py-10 text-center text-neutral-400 text-sm">
-                        Aucun film trouvé {query && `pour « ${query} »`}
-                      </td>
-                    </tr>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {films.length === 0 && (
+                    <div className="text-center py-10 text-neutral-400 text-xs">
+                      Aucun film trouvé {query && `pour « ${query} »`}
+                    </div>
                   )}
-                </tbody>
-              </table>
+                </div>
+
+                {/* DESKTOP VIEW - TABLEAU */}
+                <div className="hidden sm:block overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-neutral-800 border-b border-neutral-700">
+                        {[t('gestion_films_column_poster'), t('gestion_films_column_title'), t('gestion_films_column_director'), t('gestion_films_column_status'), t('gestion_films_column_date'), t('gestion_films_column_actions'), ""].map(h => (
+                          <th key={h} className="text-xs font-bold uppercase text-neutral-400 px-4 py-3 text-left tracking-wider whitespace-nowrap">
+                            {h}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {films.map(f => {
+                        return (
+                          <tr key={f.id} className="border-b border-neutral-800 hover:bg-neutral-800 transition-colors">
+
+                            {/* Affiche */}
+                            <td className="px-4 py-3">
+                              <div className="w-16 h-20 rounded overflow-hidden bg-neutral-800 flex items-center justify-center flex-shrink-0">
+                                {f.posterUrl ? (
+                                  <img 
+                                    src={
+                                    f.posterUrl 
+                                      ? (f.posterUrl.startsWith('http') 
+                                          ? f.posterUrl 
+                                          : `${import.meta.env.VITE_API_URL}${f.posterUrl}`)
+                                      : "https://placehold.co/300x450?text=Pas+d'affiche"
+                                  } 
+                                    alt={f.titre}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      e.target.onerror = null;
+                                      e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="64" height="80" viewBox="0 0 64 80"%3E%3Crect fill="%23262626" width="64" height="80"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23666" font-size="24"%3E🎬%3C/text%3E%3C/svg%3E';
+                                    }}
+                                  />
+                                ) : (
+                                  <div className="text-neutral-600 text-lg">🎬</div>
+                                )}
+                              </div>
+                            </td>
+
+                            {/* Titre */}
+                            <td className="px-4 py-3">
+                              <div className="font-bold text-sm text-white truncate">{f.titre}</div>
+                              <div className="text-xs text-neutral-400">Film soumis</div>
+                            </td>
+
+                            {/* Réalisateur */}
+                            <td className="px-4 py-3 text-neutral-300 font-medium text-sm truncate">{f.real}</td>
+
+                            {/* Statut */}
+                            <td className="px-4 py-3"><Badge statut={f.statut} /></td>
+
+                            {/* Date */}
+                            <td className="px-4 py-3 text-neutral-400 font-medium text-sm">{f.date}</td>
+
+                            {/* Actions */}
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-2 flex-nowrap flex-row">
+                                <button
+                                  onClick={() => changeStatut(f.id, "valide")}
+                                  disabled={f.statut === 'valide'}
+                                  className="inline-flex items-center gap-1 px-3 py-1 rounded text-xs font-bold uppercase tracking-wider bg-green-900 text-green-200 border border-green-700 hover:bg-green-800 transition whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  <Check size={14} /> Approuver
+                                </button>
+                                <button
+                                  onClick={() => changeStatut(f.id, "refuse")}
+                                  disabled={f.statut === 'refuse'}
+                                  className="inline-flex items-center gap-1 px-3 py-1 rounded text-xs font-bold uppercase tracking-wider bg-red-900 text-red-200 border border-red-700 hover:bg-red-800 transition whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  <X size={14} /> Rejeter
+                                </button>
+                              </div>
+                            </td>
+
+                            {/* Détail */}
+                            <td className="px-4 py-3">
+                              <button 
+                                onClick={() => { setSelectedFilm(f); setIsModalOpen(true); }}
+                                className="inline-flex items-center justify-center w-8 h-8 rounded border border-neutral-700 bg-neutral-800 text-violet-400 hover:border-violet-500 hover:bg-neutral-700 transition"
+                              >
+                                <ChevronRight size={16} />
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+
+                      {films.length === 0 && !loading && (
+                        <tr>
+                          <td colSpan={7} className="px-4 py-10 text-center text-neutral-400 text-sm">
+                            Aucun film trouvé {query && `pour « ${query} »`}
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             )}
           </div>
 
           {/* Pagination */}
-          <div className="flex flex-col items-center gap-3 p-6 border-t border-neutral-800">
-            <div className="flex gap-2">
+          <div className="flex flex-col items-center gap-2 sm:gap-3 p-3 sm:p-6 border-t border-neutral-800">
+            <div className="flex gap-1 sm:gap-2 flex-wrap justify-center">
               {/* Précédent */}
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className={`w-8 h-8 rounded border flex items-center justify-center transition ${
+                className={`w-7 h-7 sm:w-8 sm:h-8 rounded border flex items-center justify-center transition ${
                   page === 1 
                     ? 'border-neutral-700 bg-neutral-900 text-neutral-600 opacity-50 cursor-not-allowed'
                     : 'border-neutral-700 bg-neutral-900 text-neutral-400 hover:border-violet-500 hover:text-violet-400'
@@ -578,26 +700,38 @@ export default function GestionFilms() {
                 <ChevronLeft size={14} />
               </button>
 
-              {/* Pages */}
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-                <button
-                  key={p}
-                  onClick={() => setPage(p)}
-                  className={`w-8 h-8 rounded border flex items-center justify-center text-sm font-semibold transition ${
-                    p === page
-                      ? 'border-violet-500 bg-violet-600 text-white'
-                      : 'border-neutral-700 bg-neutral-900 text-neutral-400 hover:border-violet-500 hover:text-violet-400'
-                  }`}
-                >
-                  {p}
-                </button>
-              ))}
+              {/* Pages - Limitées sur mobile */}
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter(p => {
+                  // Sur mobile (largeur < 640px), affiche seulement 3 pages
+                  // Sur desktop, affiche toutes les pages
+                  if (totalPages <= 5) return true; // Affiche tout si <= 5 pages
+                  // Sinon affiche: page actuelle, +/- 1
+                  return Math.abs(p - page) <= 1 || p === 1 || p === totalPages;
+                })
+                .map((p, idx, arr) => (
+                  <React.Fragment key={p}>
+                    {idx > 0 && arr[idx - 1] !== p - 1 && (
+                      <span className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-neutral-500 text-lg">...</span>
+                    )}
+                    <button
+                      onClick={() => setPage(p)}
+                      className={`w-7 h-7 sm:w-8 sm:h-8 rounded border flex items-center justify-center text-xs sm:text-sm font-semibold transition ${
+                        p === page
+                          ? 'border-violet-500 bg-violet-600 text-white'
+                          : 'border-neutral-700 bg-neutral-900 text-neutral-400 hover:border-violet-500 hover:text-violet-400'
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  </React.Fragment>
+                ))}
 
               {/* Suivant */}
               <button
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages || totalPages === 0}
-                className={`w-8 h-8 rounded border flex items-center justify-center transition ${
+                className={`w-7 h-7 sm:w-8 sm:h-8 rounded border flex items-center justify-center transition ${
                   page === totalPages || totalPages === 0
                     ? 'border-neutral-700 bg-neutral-900 text-neutral-600 opacity-50 cursor-not-allowed'
                     : 'border-neutral-700 bg-neutral-900 text-neutral-400 hover:border-violet-500 hover:text-violet-400'
@@ -607,8 +741,8 @@ export default function GestionFilms() {
               </button>
             </div>
 
-            <div className="text-xs text-neutral-400 font-semibold uppercase tracking-wider">
-              Page {page} sur {totalPages || 1} — {totalFilms} film{totalFilms > 1 ? "s" : ""} trouvé{totalFilms > 1 ? "s" : ""}
+            <div className="text-xs text-neutral-400 font-semibold uppercase tracking-wider text-center">
+              Page {page}/{totalPages || 1} — {totalFilms} film{totalFilms > 1 ? "s" : ""}
             </div>
           </div>
 
