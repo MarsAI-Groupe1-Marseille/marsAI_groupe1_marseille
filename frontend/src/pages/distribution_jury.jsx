@@ -62,7 +62,20 @@ export default function AdminDashboard() {
       {/* Header */}
       <header className="sticky top-0 z-50 bg-neutral-950 border-b border-neutral-800 py-6 px-8 shadow-lg">
         <div className="max-w-7xl mx-auto flex justify-center items-center">
-          <h1 className="text-3xl font-bold text-violet-400">👥 Gestion des jurys</h1>         
+          <h1 className="text-3xl font-bold text-violet-400 flex items-center gap-3">
+          <span
+            className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+            style={{ background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.3)' }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </span>
+          Gestion des jurys
+          </h1>         
         </div>
       </header>
 
