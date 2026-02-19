@@ -147,9 +147,12 @@ exports.activateAccount = async (req, res) => {
         user.password_hash = password_hash;
         user.invite_token = null;
         user.invite_token_expires_at = null;
-        user.avatar = avatar;
+        user.avatar_url = avatar;
+        
+        // Gérer specialite : s'il vient du frontend en tant que string, le convertir en array
         if (specialite) {
-            user.specialite = specialite;
+            // Si c'est une string, la mettre dans un array ; sinon, garder le array
+            user.specialite = typeof specialite === 'string' ? [specialite] : specialite;
         }
         await user.save();
 

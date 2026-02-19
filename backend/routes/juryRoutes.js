@@ -3,6 +3,9 @@ const router = express.Router();
 const juryController = require('../controllers/juryController');
 const authMiddleware = require('../middlewares/authMiddleware');
 
+// Route pour récupérer tous les jurys
+router.get('/all', juryController.getAllJury);
+
 // Route pour soumettre ou modifier un vote
 router.post('/vote', authMiddleware.verifyToken, juryController.submitVote);
 

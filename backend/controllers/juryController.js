@@ -1,4 +1,22 @@
-const { JuryEvaluation, JuryList, Submission, JuryMember, JuryListSubmission } = require('../models');
+const { JuryEvaluation, JuryList, Submission, JuryMember, JuryListSubmission, User } = require('../models');
+const { Op } = require('sequelize');
+
+exports.getAllJury = async (req, res) => {
+    try {
+        const juryMembers = await User.findAll({
+            where: {
+                role: 'jury'
+            },
+            attributes: ['id', 'full_name', 'email', 'avatar_url', 'specialite', 'role', 'created_at'],
+            raw: true
+        });
+
+        res.status(200).json({ success: true, juryMembers });
+    } catch (error) {
+        console.error('Erreur récupération jurys:', error);
+        res.status(500).json({ error: error.message });
+    }
+};
 
 exports.submitVote = async (req, res) => {
     try {
