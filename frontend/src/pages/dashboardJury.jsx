@@ -108,9 +108,8 @@ export default function DashboardJury() {
             {playlists.map((playlist, i) => (
               <div
                 key={playlist.id}
-                // Lors du clic : On met la playlist dans le state , React re-render, La modal apparaît.
                 onClick={() => setSelectedPlaylist(playlist)}
-                className={`cursor-pointer rounded-3xl p-1 bg-gradient-to-br ${gradients[i]}
+                className={`cursor-pointer rounded-3xl p-1 bg-gradient-to-br ${gradients[i % gradients.length]}
                 transform transition duration-300 hover:scale-105`}
               >
                 <div className="bg-neutral-900 rounded-3xl p-8 text-center h-40 flex items-center justify-center">

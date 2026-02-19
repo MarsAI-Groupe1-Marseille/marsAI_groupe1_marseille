@@ -1,4 +1,4 @@
-const { JuryEvaluation } = require('../models');
+const { JuryEvaluation, JuryList, Submission, JuryMember, JuryListSubmission } = require('../models');
 
 exports.submitVote = async (req, res) => {
     try {
@@ -33,6 +33,55 @@ exports.getJuryVotes = async (req, res) => {
         const votes = await JuryEvaluation.findAll({ where: { UserId: userId } });
         res.json(votes);
     } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.getMyPlaylists = async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        // Récupérer les playlists (JuryList) associées au jury
+        const playlists = await JuryList.findAll({
+            include: [
+                {
+                    model: Submission,
+                    through: { 
+                        attributes: [] // On ne veut pas les attributs de la table de jointure
+                    },
+                    attributes: ['id', 'title_original', 'duration_seconds', 'youtube_id', 'poster_url']
+                }
+            ]
+        });
+
+        // Filtrer les playlists qui contiennent ce jury (via JuryMember)
+        const myPlaylists = [];
+        for (const playlist of playlists) {
+            const isMember = await JuryMember.findOne({
+                where: { 
+                    user_id: userId, 
+                    jury_list_id: playlist.id 
+                }
+            });
+
+            if (isMember) {
+                myPlaylists.push({
+                    id: playlist.id,
+                    name: playlist.name,
+                    videos: playlist.Submissions.map(sub => ({
+                        id: sub.id,
+                        title: sub.title_original,
+                        duration_seconds: sub.duration_seconds,
+                        youtubeId: sub.youtube_id,
+                        poster: sub.poster_url
+                    }))
+                });
+            }
+        }
+
+        res.status(200).json({ success: true, playlists: myPlaylists });
+    } catch (error) {
+        console.error('Erreur récupération playlists:', error);
         res.status(500).json({ error: error.message });
     }
 };
