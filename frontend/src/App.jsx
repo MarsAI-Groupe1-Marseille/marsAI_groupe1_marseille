@@ -2,6 +2,7 @@ import { Routes, Route, useLocation } from 'react-router-dom';
 import Home from './pages/home.jsx';
 import Galerie from './pages/galerie.jsx';
 import Login from './pages/login.jsx';
+import Faq from './pages/faq.jsx';
 import FilmDetail from './pages/film_detail.jsx';
 import Dashboard from './pages/dashboard.jsx';
 import DashboardUser from './pages/dashboardUser.jsx';
@@ -16,7 +17,7 @@ import './App.css'
 import SubmissionForm from './pages/SubmissionForm.jsx';
 import Forgotpass from './pages/forgotpass.jsx';
 import ResetPassword from './pages/ResetPassword.jsx';
-import NotationJury  from './pages/NotationJury.jsx';
+import NotationJury from './pages/NotationJury.jsx';
 import Configuration from './pages/Configuration.jsx';
 import NotFound from './pages/NotFound.jsx';
 import CompetitionAnimation from './pages/competition_animation.jsx';
@@ -52,14 +53,15 @@ function App() {
   return (
     <div className="App flex flex-col min-h-screen">
       {renderHeader()}
-      
+
       <main className="grow">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/galerie" element={<Galerie />} />
+          <Route path="/faq" element={<Faq />} />
           <Route path="/galerie/:id" element={<FilmDetail />} />
           <Route path="/login" element={<Login />} />
-          <Route path='/submission' element ={<SubmissionForm/>}/>
+          <Route path='/submission' element={<SubmissionForm />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/forgotpass" element={<Forgotpass />} />
 
@@ -103,7 +105,7 @@ function App() {
               </ProtectedRoute>
             )}
           />
-           <Route
+          <Route
             path="/configuration"
             element={(
               <ProtectedRoute allowedRoles={["admin"]}>
@@ -123,11 +125,11 @@ function App() {
 
         </Routes>
 
-        </main>
+      </main>
 
-        {isPublicRoute && <Footer />}
-      </div>
-    
+      {isPublicRoute && <Footer />}
+    </div>
+
   )
 }
 

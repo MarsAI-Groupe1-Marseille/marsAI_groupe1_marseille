@@ -4,33 +4,33 @@ import React, { useEffect, useRef, useState } from "react"; //
 import { Link } from "react-router-dom"; //
 import { Rocket, Mail, Youtube, Instagram, X, ArrowRight, Sparkles } from "lucide-react"; //
 
-const Footer = () => { 
-  const footerRef = useRef(null); 
-  const [isVisible, setIsVisible] = useState(false); 
-  const [email, setEmail] = useState(""); 
+const Footer = () => {
+  const footerRef = useRef(null);
+  const [isVisible, setIsVisible] = useState(false);
+  const [email, setEmail] = useState("");
 
-  useEffect(() => { 
-    if (!footerRef.current) return; 
-    const observer = new IntersectionObserver( 
-      (entries) => { 
-        const entry = entries[0]; 
-        if (entry.isIntersecting) setIsVisible(true); 
+  useEffect(() => {
+    if (!footerRef.current) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry.isIntersecting) setIsVisible(true);
       }, //
-      { threshold: 0.15 } 
+      { threshold: 0.15 }
     ); //
-    observer.observe(footerRef.current); 
-    return () => observer.disconnect(); 
-  }, []); 
+    observer.observe(footerRef.current);
+    return () => observer.disconnect();
+  }, []);
 
-  const onSubmitNewsletter = (e) => { 
+  const onSubmitNewsletter = (e) => {
     e.preventDefault(); //
     // TODO: brancher API plus tard 
-    setEmail(""); 
-  }; 
+    setEmail("");
+  };
 
-  return ( 
-    <footer className="w-full mt-10 border-t border-[var(--color-border)]">  
-      <div className="w-full bg-[var(--color-footer-bg)] backdrop-blur-md">  
+  return (
+    <footer className="w-full mt-10 border-t border-[var(--color-border)]">
+      <div className="w-full bg-[var(--color-footer-bg)] backdrop-blur-md">
         <div
           ref={footerRef}
           className={["container-mars py-10 sm:py-12 mars-reveal", isVisible ? "is-visible" : ""].join(" ")}
@@ -53,49 +53,49 @@ const Footer = () => {
               </p>
 
               {/* Socials */}
-                <div className="mt-4 flex items-center gap-2">
-                    <a
-                        href="https://x.com/marsai"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mars-btn mars-glow inline-flex items-center justify-center"
-                        aria-label="Twitter"
-                        title="Twitter"
-                    >
-                        <X size={18} />
-                    </a>
+              <div className="mt-4 flex items-center gap-2">
+                <a
+                  href="https://x.com/marsai"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mars-btn mars-glow inline-flex items-center justify-center"
+                  aria-label="Twitter"
+                  title="Twitter"
+                >
+                  <X size={18} />
+                </a>
 
-                    <a
-                        href="https://instagram.com/marsai"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mars-btn mars-glow inline-flex items-center justify-center"
-                        aria-label="Instagram"
-                        title="Instagram"
-                    >
-                        <Instagram size={18} />
-                    </a>
+                <a
+                  href="https://instagram.com/marsai"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mars-btn mars-glow inline-flex items-center justify-center"
+                  aria-label="Instagram"
+                  title="Instagram"
+                >
+                  <Instagram size={18} />
+                </a>
 
-                    <a
-                        href="https://youtube.com/@marsai"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mars-btn mars-glow inline-flex items-center justify-center"
-                        aria-label="YouTube"
-                        title="YouTube"
-                    >
-                        <Youtube size={18} />
-                    </a>
+                <a
+                  href="https://youtube.com/@marsai"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mars-btn mars-glow inline-flex items-center justify-center"
+                  aria-label="YouTube"
+                  title="YouTube"
+                >
+                  <Youtube size={18} />
+                </a>
 
-                    <a
-                        href="mailto:contact@marsai.fr"
-                        className="mars-btn mars-glow inline-flex items-center justify-center"
-                        aria-label="Email"
-                        title="Email"
-                    >
-                        <Mail size={18} />
-                    </a>
-                </div>
+                <a
+                  href="mailto:contact@marsai.fr"
+                  className="mars-btn mars-glow inline-flex items-center justify-center"
+                  aria-label="Email"
+                  title="Email"
+                >
+                  <Mail size={18} />
+                </a>
+              </div>
 
             </div>
 
@@ -108,6 +108,7 @@ const Footer = () => {
               <div className="mt-4 flex flex-col gap-2 text-sm">
                 <Link className="hover:text-[var(--color-secondary)] transition-colors" to="/">Accueil</Link>
                 <Link className="hover:text-[var(--color-secondary)] transition-colors" to="/galerie">Galerie</Link>
+                <Link className="hover:text-[var(--color-secondary)] transition-colors" to="/faq">FAQ</Link>
                 <Link className="hover:text-[var(--color-secondary)] transition-colors" to="/jury">Jury</Link>
                 <Link className="hover:text-[var(--color-secondary)] transition-colors" to="/sponsors">Sponsors</Link>
                 <Link className="hover:text-[var(--color-secondary)] transition-colors" to="/submission">Soumission</Link>
