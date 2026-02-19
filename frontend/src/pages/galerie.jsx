@@ -109,7 +109,7 @@ const Galerie = () => {
         // Construction des paramètres de requête
         const params = new URLSearchParams({
           page: currentPage,
-          limit: 9, // Nombre de films par page
+          limit: 12, // Nombre de films par page
           lang: language // Langue pour le filtre
         })
         
@@ -282,11 +282,17 @@ const Galerie = () => {
                 {/* AFFICHAGE DU POSTER - TOUJOURS AFFICHER LE CONTENEUR */}
                 <div className="film-poster">
                   <img 
-                    src={film.poster_url ? `${import.meta.env.VITE_API_URL}${film.poster_url}` : "https://via.placeholder.com/300x450?text=Pas+d'affiche"} 
+                    src={
+                    film.poster_url 
+                      ? (film.poster_url.startsWith('http') 
+                          ? film.poster_url 
+                          : `${import.meta.env.VITE_API_URL}${film.poster_url}`)
+                      : "https://placehold.co/300x450?text=Pas+d'affiche"
+                  }
                     alt={film.title_original} 
                     onError={(e) => {
                       // Image de remplacement si le poster ne charge pas
-                      e.target.src = "https://via.placeholder.com/300x450?text=Pas+d'affiche"
+                      e.target.src = "https://placehold.co/300x450?text=Pas+d'affiche"
                     }}
                   />
                 </div>
@@ -426,7 +432,7 @@ const Galerie = () => {
                     src={`${import.meta.env.VITE_API_URL}${selectedFilm.poster_url}`} 
                     alt={selectedFilm.title_original} 
                     onError={(e) => {
-                      e.target.src = "https://via.placeholder.com/400x600?text=Pas+d'affiche"
+                      e.target.src = "https://placehold.co/400x600?text=Pas+d'affiche"
                     }}
                   />
                 </div>

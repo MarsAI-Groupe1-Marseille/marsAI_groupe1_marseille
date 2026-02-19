@@ -1,5 +1,6 @@
 const { Submission, Director, Collaborator } = require('../models');
-const { uploadVideoToYoutube } = require('../services/youtubeService');
+const { uploadVideoToYoutube,uploadSubtitlesToYoutube } = require('../services/youtubeService');
+const emailService = require('../services/emailService');
 const { Op } = require('sequelize'); 
 const fs = require('fs');
 const crypto = require('crypto'); // C'est natif dans Node.js
@@ -22,57 +23,43 @@ const normalizeGalleryUrls = (submission) => {
 
 // Création d'une nouvelle soumission (film) avec gestion des fichiers et YouTube
 exports.createSubmission = async (req, res) => {
-    // A 'true' POUR TESTER SANS YOUTUBE
-    const MODE_TEST_YOUTUBE = false; // Passe à 'true' pour simuler l'upload YouTube sans faire de requête réelle
+    const MODE_TEST_YOUTUBE = false; 
 
-    console.log("Réception d'une nouvelle soumission (Version Complète)...");
+    console.log("Réception d'une nouvelle soumission (Version Scaleway S3)...");
 
-    // 1. VÉRIFICATION DES FICHIERS
+    // 1. VÉRIFICATION DES FICHIERS (Multer-S3 les a déjà envoyés sur S3 à ce stade)
     if (!req.files || !req.files.video_file || !req.files.poster_file) {
         return res.status(400).json({ message: "Erreur : La vidéo et l'affiche sont obligatoires." });
     }
 
+    // Avec Multer-S3, on utilise .location pour avoir l'URL complète et .key pour le nom sur le bucket
     const videoFile = req.files.video_file[0];
     const posterFile = req.files.poster_file[0];
     const subtitleFile = req.files.subtitle_file ? req.files.subtitle_file[0] : null;
     const galleryFiles = req.files.gallery_files || [];
 
     try {
-        // --- ÉTAPE 1 : GESTION DU RÉALISATEUR (Director) ---
-        // On vérifie s'il existe déjà par email
+        // --- ÉTAPE 1 : GESTION DU RÉALISATEUR ---
         let director = await Director.findOne({ where: { email: req.body.director_email } });
 
-        // Parsing des réseaux sociaux (si envoyés en JSON string depuis Insomnia)
         let socialLinksData = null;
         if (req.body.director_social_links) {
-            try {
-                socialLinksData = JSON.parse(req.body.director_social_links);
-            } catch (e) {
-                console.warn("Format JSON invalide pour social_links", e);
-            }
+            try { socialLinksData = JSON.parse(req.body.director_social_links); } catch (e) {}
         }
 
         if (!director) {
-            console.log("Création du réalisateur...");
             director = await Director.create({
-                // Identité
                 civility: req.body.director_civility || 'M',
                 first_name: req.body.director_firstname,
                 last_name: req.body.director_lastname,
-                birth_date: req.body.director_birth_date, // Format YYYY-MM-DD
-
-                // Contact
+                birth_date: req.body.director_birth_date,
                 email: req.body.director_email,
                 phone: req.body.director_phone,
-                mobile: req.body.director_mobile, // Obligatoire selon ton modèle
-
-                // Adresse
+                mobile: req.body.director_mobile,
                 address: req.body.director_address,
                 zip_code: req.body.director_zip_code,
                 city: req.body.director_city,
                 country: req.body.director_country,
-
-                // Pro
                 job_title: req.body.director_job_title,
                 social_links: socialLinksData, 
                 marketing_source: req.body.director_marketing_source,
@@ -80,107 +67,101 @@ exports.createSubmission = async (req, res) => {
             });
         }
 
-        // --- ÉTAPE 2 : YOUTUBE (Fake ou Réel) ---
+        // --- ÉTAPE 2 : YOUTUBE (Stream depuis S3) ---
         let youtubeId;
         if (MODE_TEST_YOUTUBE) {
-            console.log("MODE TEST YOUTUBE ACTIVÉ");
             youtubeId = "FAKE_ID_" + Date.now(); 
         } else {
-            console.log("Upload YouTube en cours...");
+            console.log("Upload YouTube en cours via Stream S3...");
+            // On passe la KEY du fichier S3 (ex: videos/123.mp4) au lieu du path local
             youtubeId = await uploadVideoToYoutube(
-                videoFile.path, 
+                videoFile.key, 
                 req.body.title_original, 
                 req.body.synopsis_original
             );
-            // Suppression de la vidéo locale après upload réussi
-            if (fs.existsSync(videoFile.path)) fs.unlinkSync(videoFile.path);
+
+            // SI un fichier de sous-titres a été fourni, on l'envoie
+            if (subtitleFile && youtubeId) {
+                // On l'envoie de manière asynchrone (sans attendre pour ne pas ralentir la réponse client)
+                // Ou avec un petit délai car YouTube a besoin de quelques secondes pour créer l'entrée vidéo
+                setTimeout(async () => {
+                    try {
+                        await uploadSubtitlesToYoutube(youtubeId, subtitleFile.key, req.body.language_main || 'fr');
+                    } catch (err) {
+                        console.error("Échec envoi sous-titres:", err);
+                    }
+                }, 5000); // 5 secondes de délai par sécurité
+}
         }
 
         // --- ÉTAPE 3 : PRÉPARATION GALERIE ---
-        const galleryUrls = galleryFiles.map(file => `/uploads/${file.filename}`);
+        // On récupère les URLs Scaleway directes
+        const galleryUrls = galleryFiles.map(file => file.location);
 
         // --- ÉTAPE 4 : CRÉATION DU FILM (Submission) ---
         const newSubmission = await Submission.create({
             director_id: director.id,
-            
-            // Titres & Textes
             title_original: req.body.title_original,
             title_english: req.body.title_english,
             synopsis_original: req.body.synopsis_original,
             synopsis_english: req.body.synopsis_english,
-
-            // Technique
             duration_seconds: req.body.duration_seconds || 0,
             language_main: req.body.language_main,
-            theme_tags: req.body.theme_tags, // Peut être une string "Drame, Guerre"
-
-            // IA
-            ai_classification: req.body.ai_classification, // '100% IA' ou 'Hybrid'
+            theme_tags: req.body.theme_tags,
+            ai_classification: req.body.ai_classification,
             ai_tools: req.body.ai_tools,
             ai_methodology: req.body.ai_methodology,
-
-            // Sécurité (Token unique pour édition future)
             edit_token: crypto.randomBytes(32).toString('hex'),
 
-            // Fichiers & YouTube
-            youtube_id: youtubeId, // Ton modèle attend l'ID, pas l'URL complète
-            poster_url: `/uploads/${posterFile.filename}`,
-            gallery_urls: galleryUrls, // Sequelize gère le JSON array
-            has_subtitles: !!subtitleFile, // true si fichier présent, false sinon
+            // Nouveaux champs S3
+            youtube_id: youtubeId,
+            s3_video_key: videoFile.key, // On stocke la clé pour pouvoir la retrouver sur S3
+            poster_url: posterFile.location, // URL complète https://...
+            gallery_urls: galleryUrls,
+            subtitles_url: subtitleFile ? subtitleFile.location : null,
+            has_subtitles: !!subtitleFile,
 
-            // Statuts
             video_status: MODE_TEST_YOUTUBE ? 'ready' : 'processing',
             approval_status: 'submitted'
         });
 
-        // --- ÉTAPE 5 : CRÉATION DES COLLABORATEURS ---
-        // Dans Insomnia/FormData, on envoie un tableau d'objets sous forme de TEXTE JSON
-        // Champ: "collaborators_json" -> Valeur: '[{"role":"Monteur", "first_name":"Bob"}, ...]'
+        // --- ÉTAPE 5 : COLLABORATEURS (Inchangé, ton code était déjà bon) ---
         if (req.body.collaborators_json) {
             try {
                 const collaboratorsData = JSON.parse(req.body.collaborators_json);
-                
                 if (Array.isArray(collaboratorsData) && collaboratorsData.length > 0) {
-                    console.log(`Ajout de ${collaboratorsData.length} collaborateurs...`);
-                    
-                    // On ajoute l'ID de la submission à chaque collaborateur
                     const collaboratorsWithId = collaboratorsData.map(collab => ({
                         ...collab,
-                        submission_id: newSubmission.id, // Liaison avec le film
-                        //  les champs devraient correspondre au modèle Collaborator
-                        role: collab.role,
-                        first_name: collab.first_name,
-                        last_name: collab.last_name,
-                        email: collab.email,
-                        job_title: collab.job_title,
-                        civility: collab.civility
+                        submission_id: newSubmission.id
                     }));
-
-                    // BulkCreate est plus performant pour ajouter une liste
                     await Collaborator.bulkCreate(collaboratorsWithId);
                 }
             } catch (error) {
-                console.error("Erreur format JSON Collaborators :", error.message);
-                // On ne bloque pas la soumission pour ça, mais on log l'erreur
+                console.error("Erreur Collaborators :", error.message);
             }
         }
 
-        // --- RÉPONSE ---
+        // --- ÉTAPE 6 : ENVOI EMAIL DE CONFIRMATION ---
+        try {
+            await emailService.sendSubmissionConfirmation(
+                { email: director.email },
+                req.body.title_original
+            );
+        } catch (emailError) {
+            console.error("Erreur envoi email confirmation:", emailError);
+            // On ne bloque pas la soumission si l'email échoue
+        }
+
         res.status(201).json({
-            message: "Film et collaborateurs ajoutés avec succès !",
+            message: "Film enregistré avec succès sur S3 et YouTube !",
             submission_id: newSubmission.id,
-            director: director.last_name,
             youtube_id: youtubeId
         });
 
     } catch (error) {
         console.error("Erreur Soumission :", error);
-        // Nettoyage fichiers en cas de crash
-        if (req.files) {
-            Object.values(req.files).flat().forEach(file => {
-                if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
-            });
-        }
+        // Note : Pas besoin de fs.unlinkSync ici, car les fichiers sont sur S3.
+        // On pourrait ajouter une fonction de nettoyage S3 en cas d'erreur si besoin.
         res.status(500).json({ message: "Erreur serveur.", error: error.message });
     }
 };
@@ -189,12 +170,13 @@ exports.createSubmission = async (req, res) => {
 exports.getAllSubmissions = async (req, res) => {
     try {
         // --- 1. RÉCUPÉRATION DES PARAMÈTRES (QUERY PARAMS) ---
-        // Le front enverra : /api/submissions?page=1&limit=6&search=avatar&genre=SF&lang=fr
+        // Le front enverra : /api/submissions?page=1&limit=6&search=avatar&genre=SF&lang=fr&status=approved
         
         const page = parseInt(req.query.page) || 1;       // Page par défaut : 1
         const limit = parseInt(req.query.limit) || 9;     // Films par page par défaut : 9
         const search = req.query.search || '';            // Recherche titre
         const genre = req.query.genre || '';              // Filtre par genre/thème
+        const status = req.query.status || '';            // Filtre par statut (approved, rejected, submitted)
         const lang = req.query.lang || 'fr';              // Langue pour le filtre : 'fr' ou 'en'
 
         // Calcul de l'offset (combien de films on saute)
@@ -214,6 +196,11 @@ exports.getAllSubmissions = async (req, res) => {
         // Si un filtre de genre est présent (ex: "Horreur")
         if (genre) {
             whereCondition.theme_tags = { [Op.like]: `%${genre}%` };
+        }
+
+        // Si un filtre de statut est présent (ex: "approved", "rejected", "submitted")
+        if (status) {
+            whereCondition.approval_status = status;
         }
 
         // --- 3. EXÉCUTION DE LA REQUÊTE ---
