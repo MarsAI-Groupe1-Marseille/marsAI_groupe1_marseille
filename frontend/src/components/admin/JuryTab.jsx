@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useFilms } from '../../hooks/useFilms';
+import { BarChart3, Users, FileText, ThumbsUp, ThumbsDown, Clock, Trophy, Scale, UserCheck } from 'lucide-react';
 
 const INITIAL_JURY_MEMBERS = [
   {
@@ -7,7 +8,6 @@ const INITIAL_JURY_MEMBERS = [
     full_name: 'Dr. Sophie Leclerc',
     email: 'sophie.leclerc@ai-festival.fr',
     role: 'lead',
-    avatar: '👩‍🔬',
     specialty: 'IA Créative',
     votes_cast: 12,
     total_films: 15,
@@ -20,7 +20,6 @@ const INITIAL_JURY_MEMBERS = [
     full_name: 'Marc Dubois',
     email: 'marc.dubois@ai-festival.fr',
     role: 'jury',
-    avatar: '👨‍💼',
     specialty: 'Production Vidéo',
     votes_cast: 15,
     total_films: 15,
@@ -43,6 +42,25 @@ export default function JuryTab() {
     specialty: ''
   });
 
+  // Fonction pour générer les initiales et les couleurs
+  const getAvatarData = (name) => {
+    const initials = name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase();
+    const colors = [
+      'from-violet-500 to-violet-600',
+      'from-blue-500 to-blue-600',
+      'from-purple-500 to-purple-600',
+      'from-pink-500 to-pink-600',
+      'from-indigo-500 to-indigo-600',
+      'from-cyan-500 to-cyan-600'
+    ];
+    const index = name.charCodeAt(0) % colors.length;
+    return { initials, colorGradient: colors[index] };
+  };
+
   useEffect(() => {
     const stored = localStorage.getItem('mars_ai_jury_members');
     if (stored) {
@@ -61,7 +79,6 @@ export default function JuryTab() {
       email: formData.email,
       role: formData.role,
       specialty: formData.specialty,
-      avatar: formData.full_name.charAt(0) === 'M' ? '👨‍🎬' : '👩‍🎬',
       votes_cast: 0,
       total_films: films.length,
       approved: 0,
@@ -97,7 +114,10 @@ export default function JuryTab() {
     <div className="space-y-8">
       {/* Section Statistiques Globales */}
       <section className="space-y-4">
-        <h3 className="text-xl font-bold text-violet-400">📊 Statistiques Globales</h3>
+        <div className="flex items-center gap-2">
+          <BarChart3 size={22} className="text-violet-400" />
+          <h3 className="text-xl font-bold text-violet-400">Statistiques Globales</h3>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
           <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 hover:bg-neutral-800 transition">
             <p className="text-sm text-neutral-400">Membres du jury</p>
@@ -126,7 +146,10 @@ export default function JuryTab() {
       {/* Section Gestion des Membres */}
       <section className="space-y-4">
         <div className="flex justify-between items-center">
-          <h3 className="text-xl font-bold text-violet-400">👥 Membres du Jury</h3>
+          <div className="flex items-center gap-2">
+            <Users size={22} className="text-violet-400" />
+            <h3 className="text-xl font-bold text-violet-400">Membres du Jury</h3>
+          </div>
           <button
             onClick={() => setShowForm(!showForm)}
             className="bg-violet-500 hover:bg-violet-600 text-white font-semibold py-2 px-6 rounded-lg transition"
@@ -177,14 +200,14 @@ export default function JuryTab() {
                 type="submit"
                 className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition"
               >
-                ✅ Ajouter
+                Ajouter
               </button>
               <button
                 type="button"
                 onClick={() => setShowForm(false)}
                 className="flex-1 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700 font-semibold rounded-lg transition"
               >
-                ✖️ Annuler
+                Annuler
               </button>
             </div>
           </form>
@@ -197,6 +220,15 @@ export default function JuryTab() {
             const approvalRate = member.votes_cast > 0
               ? (member.approved / member.votes_cast) * 100
               : 0;
+            const { initials, colorGradient } = getAvatarData(member.full_name);
+            
+            const getRoleIcon = (role) => {
+              switch(role) {
+                case 'lead': return <Trophy size={16} className="mr-1" />;
+                case 'moderator': return <Scale size={16} className="mr-1" />;
+                default: return <UserCheck size={16} className="mr-1" />;
+              }
+            };
 
             return (
               <div
@@ -207,7 +239,9 @@ export default function JuryTab() {
                 }`}
               >
                 <div className="flex items-start gap-4 mb-6">
-                  <div className="text-5xl">{member.avatar}</div>
+                  <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${colorGradient} flex items-center justify-center flex-shrink-0 shadow-lg border border-white/10`}>
+                    <span className="text-white font-bold text-lg">{initials}</span>
+                  </div>
                   <div className="flex-1">
                     <h4 className="text-lg font-semibold text-violet-400 mb-1">
                       {member.full_name}
@@ -217,7 +251,7 @@ export default function JuryTab() {
                     </p>
                     <div className="flex gap-2 flex-wrap">
                       <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold text-white ${
+                        className={`px-3 py-1 rounded-full text-xs font-semibold text-white flex items-center ${
                           member.role === 'lead'
                             ? 'bg-orange-600'
                             : member.role === 'moderator'
@@ -225,9 +259,10 @@ export default function JuryTab() {
                             : 'bg-violet-600'
                         }`}
                       >
-                        {member.role === 'lead' && '👑 Leader'}
-                        {member.role === 'moderator' && '⚖️ Modérateur'}
-                        {member.role === 'jury' && '👥 Jury'}
+                        {getRoleIcon(member.role)}
+                        {member.role === 'lead' && 'Leader'}
+                        {member.role === 'moderator' && 'Modérateur'}
+                        {member.role === 'jury' && 'Jury'}
                       </span>
                       <span className="px-3 py-1 rounded-full text-xs font-semibold text-violet-300 bg-violet-900/30">
                         {member.specialty}
@@ -255,28 +290,39 @@ export default function JuryTab() {
 
                 <div className="grid grid-cols-2 gap-3 mb-6">
                   <div className="bg-green-900/30 border border-green-700/30 rounded-lg p-3">
-                    <div className="text-2xl font-bold text-green-400">
-                      {member.approved}
+                    <div className="flex items-center gap-2 mb-1">
+                      <ThumbsUp size={18} className="text-green-400" />
+                      <div className="text-2xl font-bold text-green-400">
+                        {member.approved}
+                      </div>
                     </div>
-                    <div className="text-xs text-neutral-400">J aime</div>
+                    <div className="text-xs text-neutral-400">Approuvé</div>
                   </div>
                   <div className="bg-red-900/30 border border-red-700/30 rounded-lg p-3">
-                    <div className="text-2xl font-bold text-red-400">
-                      {member.rejected}
+                    <div className="flex items-center gap-2 mb-1">
+                      <ThumbsDown size={18} className="text-red-400" />
+                      <div className="text-2xl font-bold text-red-400">
+                        {member.rejected}
+                      </div>
                     </div>
-                    <div className="text-xs text-neutral-400">J aime pas</div>
+                    <div className="text-xs text-neutral-400">Rejeté</div>
                   </div>
                   <div className="bg-yellow-900/30 border border-yellow-700/30 rounded-lg p-3">
-                    <div className="text-2xl font-bold text-yellow-400">
-                      {member.pending}
+                    <div className="flex items-center gap-2 mb-1">
+                      <Clock size={18} className="text-yellow-400" />
+                      <div className="text-2xl font-bold text-yellow-400">
+                        {member.pending}
+                      </div>
                     </div>
-                    <div className="text-xs text-neutral-400">A discuter</div>
+                    <div className="text-xs text-neutral-400">En attente</div>
                   </div>
                   <div className="bg-violet-900/30 border border-violet-700/30 rounded-lg p-3">
-                    <div className="text-2xl font-bold text-violet-400">
-                      {approvalRate.toFixed(0)}%
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs text-neutral-400">Approbation</span>
+                      <div className="text-2xl font-bold text-violet-400">
+                        {approvalRate.toFixed(0)}%
+                      </div>
                     </div>
-                    <div className="text-xs text-neutral-400">Approbation</div>
                   </div>
                 </div>
               </div>
@@ -287,7 +333,10 @@ export default function JuryTab() {
 
       {/* Section Résumé */}
       <section className="space-y-4">
-        <h3 className="text-xl font-bold text-violet-400">📋 Résumé des Membres</h3>
+        <div className="flex items-center gap-2">
+          <FileText size={22} className="text-violet-400" />
+          <h3 className="text-xl font-bold text-violet-400">Résumé des Membres</h3>
+        </div>
         <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -303,10 +352,16 @@ export default function JuryTab() {
                     Progression
                   </th>
                   <th className="text-center px-6 py-4 text-sm font-semibold text-violet-400">
-                    ❤️ J'aime
+                    <div className="flex items-center justify-center gap-1">
+                      <ThumbsUp size={16} />
+                      Approuvé
+                    </div>
                   </th>
                   <th className="text-center px-6 py-4 text-sm font-semibold text-violet-400">
-                    💔 J'aime pas
+                    <div className="flex items-center justify-center gap-1">
+                      <ThumbsDown size={16} />
+                      Rejeté
+                    </div>
                   </th>
                   <th className="text-center px-6 py-4 text-sm font-semibold text-violet-400">
                     Approbation
@@ -319,13 +374,16 @@ export default function JuryTab() {
                   const approvalRate = member.votes_cast > 0
                     ? (member.approved / member.votes_cast) * 100
                     : 0;
+                  const { initials, colorGradient } = getAvatarData(member.full_name);
 
                   return (
                     <tr key={member.id} className="hover:bg-neutral-800/50 transition">
                       <td className="text-center px-6 py-4 text-neutral-300">
-                        <div className="flex items-center gap-2">
-                          <span className="text-2xl">{member.avatar}</span>
-                          <div>
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${colorGradient} flex items-center justify-center flex-shrink-0 border border-white/10`}>
+                            <span className="text-white font-bold text-sm">{initials}</span>
+                          </div>
+                          <div className="text-left">
                             <div className="font-semibold">{member.full_name}</div>
                             <div className="text-xs text-neutral-500">
                               {member.specialty}
@@ -334,9 +392,26 @@ export default function JuryTab() {
                         </div>
                       </td>
                       <td className="text-center px-6 py-4 text-sm text-neutral-400">
-                        {member.role === 'lead' && '👑 Leader'}
-                        {member.role === 'moderator' && '⚖️ Modérateur'}
-                        {member.role === 'jury' && '👥 Jury'}
+                        <span className="inline-flex items-center gap-1">
+                          {member.role === 'lead' && (
+                            <>
+                              <Trophy size={14} />
+                              Leader
+                            </>
+                          )}
+                          {member.role === 'moderator' && (
+                            <>
+                              <Scale size={14} />
+                              Modérateur
+                            </>
+                          )}
+                          {member.role === 'jury' && (
+                            <>
+                              <UserCheck size={14} />
+                              Jury
+                            </>
+                          )}
+                        </span>
                       </td>
                       <td className="text-center px-6 py-4">
                         <span className="text-violet-400 font-semibold">
