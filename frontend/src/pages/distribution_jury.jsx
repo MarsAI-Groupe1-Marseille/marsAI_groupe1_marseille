@@ -68,10 +68,10 @@ export default function AdminDashboard() {
       <main style={{ maxWidth: '1400px', margin: '0 auto', padding: '32px 16px' }}>
 
         {/* Page Title */}
-        <div className="mb-8">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-6 sm:gap-4">
+        <div className="mb-8 pb-48 sm:pb-0">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-6 sm:gap-4">
             {/* Left side - Title and description */}
-            <div className="flex-1">
+            <div className="flex-1 text-center sm:text-left">
               <span className="text-xs text-violet-400 uppercase tracking-widest font-bold">{t('jury_dist_admin_management')}</span>
               <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold text-white mb-2">{t('jury_dist_title')}</h1>
               <p className="text-xs sm:text-sm text-neutral-400">{t('jury_dist_description')}</p>

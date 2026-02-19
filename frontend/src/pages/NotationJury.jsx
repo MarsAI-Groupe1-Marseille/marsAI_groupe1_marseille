@@ -259,12 +259,21 @@ export default function NotationJury() {
     if (!selectedVote) return;
     setSubmitting(true);
     try {
-      await new Promise((r) => setTimeout(r, 800));
-      // TODO: await axios.post(`/jury/votes/${id}`, { vote: selectedVote, comment });
-      localStorage.setItem(`vote-${id}`, JSON.stringify({ vote: selectedVote, comment }));
-      setSubmitted(true);
-    } catch {
-      alert("Erreur lors de la soumission du vote");
+      // Envoyer le vote à l'API backend
+      const response = await axios.post('/jury/vote', {
+        submissionId: id,
+        vote_status: selectedVote,
+        comment: comment
+      });
+
+      if (response.data) {
+        // Sauvegarder aussi en localStorage comme backup
+        localStorage.setItem(`vote-${id}`, JSON.stringify({ vote: selectedVote, comment }));
+        setSubmitted(true);
+      }
+    } catch (error) {
+      console.error('Erreur lors de la soumission du vote:', error);
+      alert('Erreur lors de la soumission du vote. Veuillez réessayer.');
     } finally {
       setSubmitting(false);
     }
@@ -658,17 +667,10 @@ export default function NotationJury() {
                     Vote enregistré avec succès
                   </p>
                   <p className="font-rajdhani text-[13px] text-[rgba(109,255,160,0.6)] tracking-[0.5px]">
-                    Votre évaluation a été sauvegardée
+                    Votre évaluation a été sauvegardée et ne peut pas être modifiée
                   </p>
                 </div>
               </div>
-              <button
-                onClick={() => setSubmitted(false)}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[rgba(10,8,20,0.7)] border border-[rgba(123,47,255,0.25)] rounded-lg font-rajdhani text-sm font-semibold tracking-[1px] text-[#9b8ec4] cursor-pointer transition-all duration-300 hover:border-[#7b2fff] hover:text-[#f0eaff] hover:shadow-[0_0_16px_rgba(123,47,255,0.3)] whitespace-nowrap"
-              >
-                <Pencil size={13} />
-                Modifier mon vote
-              </button>
             </div>
           )}
         </div>

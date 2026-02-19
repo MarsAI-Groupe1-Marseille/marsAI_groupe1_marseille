@@ -7,40 +7,67 @@
 
 // useRef : Permet de manipuler directement un élément du DOM comme contrôler le scroll horizontal du slider.
 // X Icone de la fermeture de la modal
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { X } from "lucide-react";
+import axios from "axios";
 
 export default function DashboardJury() {
-  // Gère l’ouverture de la modal.
+  // Gère l'ouverture de la modal.
   const [selectedPlaylist, setSelectedPlaylist] = useState(null);
   // Référence vers le conteneur scrollable des vidéos.
   const sliderRef = useRef(null);
+  
+  // États pour les playlists
+  const [playlists, setPlaylists] = useState([]);
+  const [votes, setVotes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [evaluatedVideoIds, setEvaluatedVideoIds] = useState(new Set());
 
-// On stockes les playlists sous forme de tableau d’objets.
-  const playlists = [
-    {
-      id: 1,
-      name: "Sélection Officielle 2026",
-      videos: [
-        { id: 1, title: "Gourou", director: "Yann Gozlan", thumbnail: "/images/video1.jpg", status: "aimé" },
-        { id: 2, title: "Le Mage Du Kremlin", director: "Olivier Assayas", thumbnail: "/images/video2.jpg", status: "discuter" },
-      ],
-    },
-    {
-      id: 2,
-      name: "Documentaires",
-      videos: [
-        { id: 3, title: "Océans Profonds", director: "Luc Jacquet", thumbnail: "/images/video3.jpg", status: "aimé" },
-      ],
-    },
-    {
-      id: 3,
-      name: "Courts Métrages",
-      videos: [
-        { id: 4, title: "Évasion", director: "Jean Dupont", thumbnail: "/images/video4.jpg", status: "pas" },
-      ],
-    },
-  ];
+  // Récupérer les playlists et les votes de l'API
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        // Récupérer les playlists et les votes en parallèle
+        const [playlistsRes, votesRes] = await Promise.all([
+          axios.get('/jury/my-playlists'),
+          axios.get('/jury/my-votes')
+        ]);
+
+        // Extraire les votes et les IDs des films évalués
+        if (votesRes.data.success && votesRes.data.votes) {
+          setVotes(votesRes.data.votes);
+          const evaluated = new Set(votesRes.data.votes.map(v => v.submission_id));
+          setEvaluatedVideoIds(evaluated);
+        }
+
+        if (playlistsRes.data.success && playlistsRes.data.playlists) {
+          // Les données de l'API sont déjà au bon format
+          setPlaylists(playlistsRes.data.playlists.map(playlist => ({
+            id: playlist.id,
+            name: playlist.name,
+            videos: (playlist.videos || []).map(video => ({
+              id: video.id,
+              title: video.title,
+              director: video.director?.full_name || 'Réalisateur inconnu',
+              thumbnail: video.poster ? `http://localhost:3000${video.poster}` : '/images/placeholder.jpg',
+              youtubeId: video.youtubeId,
+              status: 'pas'
+            }))
+          })));
+        }
+      } catch (err) {
+        console.error('Erreur lors du chargement:', err);
+        setError('Impossible de charger les données');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
 // Tableau de classes Taiwind pour donner une couleur différentes à chaque playlist.
   const gradients = [
     "from-purple-700 via-indigo-600 to-purple-900",
@@ -49,15 +76,13 @@ export default function DashboardJury() {
   ];
 
 
-// Calcul des statistiques avec flatMap() :
-// Parcourt toutes les playlists
-// Récupère toutes les vidéos
-// Les met dans un seul tableau
-  const allVideos = playlists.flatMap(p => p.videos);
-  // Filtre les vidéos selon leur statut et compte le nombre de chaque catégorie
-  const liked = allVideos.filter(v => v.status === "aimé").length;
-  const disliked = allVideos.filter(v => v.status === "pas").length;
-  const discussion = allVideos.filter(v => v.status === "discuter").length;
+// Calcul des statistiques à partir des votes du jury
+  const liked = votes.filter(v => v.vote_status === "LIKE").length;
+  const disliked = votes.filter(v => v.vote_status === "DISLIKE").length;
+  const discussion = votes.filter(v => v.vote_status === "DISCUSS").length;
+  
+  // Nombre total de films assignés
+  const totalFilmsAssigned = playlists.reduce((acc, playlist) => acc + (playlist.videos?.length || 0), 0);
 
   return (
     <div className="min-h-screen bg-black text-white relative overflow-hidden">
@@ -69,10 +94,14 @@ export default function DashboardJury() {
       <div className="relative z-10 p-6">
 
         {/* BLOCS STATISTIQUES */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto mb-14">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto mb-14">
 
-          <StatCard
-            title="J’aime"
+          <StatCard            title="Films assignés"
+            value={totalFilmsAssigned}
+            gradient="from-blue-500 to-cyan-600"
+          />
+
+          <StatCard            title="J’aime"
             value={liked}
             gradient="from-green-500 to-emerald-600"
           />
@@ -101,16 +130,30 @@ export default function DashboardJury() {
           </p>
         </header>
 
+        {/* LOADING */}
+        {loading && (
+          <div className="text-center py-12">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+            <p className="text-neutral-400 mt-4">Chargement des playlists...</p>
+          </div>
+        )}
+
+        {/* ERROR */}
+        {error && (
+          <div className="text-center py-12 text-red-500">
+            <p>{error}</p>
+          </div>
+        )}
+
         {/* PLAYLIST GRID */}
         {/* Affichage conditionnel des playlists : Si aucune playlist n'est sélectionnée alors on affiche la grille. */}
-        {!selectedPlaylist && (
+        {!loading && !error && !selectedPlaylist && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {playlists.map((playlist, i) => (
               <div
                 key={playlist.id}
-                // Lors du clic : On met la playlist dans le state , React re-render, La modal apparaît.
                 onClick={() => setSelectedPlaylist(playlist)}
-                className={`cursor-pointer rounded-3xl p-1 bg-gradient-to-br ${gradients[i]}
+                className={`cursor-pointer rounded-3xl p-1 bg-gradient-to-br ${gradients[i % gradients.length]}
                 transform transition duration-300 hover:scale-105`}
               >
                 <div className="bg-neutral-900 rounded-3xl p-8 text-center h-40 flex items-center justify-center">
@@ -149,11 +192,13 @@ export default function DashboardJury() {
                   ref={sliderRef}
                   className="flex overflow-x-auto gap-6 scroll-smooth no-scrollbar"
                 >
-                  {selectedPlaylist.videos.map((video) => (
+                  {selectedPlaylist.videos.map((video) => {
+                    const isEvaluated = evaluatedVideoIds.has(video.id);
+                    return (
                     <a
                       key={video.id}
-                      // Redirection vers la page détails
-                      href={`/videos/${video.id}`}
+                      // Redirection vers la page notation jury
+                      href={`/notationjury/${video.id}`}
                       className="relative flex-shrink-0 w-56 md:w-64 bg-neutral-800 
                       rounded-2xl overflow-hidden transition 
                       hover:scale-105 hover:shadow-2xl group"
@@ -175,6 +220,15 @@ export default function DashboardJury() {
                             ▶
                           </div>
                         </div>
+
+                        {/* Badge évalué */}
+                        {isEvaluated && (
+                          <div className="absolute top-3 right-3 bg-green-500 text-white rounded-full p-1.5 shadow-lg flex items-center justify-center">
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        )}
                       </div>
 
                       <div className="p-4">
@@ -186,7 +240,8 @@ export default function DashboardJury() {
                         </p>
                       </div>
                     </a>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 {/* CHEVRONS */}
