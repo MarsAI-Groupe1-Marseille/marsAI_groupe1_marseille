@@ -49,7 +49,13 @@ exports.getMyPlaylists = async (req, res) => {
                     through: { 
                         attributes: [] // On ne veut pas les attributs de la table de jointure
                     },
-                    attributes: ['id', 'title_original', 'duration_seconds', 'youtube_id', 'poster_url']
+                    include: [
+                        {
+                            model: require('../models').Director,
+                            attributes: ['id', 'first_name', 'last_name']
+                        }
+                    ],
+                    attributes: ['id', 'title_original', 'duration_seconds', 'youtube_id', 'poster_url', 'director_id']
                 }
             ]
         });
@@ -73,7 +79,12 @@ exports.getMyPlaylists = async (req, res) => {
                         title: sub.title_original,
                         duration_seconds: sub.duration_seconds,
                         youtubeId: sub.youtube_id,
-                        poster: sub.poster_url
+                        poster: sub.poster_url,
+                        director: sub.Director ? { 
+                            first_name: sub.Director.first_name,
+                            last_name: sub.Director.last_name,
+                            full_name: `${sub.Director.first_name} ${sub.Director.last_name}`
+                        } : null
                     }))
                 });
             }

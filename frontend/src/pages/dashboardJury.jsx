@@ -7,40 +7,53 @@
 
 // useRef : Permet de manipuler directement un élément du DOM comme contrôler le scroll horizontal du slider.
 // X Icone de la fermeture de la modal
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { X } from "lucide-react";
+import axios from "axios";
 
 export default function DashboardJury() {
-  // Gère l’ouverture de la modal.
+  // Gère l'ouverture de la modal.
   const [selectedPlaylist, setSelectedPlaylist] = useState(null);
   // Référence vers le conteneur scrollable des vidéos.
   const sliderRef = useRef(null);
+  
+  // États pour les playlists
+  const [playlists, setPlaylists] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-// On stockes les playlists sous forme de tableau d’objets.
-  const playlists = [
-    {
-      id: 1,
-      name: "Sélection Officielle 2026",
-      videos: [
-        { id: 1, title: "Gourou", director: "Yann Gozlan", thumbnail: "/images/video1.jpg", status: "aimé" },
-        { id: 2, title: "Le Mage Du Kremlin", director: "Olivier Assayas", thumbnail: "/images/video2.jpg", status: "discuter" },
-      ],
-    },
-    {
-      id: 2,
-      name: "Documentaires",
-      videos: [
-        { id: 3, title: "Océans Profonds", director: "Luc Jacquet", thumbnail: "/images/video3.jpg", status: "aimé" },
-      ],
-    },
-    {
-      id: 3,
-      name: "Courts Métrages",
-      videos: [
-        { id: 4, title: "Évasion", director: "Jean Dupont", thumbnail: "/images/video4.jpg", status: "pas" },
-      ],
-    },
-  ];
+  // Récupérer les playlists de l'API
+  useEffect(() => {
+    const fetchPlaylists = async () => {
+      try {
+        setLoading(true);
+        const { data } = await axios.get('/jury/my-playlists');
+        if (data.success && data.playlists) {
+          // Les données de l'API sont déjà au bon format
+          setPlaylists(data.playlists.map(playlist => ({
+            id: playlist.id,
+            name: playlist.name,
+            videos: (playlist.videos || []).map(video => ({
+              id: video.id,
+              title: video.title,
+              director: video.director?.full_name || 'Réalisateur inconnu',
+              thumbnail: video.poster ? `http://localhost:3000${video.poster}` : '/images/placeholder.jpg',
+              youtubeId: video.youtubeId,
+              status: 'pas'
+            }))
+          })));
+        }
+      } catch (err) {
+        console.error('Erreur lors du chargement des playlists:', err);
+        setError('Impossible de charger les playlists');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPlaylists();
+  }, []);
+
 // Tableau de classes Taiwind pour donner une couleur différentes à chaque playlist.
   const gradients = [
     "from-purple-700 via-indigo-600 to-purple-900",
@@ -101,9 +114,24 @@ export default function DashboardJury() {
           </p>
         </header>
 
+        {/* LOADING */}
+        {loading && (
+          <div className="text-center py-12">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+            <p className="text-neutral-400 mt-4">Chargement des playlists...</p>
+          </div>
+        )}
+
+        {/* ERROR */}
+        {error && (
+          <div className="text-center py-12 text-red-500">
+            <p>{error}</p>
+          </div>
+        )}
+
         {/* PLAYLIST GRID */}
         {/* Affichage conditionnel des playlists : Si aucune playlist n'est sélectionnée alors on affiche la grille. */}
-        {!selectedPlaylist && (
+        {!loading && !error && !selectedPlaylist && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {playlists.map((playlist, i) => (
               <div
@@ -151,8 +179,8 @@ export default function DashboardJury() {
                   {selectedPlaylist.videos.map((video) => (
                     <a
                       key={video.id}
-                      // Redirection vers la page détails
-                      href={`/videos/${video.id}`}
+                      // Redirection vers la page notation jury
+                      href={`/notationjury/${video.id}`}
                       className="relative flex-shrink-0 w-56 md:w-64 bg-neutral-800 
                       rounded-2xl overflow-hidden transition 
                       hover:scale-105 hover:shadow-2xl group"
