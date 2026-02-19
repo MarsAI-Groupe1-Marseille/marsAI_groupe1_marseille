@@ -23,6 +23,7 @@ import Configuration from './pages/Configuration.jsx';
 import NotFound from './pages/NotFound.jsx';
 import JuryAssignment from './pages/jury_assignment.jsx';
 import { useAuth } from './context/AuthContext.jsx';
+import JuryPage from './pages/JuryPage.jsx';
 
 
 function App() {
@@ -66,6 +67,8 @@ function App() {
           <Route path="/active-compte" element={<ActiveCompte />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/forgotpass" element={<Forgotpass />} />
+          <Route path="/jury" element={<JuryPage />} />
+
 
           <Route
             path="/dashboard"
