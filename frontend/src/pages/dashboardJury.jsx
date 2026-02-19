@@ -19,18 +19,32 @@ export default function DashboardJury() {
   
   // États pour les playlists
   const [playlists, setPlaylists] = useState([]);
+  const [votes, setVotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [evaluatedVideoIds, setEvaluatedVideoIds] = useState(new Set());
 
-  // Récupérer les playlists de l'API
+  // Récupérer les playlists et les votes de l'API
   useEffect(() => {
-    const fetchPlaylists = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const { data } = await axios.get('/jury/my-playlists');
-        if (data.success && data.playlists) {
+        // Récupérer les playlists et les votes en parallèle
+        const [playlistsRes, votesRes] = await Promise.all([
+          axios.get('/jury/my-playlists'),
+          axios.get('/jury/my-votes')
+        ]);
+
+        // Extraire les votes et les IDs des films évalués
+        if (votesRes.data.success && votesRes.data.votes) {
+          setVotes(votesRes.data.votes);
+          const evaluated = new Set(votesRes.data.votes.map(v => v.submission_id));
+          setEvaluatedVideoIds(evaluated);
+        }
+
+        if (playlistsRes.data.success && playlistsRes.data.playlists) {
           // Les données de l'API sont déjà au bon format
-          setPlaylists(data.playlists.map(playlist => ({
+          setPlaylists(playlistsRes.data.playlists.map(playlist => ({
             id: playlist.id,
             name: playlist.name,
             videos: (playlist.videos || []).map(video => ({
@@ -44,14 +58,14 @@ export default function DashboardJury() {
           })));
         }
       } catch (err) {
-        console.error('Erreur lors du chargement des playlists:', err);
-        setError('Impossible de charger les playlists');
+        console.error('Erreur lors du chargement:', err);
+        setError('Impossible de charger les données');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchPlaylists();
+    fetchData();
   }, []);
 
 // Tableau de classes Taiwind pour donner une couleur différentes à chaque playlist.
@@ -62,15 +76,13 @@ export default function DashboardJury() {
   ];
 
 
-// Calcul des statistiques avec flatMap() :
-// Parcourt toutes les playlists
-// Récupère toutes les vidéos
-// Les met dans un seul tableau
-  const allVideos = playlists.flatMap(p => p.videos);
-  // Filtre les vidéos selon leur statut et compte le nombre de chaque catégorie
-  const liked = allVideos.filter(v => v.status === "aimé").length;
-  const disliked = allVideos.filter(v => v.status === "pas").length;
-  const discussion = allVideos.filter(v => v.status === "discuter").length;
+// Calcul des statistiques à partir des votes du jury
+  const liked = votes.filter(v => v.vote_status === "LIKE").length;
+  const disliked = votes.filter(v => v.vote_status === "DISLIKE").length;
+  const discussion = votes.filter(v => v.vote_status === "DISCUSS").length;
+  
+  // Nombre total de films assignés
+  const totalFilmsAssigned = playlists.reduce((acc, playlist) => acc + (playlist.videos?.length || 0), 0);
 
   return (
     <div className="min-h-screen bg-black text-white relative overflow-hidden">
@@ -82,10 +94,14 @@ export default function DashboardJury() {
       <div className="relative z-10 p-6">
 
         {/* BLOCS STATISTIQUES */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto mb-14">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto mb-14">
 
-          <StatCard
-            title="J’aime"
+          <StatCard            title="Films assignés"
+            value={totalFilmsAssigned}
+            gradient="from-blue-500 to-cyan-600"
+          />
+
+          <StatCard            title="J’aime"
             value={liked}
             gradient="from-green-500 to-emerald-600"
           />
@@ -176,7 +192,9 @@ export default function DashboardJury() {
                   ref={sliderRef}
                   className="flex overflow-x-auto gap-6 scroll-smooth no-scrollbar"
                 >
-                  {selectedPlaylist.videos.map((video) => (
+                  {selectedPlaylist.videos.map((video) => {
+                    const isEvaluated = evaluatedVideoIds.has(video.id);
+                    return (
                     <a
                       key={video.id}
                       // Redirection vers la page notation jury
@@ -202,6 +220,15 @@ export default function DashboardJury() {
                             ▶
                           </div>
                         </div>
+
+                        {/* Badge évalué */}
+                        {isEvaluated && (
+                          <div className="absolute top-3 right-3 bg-green-500 text-white rounded-full p-1.5 shadow-lg flex items-center justify-center">
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        )}
                       </div>
 
                       <div className="p-4">
@@ -213,7 +240,8 @@ export default function DashboardJury() {
                         </p>
                       </div>
                     </a>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 {/* CHEVRONS */}

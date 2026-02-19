@@ -30,8 +30,11 @@ exports.submitVote = async (req, res) => {
 exports.getJuryVotes = async (req, res) => {
     try {
         const userId = req.user.id;
-        const votes = await JuryEvaluation.findAll({ where: { UserId: userId } });
-        res.json(votes);
+        const votes = await JuryEvaluation.findAll({ 
+            where: { user_id: userId },
+            attributes: ['id', 'submission_id', 'vote_status', 'comment', 'created_at']
+        });
+        res.json({ success: true, votes });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
