@@ -13,7 +13,7 @@ async function seedData() {
         email: 'jury@test.com',
         full_name: 'Jury Marseille',
         role: 'jury',
-        password_hash: '$2b$10$...' // Hash factice
+        password_hash: '$2b$10$wsDcaDk5BP.qIfugqE./geLIroEJdORZ9YfzVr3RY5fMlrLRjG.pm' // password123
       }
     });
     console.log(juryCreated ? 'Jury créé' : 'Jury trouvé', jury.id);
