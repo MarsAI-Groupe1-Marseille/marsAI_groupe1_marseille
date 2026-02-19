@@ -38,7 +38,7 @@ export default function DashboardJury() {
     "from-cyan-500 via-blue-600 to-indigo-800",
   ];
 
-  // 🔢 Calcul des statistiques
+  // Calcul des statistiques
   const allVideos = playlists.flatMap(p => p.videos);
   const liked = allVideos.filter(v => v.status === "aimé").length;
   const disliked = allVideos.filter(v => v.status === "pas").length;
@@ -52,18 +52,8 @@ export default function DashboardJury() {
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-pink-600/20 rounded-full blur-3xl"></div>
 
       <div className="relative z-10 p-6">
-
-        {/* HEADER */}
-        <header className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold mb-3 bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
-            Mes Playlists
-          </h1>
-          <p className="text-neutral-400">
-            Sélectionnez une playlist pour consulter les vidéos
-          </p>
-        </header>
-
-        {/* 🔥 BLOCS STATISTIQUES */}
+        
+        {/* BLOCS STATISTIQUES */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto mb-14">
 
           <StatCard
@@ -85,6 +75,16 @@ export default function DashboardJury() {
           />
 
         </div>
+
+        {/* HEADER */}
+        <header className="text-center mb-12">
+          <h1 className="text-4xl md:text-5xl font-bold mb-3 bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
+            Mes Playlists
+          </h1>
+          <p className="text-neutral-400">
+            Sélectionnez une playlist pour consulter les vidéos
+          </p>
+        </header>
 
         {/* PLAYLIST GRID */}
         {!selectedPlaylist && (
