@@ -5,6 +5,9 @@ import Login from './pages/login.jsx';
 import FilmDetail from './pages/film_detail.jsx';
 import Dashboard from './pages/dashboard.jsx';
 import DashboardUser from './pages/dashboardUser.jsx';
+<<<<<<< dashboard-jury
+import DashboardJury from './pages/dashboardJury.jsx';
+=======
 import Header from './components/Header.jsx'; // Import du Header
 import Footer from './components/Footer.jsx'; // Import du Footer
 import AdminHeader from './components/AdminHeader.jsx';
@@ -12,6 +15,7 @@ import JuryHeader from './components/JuryHeader.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import GestionFilms from './pages/gestion_film.jsx';
 import DistributionJury from './pages/distribution_jury.jsx';
+>>>>>>> main
 import './App.css'
 import SubmissionForm from './pages/SubmissionForm.jsx';
 import Forgotpass from './pages/forgotpass.jsx';
@@ -65,6 +69,11 @@ function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/forgotpass" element={<Forgotpass />} />
 
+<<<<<<< dashboard-jury
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboardUser" element={<DashboardUser />} />
+          <Route path="/dashboardJury" element={<DashboardJury />} />
+=======
           <Route
             path="/dashboard"
             element={(
@@ -123,6 +132,7 @@ function App() {
           />
           <Route path="*" element={<NotFound />} />
 
+>>>>>>> main
         </Routes>
 
         </main>
