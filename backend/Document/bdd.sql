@@ -7,7 +7,7 @@ DROP DATABASE IF EXISTS `mars_ai_db`;
 CREATE DATABASE `mars_ai_db` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 USE `mars_ai_db`;
-
+-- 
 -- 2. CONFIGURATION DE L'ENCODAGE
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
