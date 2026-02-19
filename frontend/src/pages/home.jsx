@@ -290,20 +290,72 @@ const Home = () => {
 
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8 opacity-70 hover:opacity-100 transition-all duration-500">
                         {/* Logo 1 - Gemini */}
-                        <div className="h-20 sm:h-24 bg-white/5 rounded-lg flex items-center justify-center border border-white/5 hover:bg-white/10 hover:border-orange-500/50 transition cursor-pointer">
-                            <img src="/Generated_Image_logoGemini01.png" alt="Logo Gemini" className="h-16 sm:h-20 object-contain" />
+                        <div className="h-20 sm:h-24 bg-white/5 rounded-lg flex items-center justify-center border border-white/5 hover:bg-white/10 hover:border-orange-500/50 transition cursor-pointer relative overflow-hidden">
+                            <div style={{
+                              position: 'absolute',
+                              top: '50%',
+                              left: '50%',
+                              transform: 'translate(-50%, -50%)',
+                              width: '120%',
+                              height: '120%',
+                              background: 'radial-gradient(circle, rgba(59, 130, 246, 0.4) 0%, transparent 70%)',
+                              borderRadius: '50%',
+                              filter: 'blur(20px)',
+                              zIndex: 0,
+                              pointerEvents: 'none'
+                            }}></div>
+                            <img src="/Generated_Image_logoGemini01.png" alt="Logo Gemini" className="h-16 sm:h-20 object-contain relative z-10" />
                         </div>
                         {/* Logo 2 - Nano Banana */}
-                        <div className="h-20 sm:h-24 bg-white/5 rounded-lg flex items-center justify-center border border-white/5 hover:bg-white/10 hover:border-orange-500/50 transition cursor-pointer">
-                            <img src="/Generated_Image_logoBanana01.png" alt="Logo Nano Banana" className="h-16 sm:h-20 object-contain" />
+                        <div className="h-20 sm:h-24 bg-white/5 rounded-lg flex items-center justify-center border border-white/5 hover:bg-white/10 hover:border-orange-500/50 transition cursor-pointer relative overflow-hidden">
+                            <div style={{
+                              position: 'absolute',
+                              top: '50%',
+                              left: '50%',
+                              transform: 'translate(-50%, -50%)',
+                              width: '120%',
+                              height: '120%',
+                              background: 'radial-gradient(circle, rgba(234, 179, 8, 0.4) 0%, transparent 70%)',
+                              borderRadius: '50%',
+                              filter: 'blur(20px)',
+                              zIndex: 0,
+                              pointerEvents: 'none'
+                            }}></div>
+                            <img src="/Generated_Image_logoBanana01.png" alt="Logo Nano Banana" className="h-16 sm:h-20 object-contain relative z-10" />
                         </div>
                         {/* Logo 3 - Claude */}
-                        <div className="h-20 sm:h-24 bg-white/5 rounded-lg flex items-center justify-center border border-white/5 hover:bg-white/10 hover:border-orange-500/50 transition cursor-pointer">
-                            <img src="/Generated_Image_logoClaude01.png" alt="Logo Claude" className="h-16 sm:h-20 object-contain" />
+                        <div className="h-20 sm:h-24 bg-white/5 rounded-lg flex items-center justify-center border border-white/5 hover:bg-white/10 hover:border-orange-500/50 transition cursor-pointer relative overflow-hidden">
+                            <div style={{
+                              position: 'absolute',
+                              top: '50%',
+                              left: '50%',
+                              transform: 'translate(-50%, -50%)',
+                              width: '120%',
+                              height: '120%',
+                              background: 'radial-gradient(circle, rgba(168, 85, 247, 0.4) 0%, transparent 70%)',
+                              borderRadius: '50%',
+                              filter: 'blur(20px)',
+                              zIndex: 0,
+                              pointerEvents: 'none'
+                            }}></div>
+                            <img src="/Generated_Image_logoClaude01.png" alt="Logo Claude" className="h-16 sm:h-20 object-contain relative z-10" />
                         </div>
                         {/* Logo 4 - CapCut */}
-                        <div className="h-20 sm:h-24 bg-white/5 rounded-lg flex items-center justify-center border border-white/5 hover:bg-white/10 hover:border-orange-500/50 transition cursor-pointer">
-                            <img src="/Generated_Image_logoCapcut01.png" alt="Logo CapCut" className="h-16 sm:h-20 object-contain" />
+                        <div className="h-20 sm:h-24 bg-white/5 rounded-lg flex items-center justify-center border border-white/5 hover:bg-white/10 hover:border-orange-500/50 transition cursor-pointer relative overflow-hidden">
+                            <div style={{
+                              position: 'absolute',
+                              top: '50%',
+                              left: '50%',
+                              transform: 'translate(-50%, -50%)',
+                              width: '120%',
+                              height: '120%',
+                              background: 'radial-gradient(circle, rgba(239, 68, 68, 0.4) 0%, transparent 70%)',
+                              borderRadius: '50%',
+                              filter: 'blur(20px)',
+                              zIndex: 0,
+                              pointerEvents: 'none'
+                            }}></div>
+                            <img src="/Generated_Image_logoCapcut01.png" alt="Logo CapCut" className="h-16 sm:h-20 object-contain relative z-10" />
                         </div>
                     </div>
                 </section>
