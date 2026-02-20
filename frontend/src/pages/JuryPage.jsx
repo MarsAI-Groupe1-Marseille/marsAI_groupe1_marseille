@@ -4,29 +4,111 @@ import {
   Star, Award, Linkedin, Twitter, 
   Info, X, Cpu, Sparkles, Facebook 
 } from "lucide-react";
+import axios from "../config/axiosConfig.js";
 
-const JuryPage = ({ usersFromDB = [] }) => {
-  // usersFromDB sera le tableau venant de ta requête : SELECT * FROM users WHERE role = 'jury' OR role = 'admin'
-  
+const JuryPage = () => {
+  // État pour les données
+  const [juryList, setJuryList] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [filter, setFilter] = useState("Tous");
   const [selectedJury, setSelectedJury] = useState(null);
   const [isVisible, setIsVisible] = useState(false);
+
+  // Fonction pour générer un avatar avec les initiales
+  const getAvatarUrl = (user) => {
+    if (user.avatar_url) return user.avatar_url;
+    
+    const initials = user.full_name
+      ?.split(' ')
+      .map(name => name[0])
+      .join('')
+      .toUpperCase() || 'M';
+    
+    // Génère une couleur basée sur l'ID pour de la variété
+    const colors = ['3B82F6', 'EF4444', '10B981', 'F59E0B', '8B5CF6', 'EC4899', '06B6D4', 'F97316'];
+    const bgColor = colors[user.id % colors.length];
+    
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&background=${bgColor}&color=fff&size=400&bold=true`;
+  };
+
+  // Fonction pour parser et afficher specialite correctement
+  const parseSpecialite = (specialite) => {
+    if (!specialite) return "Expert Festival";
+    
+    // Si c'est une string, essayer de la parser en JSON
+    if (typeof specialite === 'string') {
+      try {
+        const parsed = JSON.parse(specialite);
+        return Array.isArray(parsed) ? parsed.join(', ') : parsed;
+      } catch {
+        // Si ce n'est pas du JSON valide, retourner la string directe
+        return specialite;
+      }
+    }
+    
+    // Si c'est un array, le joindre
+    if (Array.isArray(specialite)) {
+      return specialite.length > 0 ? specialite.join(', ') : "Expert Festival";
+    }
+    
+    // Sinon retourner la valeur directe
+    return specialite || "Expert Festival";
+  };
+
+  // Récupérer les jurys de la base de données
+  useEffect(() => {
+    const fetchJury = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get('/jury/all');
+        setJuryList(response.data.juryMembers || []);
+      } catch (err) {
+        console.error('Erreur récupération jurys:', err);
+        setError('Impossible de charger les jurys');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchJury();
+  }, []);
 
   useEffect(() => { 
     setIsVisible(true); 
   }, []);
 
-  // On filtre pour n'afficher que ceux qui ont le rôle 'jury' ou 'admin'
-  // Et on applique le filtre de catégorie si nécessaire
-  const juryMembers = usersFromDB.filter(u => u.role === 'jury' || u.role === 'admin');
+  // On filtre pour n'afficher que les jurys (role = 'jury' ou 'admin')
+  const juryMembers = juryList.filter(u => u.role === 'jury' || u.role === 'admin');
 
   const filteredJury = filter === "Tous" 
     ? juryMembers 
     : juryMembers.filter(j => j.specialite === filter);
 
-  // Le président est celui qui a l'ID le plus bas (souvent l'admin) ou un critère spécifique
-  // Ici, on cherche par exemple le premier 'admin' trouvé
+  // Le président est celui qui a le rôle 'admin'
   const president = juryMembers.find(u => u.role === 'admin');
+
+  // Afficher un loader pendant le chargement
+  if (loading) {
+    return (
+      <div className="min-h-screen pb-20 bg-[var(--color-bg)] flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-white text-2xl font-bold">Chargement des jurys...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Afficher une erreur s'il y a un problème
+  if (error) {
+    return (
+      <div className="min-h-screen pb-20 bg-[var(--color-bg)] flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-500 text-2xl font-bold">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen pb-20 bg-[var(--color-bg)]">
@@ -81,7 +163,7 @@ const JuryPage = ({ usersFromDB = [] }) => {
                 <div className="relative h-80 w-full p-4">
                   <div className="w-full h-full overflow-hidden rounded-[50px] border border-[var(--color-border-strong)] relative bg-black">
                     <img 
-                      src={user.avatar_url || "https://via.placeholder.com/400x500/000000/FFFFFF?text=Mars+AI"} 
+                      src={getAvatarUrl(user)} 
                       alt={user.full_name} 
                       className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-100"
                     />
@@ -102,7 +184,7 @@ const JuryPage = ({ usersFromDB = [] }) => {
                         {user.full_name || "Membre Anonyme"}
                       </h3>
                       <p className="text-[var(--color-primary)] text-[10px] font-black uppercase tracking-[0.2em] mt-1">
-                        {user.specialite || "Expert Festival"}
+                        {parseSpecialite(user.specialite)}
                       </p>
                     </div>
                     <Award size={24} className="text-[var(--color-secondary)] opacity-40" />
@@ -136,7 +218,7 @@ const JuryPage = ({ usersFromDB = [] }) => {
 
             <div className="grid grid-cols-1 md:grid-cols-2">
               <div className="relative h-80 md:h-[600px]">
-                <img src={selectedJury.avatar_url || "https://via.placeholder.com/400"} className="w-full h-full object-cover" alt="" />
+                <img src={getAvatarUrl(selectedJury)} className="w-full h-full object-cover" alt="" />
                 <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-transparent via-transparent to-[#0a0a0a]" />
               </div>
               
@@ -150,7 +232,7 @@ const JuryPage = ({ usersFromDB = [] }) => {
                   {selectedJury.full_name}
                 </h2>
                 <p className="text-[var(--color-primary)] font-bold text-sm mb-8 uppercase tracking-[0.3em]">
-                  {selectedJury.specialite}
+                  {parseSpecialite(selectedJury.specialite)}
                 </p>
                 
                 <div className="space-y-6">
