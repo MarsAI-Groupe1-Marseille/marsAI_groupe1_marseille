@@ -26,7 +26,7 @@ const JuryHeader = () => {
   return (
     <header className={`mars-header sticky top-0 z-50 w-full border-b border-[var(--color-border)] ${headerBg}`}>
       <div className="container-mars flex items-center justify-between" style={{ paddingTop: "var(--header-py)", paddingBottom: "var(--header-py)" }}>
-        <Link to="/dashboardUser" className="flex items-center gap-2 group select-none min-w-0">
+        <Link to="/dashboardJury" className="flex items-center gap-2 group select-none min-w-0">
           <Star size={22} className="text-[var(--color-secondary)]" />
           <span
             className="font-[var(--font-family-title)] font-bold tracking-tighter italic text-[var(--color-text)] truncate"
