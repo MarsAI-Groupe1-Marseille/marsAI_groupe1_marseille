@@ -64,6 +64,7 @@ const Header = () => { //
     () => [
       { label: lang === "fr" ? "ACCUEIL" : "HOME", to: "/" },
       { label: lang === "fr" ? "GALERIE" : "GALLERY", to: "/galerie" },
+      { label: "FAQ", to: "/faq" },
       { label: "JURY", to: "/jury" },
       { label: "SPONSORS", to: "/sponsors" },
     ],
@@ -111,9 +112,8 @@ const Header = () => { //
             <button
               type="button"
               onClick={() => setLang("fr")}
-              className={`rounded-full ${
-                lang === "fr" ? "bg-[var(--color-surface-2)]" : "opacity-70"
-              }`}
+              className={`rounded-full ${lang === "fr" ? "bg-[var(--color-surface-2)]" : "opacity-70"
+                }`}
               aria-label="Français"
               title="FR"
             >
@@ -123,9 +123,8 @@ const Header = () => { //
             <button
               type="button"
               onClick={() => setLang("en")}
-              className={`rounded-full ${
-                lang === "en" ? "bg-[var(--color-surface-2)]" : "opacity-70"
-              }`}
+              className={`rounded-full ${lang === "en" ? "bg-[var(--color-surface-2)]" : "opacity-70"
+                }`}
               aria-label="English"
               title="EN"
             >
@@ -273,7 +272,7 @@ const Header = () => { //
             onClick={() => setIsMobileMenuOpen(false)}
             aria-label="Fermer overlay"
           />
-{/* <div className="mars-drawer absolute left-0 right-0 top-full mx-3 rounded-2xl ..."> */}
+          {/* <div className="mars-drawer absolute left-0 right-0 top-full mx-3 rounded-2xl ..."> */}
 
           <div className="mars-drawer absolute left-0 right-0 top-4 mx-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-xl">
             {/* Header du drawer : logo + close */}
