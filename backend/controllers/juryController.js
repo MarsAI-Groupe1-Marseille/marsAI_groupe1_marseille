@@ -1,22 +1,45 @@
 const { JuryEvaluation, JuryList, Submission, JuryMember, JuryListSubmission, User } = require('../models');
 const { Op } = require('sequelize');
 
+// ===============================================================
+// ===============================================================
 exports.getAllJury = async (req, res) => {
     try {
+        // ÉTAPE 1 : On demande à la base de données de chercher les admins ET les jurys
         const juryMembers = await User.findAll({
             where: {
-                role: 'jury'
+                // Op.in permet de chercher plusieurs valeurs en même temps
+                role: { [Op.in]: ['jury', 'admin'] } 
             },
+            // ÉTAPE 2 : On liste les colonnes qu'on veut récupérer
             attributes: ['id', 'full_name', 'email', 'avatar_url', 'specialite', 'role', 'created_at'],
             raw: true
         });
 
+        // ÉTAPE 3 : On renvoie la liste complète au Front-end
         res.status(200).json({ success: true, juryMembers });
     } catch (error) {
         console.error('Erreur récupération jurys:', error);
         res.status(500).json({ error: error.message });
     }
 };
+// ===============================================================
+// ===============================================================
+// exports.getAllJury = async (req, res) => {
+//     try {
+//         const juryMembers = await User.findAll({
+//             where: {
+//                 role: 'jury'             },
+//             attributes: ['id', 'full_name', 'email', 'avatar_url', 'specialite', 'role', 'created_at'],
+//             raw: true
+//         });
+
+//         res.status(200).json({ success: true, juryMembers });
+//     } catch (error) {
+//         console.error('Erreur récupération jurys:', error);
+//         res.status(500).json({ error: error.message });
+//     }
+// };
 
 exports.submitVote = async (req, res) => {
     try {
