@@ -2,63 +2,85 @@ import React, { useState, useEffect } from 'react';
 import { ArrowRight, Trophy, Users, Cpu, Globe, Menu, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext.jsx';
 
+// Mapping clé → image par défaut (pour les catégories qui n'ont pas d'image custom)
+const DEFAULT_CATEGORY_IMAGES = {
+    sci_fi:      "/Gemini_Generated_Image_ScFIction.png",
+    horror:      "/Gemini_Generated_Image_Horreur.png",
+    action:      "/Gemini_Generated_Image_Action.png",
+    drama:       "/Gemini_Generated_Image_Drame.png",
+    thriller:    "/Gemini_Generated_Image_Thriller.png",
+    documentary: "/Gemini_Generated_Image_Documentaire.png",
+    animation:   "/Gemini_Generated_Image_Animation.png",
+    history:     "/Gemini_Generated_Image_Histoire.png",
+};
+
+// Catégories par défaut si aucune config en localStorage
+const DEFAULT_CATEGORIES = [
+    { key: 'sci_fi',      desc_fr: "Exploration des futurs possibles.",              desc_en: "Exploration of possible futures.",            image: "/Gemini_Generated_Image_ScFIction.png" },
+    { key: 'horror',      desc_fr: "Frissons garantis par l'IA.",                    desc_en: "Guaranteed thrills by AI.",                   image: "/Gemini_Generated_Image_Horreur.png" },
+    { key: 'action',      desc_fr: "Adrénaline et cinématiques.",                    desc_en: "Adrenaline and cinematics.",                  image: "/Gemini_Generated_Image_Action.png" },
+    { key: 'drama',       desc_fr: "Émotions profondes et récits.",                  desc_en: "Deep emotions and stories.",                  image: "/Gemini_Generated_Image_Drame.png" },
+    { key: 'thriller',    desc_fr: "Enquête approfonfis et suspense.",               desc_en: "In-depth investigation and suspense.",        image: "/Gemini_Generated_Image_Thriller.png" },
+    { key: 'documentary', desc_fr: "Reportage et investigation de haut vol.",        desc_en: "High-level reporting and investigation.",     image: "/Gemini_Generated_Image_Documentaire.png" },
+    { key: 'animation',   desc_fr: "Technologie et fantaisie.",                      desc_en: "Technology and fantasy.",                    image: "/Gemini_Generated_Image_Animation.png" },
+    { key: 'history',     desc_fr: "Revisite les meilleurs moments de l'histoire.",  desc_en: "Revisit the best moments that marked history.", image: "/Gemini_Generated_Image_Histoire.png" },
+];
+
 const Home = () => {
     const { t, lang } = useLanguage();
     const [showAboutModal, setShowAboutModal] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [carouselIndex, setCarouselIndex] = useState(0);
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-    
-    const categories = [
-        { 
-            key: 'sci_fi',
-            desc_fr: "Exploration des futurs possibles.", 
-            desc_en: "Exploration of possible futures.",
-            image: "/Gemini_Generated_Image_ScFIction.png" 
-        },
-        { 
-            key: 'horror',
-            desc_fr: "Frissons garantis par l'IA.", 
-            desc_en: "Guaranteed thrills by AI.",
-            image: "/Gemini_Generated_Image_Horreur.png" 
-        },
-        { 
-            key: 'action',
-            desc_fr: "Adrénaline et cinématiques.", 
-            desc_en: "Adrenaline and cinematics.",
-            image: "/Gemini_Generated_Image_Action.png" 
-        },
-        { 
-            key: 'drama',
-            desc_fr: "Émotions profondes et récits.", 
-            desc_en: "Deep emotions and stories.",
-            image: "/Gemini_Generated_Image_Drame.png" 
-        },
-        { 
-            key: 'thriller',
-            desc_fr: "Enquête approfonfis et suspense.", 
-            desc_en: "In-depth investigation and suspense.",
-            image: "/Gemini_Generated_Image_Thriller.png"
-        },
-        { 
-            key: 'documentary',
-            desc_fr: "Reportage et investigation de haut vol.", 
-            desc_en: "High-level reporting and investigation.",
-            image: "/Gemini_Generated_Image_Documentaire.png"
-        },
-        { 
-            key: 'animation',
-            desc_fr: "Technologie et fantaisie.", 
-            desc_en: "Technology and fantasy.",
-            image: "/Gemini_Generated_Image_Animation.png"
-        },
-        { 
-            key: 'history',
-            desc_fr: "Revisite les meilleurs moments qui ont marqué l'histoire.", 
-            desc_en: "Revisit the best moments that marked history.",
-            image: "/Gemini_Generated_Image_Histoire.png"
-        },
-    ];
+
+    // ── Lecture de la config sauvegardée par la page Configuration ──
+    const [homeConfig, setHomeConfig] = useState(() => {
+        try {
+            const saved = localStorage.getItem('home_config');
+            return saved ? JSON.parse(saved) : null;
+        } catch {
+            return null;
+        }
+    });
+
+    // Écoute les changements de localStorage (si la config change dans un autre onglet)
+    useEffect(() => {
+        const onStorage = (e) => {
+            if (e.key === 'home_config') {
+                try { setHomeConfig(e.newValue ? JSON.parse(e.newValue) : null); } catch {}
+            }
+        };
+        window.addEventListener('storage', onStorage);
+        return () => window.removeEventListener('storage', onStorage);
+    }, []);
+
+    // ── Textes du Hero (depuis config ou valeurs hardcodées) ──
+    const heroConfig = homeConfig?.hero;
+    const heroTitle          = heroConfig?.title          || 'MARS';
+    const heroTitleHighlight = heroConfig?.titleHighlight || 'AI';
+    const heroSubtitle       = lang === 'fr'
+        ? (heroConfig?.subtitle    || "L'intelligence artificielle au service de la création cinématographique. Découvrez une nouvelle ère de narration numérique.")
+        : (heroConfig?.subtitle_en || "Artificial intelligence at the service of filmmaking. Discover a new era of digital storytelling.");
+    const ctaPrimary   = lang === 'fr' ? (heroConfig?.ctaPrimary   || 'Commencer')    : (heroConfig?.ctaPrimary_en   || 'Get Started');
+    const ctaSecondary = lang === 'fr' ? (heroConfig?.ctaSecondary || 'En savoir plus') : (heroConfig?.ctaSecondary_en || 'Learn More');
+
+    // ── Catégories (depuis config ou valeurs par défaut) ──
+    const configItems = homeConfig?.categories?.items;
+    const categories = configItems && configItems.length > 0
+        ? configItems.map((item, i) => {
+            // On génère une clé stable à partir du titre ou de l'index
+            const key = item.key || item.title?.toLowerCase().replace(/\s+/g, '_') || `cat_${i}`;
+            return {
+                key,
+                desc_fr: item.desc  || DEFAULT_CATEGORIES[i]?.desc_fr || '',
+                desc_en: item.desc_en || DEFAULT_CATEGORIES[i]?.desc_en || '',
+                image:   item.image || DEFAULT_CATEGORY_IMAGES[key] || DEFAULT_CATEGORIES[i]?.image || '',
+                // On garde aussi le titre custom pour l'affichage si la clé de traduction n'existe pas
+                title_fr: item.title    || undefined,
+                title_en: item.title_en || undefined,
+            };
+          })
+        : DEFAULT_CATEGORIES;
 
     // Hook pour suivre la taille de la fenêtre
     useEffect(() => {
@@ -169,17 +191,17 @@ const Home = () => {
 
                     {/* CONTENT - HIGHEST Z-INDEX */}
                     <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black text-white tracking-tight mb-4 sm:mb-6" style={{ position: 'relative', zIndex: 10 }}>
-                        MARS <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-violet-600">AI</span>
+                        {heroTitle} <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-violet-600">{heroTitleHighlight}</span>
                     </h1>
                     <p className="max-w-2xl text-sm sm:text-base md:text-lg font-medium text-white/90 mb-6 sm:mb-10 leading-relaxed px-2 drop-shadow-md" style={{ position: 'relative', zIndex: 10 }}>
-                        {lang === 'fr' ? "L'intelligence artificielle au service de la création cinématographique. Découvrez une nouvelle ère de narration numérique." : "Artificial intelligence at the service of filmmaking. Discover a new era of digital storytelling."}
+                        {heroSubtitle}
                     </p>
                     <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto px-4 sm:px-0" style={{ position: 'relative', zIndex: 10 }}>
                         <button className="bg-white text-slate-950 px-6 sm:px-8 py-3 rounded-full font-bold hover:bg-slate-200 transition flex items-center justify-center gap-2 text-sm sm:text-base">
-                            {lang === 'fr' ? "Commencer" : "Get Started"} <ArrowRight size={18} />
+                            {ctaPrimary} <ArrowRight size={18} />
                         </button>
                         <button className="border border-white/20 px-6 sm:px-8 py-3 rounded-full font-bold hover:bg-white/10 transition text-sm sm:text-base" onClick={() => setShowAboutModal(true)}>
-                            {lang === 'fr' ? "En savoir plus" : "Learn More"}
+                            {ctaSecondary}
                         </button>
                     </div>
                 </section>
@@ -216,7 +238,11 @@ const Home = () => {
                                         </div>
                                         <div className="p-3 sm:p-4 lg:p-4 flex-grow flex flex-col justify-between overflow-hidden">
                                             <div className="flex-shrink-0">
-                                                <h3 className="text-sm sm:text-base lg:text-base font-bold text-white mb-0.5 sm:mb-1 truncate">{t(cat.key)}</h3>
+                                                <h3 className="text-sm sm:text-base lg:text-base font-bold text-white mb-0.5 sm:mb-1 truncate">
+                                                    {lang === 'fr'
+                                                        ? (cat.title_fr || t(cat.key))
+                                                        : (cat.title_en || t(cat.key))}
+                                                </h3>
                                                 <p className="text-slate-400 text-xs line-clamp-1">{lang === 'fr' ? cat.desc_fr : cat.desc_en}</p>
                                             </div>
                                         </div>
@@ -473,7 +499,11 @@ const Home = () => {
                     >
                         {/* Header with Close Button */}
                         <div className="sticky top-0 bg-gradient-to-r from-violet-600 to-violet-800 p-4 sm:p-6 flex items-center justify-between z-10">
-                            <h2 className="text-2xl sm:text-3xl font-bold text-white">{t(categories[selectedCategory].key)}</h2>
+                            <h2 className="text-2xl sm:text-3xl font-bold text-white">
+                                {lang === 'fr'
+                                    ? (categories[selectedCategory].title_fr || t(categories[selectedCategory].key))
+                                    : (categories[selectedCategory].title_en || t(categories[selectedCategory].key))}
+                            </h2>
                             <button 
                                 onClick={() => setSelectedCategory(null)}
                                 className="p-2 hover:bg-white/10 rounded-lg transition-colors"
