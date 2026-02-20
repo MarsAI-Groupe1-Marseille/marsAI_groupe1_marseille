@@ -1,5 +1,6 @@
 const { Submission, Director, Collaborator } = require('../models');
 const { uploadVideoToYoutube,uploadSubtitlesToYoutube } = require('../services/youtubeService');
+const emailService = require('../services/emailService');
 const { Op } = require('sequelize'); 
 const fs = require('fs');
 const crypto = require('crypto'); // C'est natif dans Node.js
@@ -138,6 +139,17 @@ exports.createSubmission = async (req, res) => {
             } catch (error) {
                 console.error("Erreur Collaborators :", error.message);
             }
+        }
+
+        // --- ÉTAPE 6 : ENVOI EMAIL DE CONFIRMATION ---
+        try {
+            await emailService.sendSubmissionConfirmation(
+                { email: director.email },
+                req.body.title_original
+            );
+        } catch (emailError) {
+            console.error("Erreur envoi email confirmation:", emailError);
+            // On ne bloque pas la soumission si l'email échoue
         }
 
         res.status(201).json({

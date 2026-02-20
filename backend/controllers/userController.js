@@ -40,7 +40,7 @@ exports.createUser = async (req, res) => {
 
         // 4. Construction du lien magique et envoi de l'email
         // Le lien renvoie vers le frontend avec le token en paramètre.
-        const resetLink = `http://localhost:5173/reset-password?token=${token}`;
+        const resetLink = `http://localhost:5173/active-compte?token=${token}`;
         
         // On appelle le service d'emailing adapté au rôle.
         await emailService.sendUserInvitation(email, full_name, role, resetLink);
@@ -56,10 +56,50 @@ exports.createUser = async (req, res) => {
     }
 };
 
-// Réinitialiser le mot de passe avec un token d'invitation
+// Demande de réinitialisation de mot de passe (Oubli de mot de passe)
+exports.forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({ error: "L'email est requis." });
+        }
+
+        // Chercher l'utilisateur par email
+        const user = await User.findOne({ where: { email } });
+        if (!user) {
+            // Pour des raisons de sécurité, on ne révèle pas si l'email existe ou non
+            return res.status(200).json({ message: "Si cet email existe, un lien de réinitialisation a été envoyé." });
+        }
+
+        // Générer un token unique
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
+
+        // Mettre à jour l'utilisateur avec le token (utiliser l'instance directement)
+        user.invite_token = resetToken;
+        user.invite_token_expires_at = expiresAt;
+        await user.save();
+
+        // Construire le lien de réinitialisation
+        const resetLink = `http://localhost:5173/reset-password?token=${resetToken}`;
+
+        // Envoyer l'email avec le lien
+        await emailService.sendResetPasswordEmail(email, user.full_name || 'utilisateur', resetLink);
+
+        res.status(200).json({ 
+            message: "Si cet email existe, un lien de réinitialisation a été envoyé." 
+        });
+
+    } catch (error) {
+        console.error("Erreur forgotPassword :", error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Réinitialiser le mot de passe avec un token (depuis forgotpass)
 exports.resetPassword = async (req, res) => {
     try {
-        // Récupération du token et du nouveau mot de passe depuis le corps de la requête
         const { token, new_password } = req.body;
 
         // Validation des paramètres
@@ -73,16 +113,61 @@ exports.resetPassword = async (req, res) => {
             return res.status(404).json({ error: "Token invalide ou expiré." });
         }
 
+        if (user.invite_token_expires_at && user.invite_token_expires_at < new Date()) {
+            return res.status(404).json({ error: "Token invalide ou expiré." });
+        }
+
         // Hasher le nouveau mot de passe
         const password_hash = await bcrypt.hash(new_password, 10);
 
-        // Mettre à jour l'utilisateur et invalider le token
+        // Mettre à jour l'utilisateur : définir le mot de passe et invalider le token
         await User.update(
-            { password_hash, invite_token: null },
+            { password_hash, invite_token: null, invite_token_expires_at: null },
             { where: { invite_token: token } }
         );
 
         res.status(200).json({ message: "Mot de passe réinitialisé avec succès." });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+// Activation du compte après invitation (définition du mot de passe et éventuellement upload d'avatar)
+exports.activateAccount = async (req, res) => {
+    try {
+        const { token, new_password, specialite } = req.body;
+        // Avec multer-s3, utiliser req.file.location au lieu de req.file.path
+        const avatar = req.file ? req.file.location : null;
+        
+        if (!token || !new_password) {
+            return res.status(400).json({ error: "Le token et le nouveau mot de passe sont requis." });
+        }
+        const user = await User.findOne({ where: { invite_token: token } });
+        if (!user) {
+            return res.status(404).json({ error: "Token invalide ou expiré." });
+        }
+        const password_hash = await bcrypt.hash(new_password, 10);
+        user.password_hash = password_hash;
+        user.invite_token = null;
+        user.invite_token_expires_at = null;
+        
+        // Mise à jour de l'avatar seulement si un fichier a été uploadé
+        if (avatar) {
+            user.avatar_url = avatar;
+        }
+        
+        // Gérer specialite : parser le JSON si c'est une string
+        if (specialite) {
+            try {
+                // Le frontend envoie JSON.stringify(specialiteList), donc on doit parser
+                user.specialite = typeof specialite === 'string' ? JSON.parse(specialite) : specialite;
+            } catch (e) {
+                // Si le parsing échoue, traiter comme un simple array avec une seule valeur
+                user.specialite = [specialite];
+            }
+        }
+        await user.save();
+
+        res.status(200).json({ message: "Compte activé avec succès." });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

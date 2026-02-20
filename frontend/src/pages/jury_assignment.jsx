@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Plus, Trash2, Save, Sparkles, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { Plus, Trash2, Users, ChevronLeft, ChevronRight } from "lucide-react";
 import axios from "../config/axiosConfig.js";
 
 /**
  * ============================================================
- * COMPOSANT: CompetitionAnimation
+ * COMPOSANT: JuryAssignment
  * ============================================================
  * Cette page permet aux admins/modos de gérer une compétition
  * animée : sélectionner les films à juger et assigner les jurés.
@@ -15,7 +15,7 @@ import axios from "../config/axiosConfig.js";
  * - Section 2: Gestion des jurés (disponibles ↔ assignés)
  */
 
-export default function CompetitionAnimation() {
+export default function JuryAssignment() {
   // ========================================================================
   // ÉTATS: Données provenant de la base
   // ========================================================================
@@ -246,21 +246,11 @@ export default function CompetitionAnimation() {
       <div className="max-w-7xl mx-auto space-y-10">
         {/* HEADER SECTION */}
         <header className="bg-neutral-900 border border-neutral-800 rounded-xl p-8">
-          {/* Titre avec émoji */}
+          {/* Titre avec icone */}
           <div className="flex items-center gap-4 mb-3">
-  <span
-    className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
-    style={{ background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.3)' }}
-  >
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-      <circle cx="9" cy="7" r="4"/>
-      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-      </svg>
-      </span>
-      <h1 className="text-4xl font-bold text-white">Assignation des Jurys et Films</h1>
-      </div>
+            <Users className="text-violet-300" size={30} />
+            <h1 className="text-4xl font-bold text-white">Assignation des Jurys et Films</h1>
+          </div>
           
           {/* Sous-titre */}
           <p className="text-neutral-400 mb-6 ml-16">

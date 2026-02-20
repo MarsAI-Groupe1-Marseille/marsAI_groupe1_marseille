@@ -113,31 +113,36 @@ const DEFAULT_HOME_CONFIG = {
     title: 'MARS',
     titleHighlight: 'AI',
     subtitle: "L'intelligence artificielle au service de la création cinématographique. Découvrez une nouvelle ère de narration numérique.",
+    subtitle_en: 'Artificial intelligence at the service of cinematic creation. Discover a new era of digital storytelling.',
     ctaPrimary: 'Commencer',
+    ctaPrimary_en: 'Get Started',
     ctaSecondary: 'En savoir plus',
+    ctaSecondary_en: 'Learn More',
   },
   categories: {
     enabled: true,
     items: [
-      { title: 'SCI-FI', desc: 'Exploration des futurs possibles.' },
-      { title: 'HORREUR', desc: "Frissons garantis par l'IA." },
-      { title: 'ACTION', desc: 'Adrénaline et cinématiques.' },
-      { title: 'DRAME', desc: 'Émotions profondes et récits.' },
+      { title: 'SCI-FI',  title_en: 'SCI-FI',  desc: 'Exploration des futurs possibles.',  desc_en: 'Exploring possible futures.' },
+      { title: 'HORREUR', title_en: 'HORROR',  desc: "Frissons garantis par l'IA.",        desc_en: 'AI-powered thrills guaranteed.' },
+      { title: 'ACTION',  title_en: 'ACTION',  desc: 'Adrénaline et cinématiques.',        desc_en: 'Adrenaline and cinematics.' },
+      { title: 'DRAME',   title_en: 'DRAMA',   desc: 'Émotions profondes et récits.',      desc_en: 'Deep emotions and narratives.' },
     ],
   },
   awards: {
     enabled: true,
     title: 'Reconnaissance & Awards',
+    title_en: 'Recognition & Awards',
     stats: [
-      { label: 'Prix à gagner', sub: 'Dotations mensuelles' },
-      { label: 'Global', sub: 'Ouvert au monde entier' },
-      { label: 'AI Only', sub: '100% généré par IA' },
+      { label: 'Prix à gagner', sub: 'Dotations mensuelles',   sub_en: 'Monthly grants' },
+      { label: 'Global',        sub: 'Ouvert au monde entier',  sub_en: 'Open worldwide' },
+      { label: 'AI Only',       sub: '100% généré par IA',      sub_en: '100% AI-generated' },
     ],
   },
   partners: {
     enabled: true,
     title: 'Nos Partenaires',
     subtitle: 'Ils font confiance à la plateforme',
+    subtitle_en: 'They trust our platform',
   },
 }
 
@@ -173,6 +178,29 @@ const Field = ({ label, value, onChange, multiline = false, placeholder = '' }) 
   </div>
 )
 
+// ─── Champ EN : même structure que Field, badge rouge EN dans le label ────────
+const FieldEN = ({ label, value, onChange, multiline = false, placeholder = '' }) => (
+  <div className="mb-3">
+    <label className="flex items-center gap-1.5 text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.4)' }}>
+      {label}
+      <span style={{ padding: '1px 5px', borderRadius: 4, fontSize: 10, fontWeight: 700, background: 'rgba(239,68,68,0.15)', color: '#f87171', border: '1px solid rgba(239,68,68,0.3)' }}>EN</span>
+    </label>
+    {multiline ? (
+      <textarea rows={3} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
+        className="w-full px-3 py-2 text-sm rounded-xl text-white placeholder-white/20 focus:outline-none resize-none transition-colors"
+        style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(239,68,68,0.2)' }}
+        onFocus={e => e.target.style.borderColor = 'rgba(239,68,68,0.5)'}
+        onBlur={e => e.target.style.borderColor = 'rgba(239,68,68,0.2)'} />
+    ) : (
+      <input type="text" value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
+        className="w-full px-3 py-2 text-sm rounded-xl text-white placeholder-white/20 focus:outline-none transition-colors"
+        style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(239,68,68,0.2)' }}
+        onFocus={e => e.target.style.borderColor = 'rgba(239,68,68,0.5)'}
+        onBlur={e => e.target.style.borderColor = 'rgba(239,68,68,0.2)'} />
+    )}
+  </div>
+)
+
 const SectionHeader = ({ label, enabled, onChange }) => (
   <div className="flex items-center justify-between mb-4 pb-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
     <span className="text-sm font-bold text-white">{label}</span>
@@ -204,7 +232,7 @@ const ImageUpload = ({ value, onChange, label = 'Image' }) => {
     const file = e.target.files?.[0]
     if (!file) return
     const reader = new FileReader()
-    reader.onload = (ev) => onChange(ev.target.result) // base64 data URL
+    reader.onload = (ev) => onChange(ev.target.result)
     reader.readAsDataURL(file)
   }
   const handleDrop = (e) => {
@@ -270,7 +298,6 @@ const HomeConfigModal = ({ onClose }) => {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
 
-  // Charge la config existante depuis l'API ou localStorage
   useEffect(() => {
     const load = async () => {
       try {
@@ -314,7 +341,7 @@ const HomeConfigModal = ({ onClose }) => {
       <div className="relative w-full max-w-2xl max-h-[90vh] flex flex-col rounded-2xl shadow-2xl overflow-hidden"
         style={{ background: 'linear-gradient(160deg, #12122a 0%, #0f0f1e 100%)', border: '1px solid rgba(255,255,255,0.1)' }}>
 
-        {/* Header */}
+        {/* Header — identique */}
         <div className="flex items-center justify-between px-6 py-4 shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl flex items-center justify-center"
@@ -334,7 +361,7 @@ const HomeConfigModal = ({ onClose }) => {
           </button>
         </div>
 
-        {/* Tabs */}
+        {/* Tabs — identiques */}
         <div className="flex gap-1.5 px-6 py-3 shrink-0 overflow-x-auto" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', scrollbarWidth: 'none' }}>
           {TABS.map(t => (
             <TabBtn key={t.key} active={activeTab === t.key} onClick={() => setActiveTab(t.key)}>
@@ -352,21 +379,33 @@ const HomeConfigModal = ({ onClose }) => {
               <SectionHeader label="Section Hero" enabled={config.hero.enabled}
                 onChange={v => set('hero', { ...config.hero, enabled: v })} />
               <div className={config.hero.enabled ? '' : 'opacity-30 pointer-events-none'}>
+                {/* Titre + mot coloré : pas traduits (même texte) */}
                 <div className="grid grid-cols-2 gap-3">
                   <Field label="Titre principal" value={config.hero.title}
                     onChange={v => set('hero', { ...config.hero, title: v })} placeholder="MARS" />
                   <Field label="Mot en couleur (violet)" value={config.hero.titleHighlight}
                     onChange={v => set('hero', { ...config.hero, titleHighlight: v })} placeholder="AI" />
                 </div>
+                {/* Sous-titre FR puis EN */}
                 <Field label="Sous-titre" value={config.hero.subtitle} multiline
                   onChange={v => set('hero', { ...config.hero, subtitle: v })} />
+                <FieldEN label="Sous-titre" value={config.hero.subtitle_en ?? ''} multiline
+                  onChange={v => set('hero', { ...config.hero, subtitle_en: v })}
+                  placeholder="English subtitle..." />
+                {/* Boutons FR + EN côte à côte */}
                 <div className="grid grid-cols-2 gap-3">
                   <Field label="Bouton principal" value={config.hero.ctaPrimary}
                     onChange={v => set('hero', { ...config.hero, ctaPrimary: v })} placeholder="Commencer" />
+                  <FieldEN label="Bouton principal" value={config.hero.ctaPrimary_en ?? ''}
+                    onChange={v => set('hero', { ...config.hero, ctaPrimary_en: v })} placeholder="Get Started" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
                   <Field label="Bouton secondaire" value={config.hero.ctaSecondary}
                     onChange={v => set('hero', { ...config.hero, ctaSecondary: v })} placeholder="En savoir plus" />
+                  <FieldEN label="Bouton secondaire" value={config.hero.ctaSecondary_en ?? ''}
+                    onChange={v => set('hero', { ...config.hero, ctaSecondary_en: v })} placeholder="Learn More" />
                 </div>
-                {/* Aperçu mini */}
+                {/* Aperçu mini — identique */}
                 <div className="mt-2 rounded-xl p-4 text-center" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
                   <p className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.3)' }}>Aperçu</p>
                   <p className="text-lg font-black text-white">
@@ -399,6 +438,7 @@ const HomeConfigModal = ({ onClose }) => {
                           <IconTrash size={12} />
                         </button>
                       </div>
+                      {/* Titre (pas traduit) + Description FR */}
                       <div className="grid grid-cols-2 gap-2">
                         <div>
                           <label className="block text-xs mb-1" style={{ color: 'rgba(255,255,255,0.35)' }}>Titre</label>
@@ -410,6 +450,23 @@ const HomeConfigModal = ({ onClose }) => {
                             style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }} />
                         </div>
                         <div>
+                          <label className="flex items-center gap-1.5 text-xs mb-1" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                            Titre
+                            <span style={{ padding: '1px 5px', borderRadius: 4, fontSize: 10, fontWeight: 700, background: 'rgba(239,68,68,0.15)', color: '#f87171', border: '1px solid rgba(239,68,68,0.3)' }}>EN</span>
+                          </label>
+                          <input value={item.title_en ?? ''} onChange={e => {
+                            const items = [...config.categories.items]
+                            items[i] = { ...items[i], title_en: e.target.value }
+                            set('categories', { ...config.categories, items })
+                          }} placeholder="English title..."
+                            className="w-full px-2.5 py-1.5 text-xs rounded-lg text-white focus:outline-none"
+                            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(239,68,68,0.2)' }}
+                            onFocus={e => e.target.style.borderColor = 'rgba(239,68,68,0.5)'}
+                            onBlur={e => e.target.style.borderColor = 'rgba(239,68,68,0.2)'} />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 mt-2">
+                        <div>
                           <label className="block text-xs mb-1" style={{ color: 'rgba(255,255,255,0.35)' }}>Description</label>
                           <input value={item.desc} onChange={e => {
                             const items = [...config.categories.items]
@@ -417,6 +474,21 @@ const HomeConfigModal = ({ onClose }) => {
                             set('categories', { ...config.categories, items })
                           }} className="w-full px-2.5 py-1.5 text-xs rounded-lg text-white focus:outline-none"
                             style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }} />
+                        </div>
+                        <div>
+                          <label className="flex items-center gap-1.5 text-xs mb-1" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                            Description
+                            <span style={{ padding: '1px 5px', borderRadius: 4, fontSize: 10, fontWeight: 700, background: 'rgba(239,68,68,0.15)', color: '#f87171', border: '1px solid rgba(239,68,68,0.3)' }}>EN</span>
+                          </label>
+                          <input value={item.desc_en ?? ''} onChange={e => {
+                            const items = [...config.categories.items]
+                            items[i] = { ...items[i], desc_en: e.target.value }
+                            set('categories', { ...config.categories, items })
+                          }} placeholder="English description..."
+                            className="w-full px-2.5 py-1.5 text-xs rounded-lg text-white focus:outline-none"
+                            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(239,68,68,0.2)' }}
+                            onFocus={e => e.target.style.borderColor = 'rgba(239,68,68,0.5)'}
+                            onBlur={e => e.target.style.borderColor = 'rgba(239,68,68,0.2)'} />
                         </div>
                       </div>
                       <ImageUpload
@@ -431,7 +503,7 @@ const HomeConfigModal = ({ onClose }) => {
                     </div>
                   ))}
                 </div>
-                <button onClick={() => set('categories', { ...config.categories, items: [...config.categories.items, { title: '', desc: '' }] })}
+                <button onClick={() => set('categories', { ...config.categories, items: [...config.categories.items, { title: '', title_en: '', desc: '', desc_en: '' }] })}
                   className="w-full py-2 rounded-xl text-sm flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
                   style={{ border: '2px dashed rgba(139,92,246,0.25)', color: 'rgba(139,92,246,0.6)', background: 'transparent' }}
                   onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(139,92,246,0.5)'; e.currentTarget.style.background = 'rgba(139,92,246,0.05)' }}
@@ -448,8 +520,11 @@ const HomeConfigModal = ({ onClose }) => {
               <SectionHeader label="Section Awards" enabled={config.awards.enabled}
                 onChange={v => set('awards', { ...config.awards, enabled: v })} />
               <div className={config.awards.enabled ? '' : 'opacity-30 pointer-events-none'}>
+                {/* Titre section FR + EN */}
                 <Field label="Titre de la section" value={config.awards.title}
                   onChange={v => set('awards', { ...config.awards, title: v })} placeholder="Reconnaissance & Awards" />
+                <FieldEN label="Titre de la section" value={config.awards.title_en ?? ''}
+                  onChange={v => set('awards', { ...config.awards, title_en: v })} placeholder="Recognition & Awards" />
                 <p className="text-xs mb-3 mt-1" style={{ color: 'rgba(255,255,255,0.3)' }}>Statistiques affichées</p>
                 <div className="space-y-2">
                   {config.awards.stats.map((stat, i) => (
@@ -473,6 +548,22 @@ const HomeConfigModal = ({ onClose }) => {
                           }} className="w-full px-2.5 py-1.5 text-xs rounded-lg text-white focus:outline-none"
                             style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }} />
                         </div>
+                      </div>
+                      {/* Sous-titre EN */}
+                      <div className="mb-2">
+                        <label className="flex items-center gap-1.5 text-xs mb-1" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                          Sous-titre
+                          <span style={{ padding: '1px 5px', borderRadius: 4, fontSize: 10, fontWeight: 700, background: 'rgba(239,68,68,0.15)', color: '#f87171', border: '1px solid rgba(239,68,68,0.3)' }}>EN</span>
+                        </label>
+                        <input value={stat.sub_en ?? ''} onChange={e => {
+                          const stats = [...config.awards.stats]
+                          stats[i] = { ...stats[i], sub_en: e.target.value }
+                          set('awards', { ...config.awards, stats })
+                        }} placeholder="English subtitle..."
+                          className="w-full px-2.5 py-1.5 text-xs rounded-lg text-white focus:outline-none"
+                          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(239,68,68,0.2)' }}
+                          onFocus={e => e.target.style.borderColor = 'rgba(239,68,68,0.5)'}
+                          onBlur={e => e.target.style.borderColor = 'rgba(239,68,68,0.2)'} />
                       </div>
                       <ImageUpload
                         label="Icône / Illustration"
@@ -500,12 +591,14 @@ const HomeConfigModal = ({ onClose }) => {
                   onChange={v => set('partners', { ...config.partners, title: v })} placeholder="Nos Partenaires" />
                 <Field label="Sous-titre" value={config.partners.subtitle}
                   onChange={v => set('partners', { ...config.partners, subtitle: v })} placeholder="Ils font confiance à la plateforme" />
+                <FieldEN label="Sous-titre" value={config.partners.subtitle_en ?? ''}
+                  onChange={v => set('partners', { ...config.partners, subtitle_en: v })} placeholder="They trust our platform" />
               </div>
             </div>
           )}
         </div>
 
-        {/* Footer */}
+        {/* Footer — identique */}
         <div className="flex items-center justify-between px-6 py-4 shrink-0" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
           <button onClick={onClose} className="px-4 py-2 rounded-xl text-sm font-medium cursor-pointer transition-colors"
             style={{ color: 'rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.05)' }}
@@ -684,8 +777,10 @@ const PlaylistsCard = ({ playlists, onNew, onDelete, onDeleteMany }) => {
   )
 }
 
-const AssignCard = ({ onClick }) => (
-  <div onClick={onClick} className="rounded-2xl p-6 cursor-pointer group transition-all duration-300 relative overflow-hidden flex flex-col"
+const AssignCard = ({ filmsCount, juryCount, onClick }) => (
+  <div
+    onClick={onClick}
+    className="rounded-2xl p-6 cursor-pointer group transition-all duration-300 relative overflow-hidden flex flex-col"
     style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', border: '1px solid rgba(255,255,255,0.08)' }}
     onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(139,92,246,0.45)'}
     onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'}>
@@ -705,11 +800,11 @@ const AssignCard = ({ onClick }) => (
     <div className="flex gap-2 flex-wrap mt-auto">
       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold"
         style={{ background: 'rgba(99,102,241,0.15)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.2)' }}>
-        <IconClapperboard /> 6 films
+        <IconClapperboard /> {filmsCount} film{filmsCount !== 1 ? 's' : ''}
       </span>
       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold"
         style={{ background: 'rgba(168,85,247,0.15)', color: '#c084fc', border: '1px solid rgba(168,85,247,0.2)' }}>
-        <IconUsers /> 5 membres jury
+        <IconUsers /> {juryCount} membre{juryCount !== 1 ? 's' : ''} jury
       </span>
     </div>
   </div>
@@ -720,6 +815,8 @@ const AssignCard = ({ onClick }) => (
 const Configuration = () => {
   const navigate = useNavigate()
   const [playlists, setPlaylists] = useState([])
+  const [filmsCount, setFilmsCount] = useState(0)
+  const [juryCount, setJuryCount] = useState(0)
   const [showModal, setShowModal] = useState(false)
   const [showHomeModal, setShowHomeModal] = useState(false)
   const [activeSections, setActiveSections] = useState(4)
@@ -748,6 +845,34 @@ const Configuration = () => {
     fetchPlaylists()
   }, [])
 
+  useEffect(() => {
+    const fetchFilmsAndJury = async () => {
+      try {
+        const [filmsRes, usersRes] = await Promise.all([
+          axios.get('/submissions', {
+            params: { status: 'approved', page: 1, limit: 1000 }
+          }),
+          axios.get('/users')
+        ])
+        console.log('Films response:', filmsRes.data)
+        console.log('Users response:', usersRes.data)
+        
+        // Films retourne { data: [...], totalItems, ... }
+        const films = filmsRes.data?.data || []
+        setFilmsCount(films.length)
+        
+        const allUsers = Array.isArray(usersRes.data) ? usersRes.data : usersRes.data?.users || []
+        const juries = allUsers.filter(u => u.role === 'jury')
+        console.log('Films count:', films.length, 'Jury count:', juries.length)
+        setJuryCount(juries.length)
+      } catch (error) {
+        console.error('Erreur chargement films/jury :', error)
+      }
+    }
+
+    fetchFilmsAndJury()
+  }, [])
+
   const handleDelete = async (id) => {
     try { await axios.delete(`/admin/jury-list/${id}`); setPlaylists(prev => prev.filter(p => p.id !== id)) }
     catch (e) { console.error(e) }
@@ -766,8 +891,13 @@ const Configuration = () => {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 items-stretch" style={{ gridAutoRows: '320px' }}>
           <HomeConfigCard onClick={() => setShowHomeModal(true)} activeSections={activeSections} />
-          <PlaylistsCard playlists={playlists} onNew={() => setShowModal(true)} onDelete={handleDelete} onDeleteMany={handleDeleteMany} />
-          <AssignCard onClick={() => navigate('/jury-assignment')} />
+          <PlaylistsCard
+            playlists={playlists}
+            onNew={() => setShowModal(true)}
+            onDelete={handleDelete}
+            onDeleteMany={handleDeleteMany}
+          />
+          <AssignCard filmsCount={filmsCount} juryCount={juryCount} onClick={() => navigate('/jury-assignment')} />
         </div>
       </div>
 

@@ -6,11 +6,13 @@ const User = sequelize.define('User', {
   password_hash: { type: DataTypes.STRING }, 
   full_name: { type: DataTypes.STRING },
   avatar_url: { type: DataTypes.STRING },
+  specialite: { type: DataTypes.JSON, allowNull: true },
   role: { 
     type: DataTypes.ENUM('admin', 'jury', 'moderator'), 
     defaultValue: 'jury' 
   },
   invite_token: { type: DataTypes.STRING },
+  invite_token_expires_at: { type: DataTypes.DATE },
   google_id: { type: DataTypes.STRING }
 }, {
   tableName: 'users',

@@ -6,6 +6,7 @@ import Faq from './pages/faq.jsx';
 import FilmDetail from './pages/film_detail.jsx';
 import Dashboard from './pages/dashboard.jsx';
 import DashboardUser from './pages/dashboardUser.jsx';
+import DashboardJury from './pages/dashboardJury.jsx';
 import Header from './components/Header.jsx'; // Import du Header
 import Footer from './components/Footer.jsx'; // Import du Footer
 import AdminHeader from './components/AdminHeader.jsx';
@@ -16,12 +17,14 @@ import DistributionJury from './pages/distribution_jury.jsx';
 import './App.css'
 import SubmissionForm from './pages/SubmissionForm.jsx';
 import Forgotpass from './pages/forgotpass.jsx';
+import ActiveCompte from './pages/ActiveCompte.jsx';
 import ResetPassword from './pages/ResetPassword.jsx';
 import NotationJury from './pages/NotationJury.jsx';
 import Configuration from './pages/Configuration.jsx';
 import NotFound from './pages/NotFound.jsx';
-import CompetitionAnimation from './pages/competition_animation.jsx';
+import JuryAssignment from './pages/jury_assignment.jsx';
 import { useAuth } from './context/AuthContext.jsx';
+import JuryPage from './pages/JuryPage.jsx';
 
 
 function App() {
@@ -35,6 +38,7 @@ function App() {
     "/distribution_jury",
     "/Configuration",
     "/jury-assignment",
+    "/dashboardJury",
   ];
 
   const isPrivateRoute =
@@ -61,9 +65,12 @@ function App() {
           <Route path="/faq" element={<Faq />} />
           <Route path="/galerie/:id" element={<FilmDetail />} />
           <Route path="/login" element={<Login />} />
-          <Route path='/submission' element={<SubmissionForm />} />
+          <Route path='/submission' element ={<SubmissionForm/>}/>
+          <Route path="/active-compte" element={<ActiveCompte />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/forgotpass" element={<Forgotpass />} />
+          <Route path="/jury" element={<JuryPage />} />
+
 
           <Route
             path="/dashboard"
@@ -78,6 +85,14 @@ function App() {
             element={(
               <ProtectedRoute allowedRoles={["admin"]}>
                 <DashboardUser />
+              </ProtectedRoute>
+            )}
+          />
+          <Route
+            path="/dashboardJury"
+            element={(
+              <ProtectedRoute allowedRoles={["jury"]}>
+                <DashboardJury />
               </ProtectedRoute>
             )}
           />
@@ -117,7 +132,7 @@ function App() {
             path="/jury-assignment"
             element={(
               <ProtectedRoute allowedRoles={["admin", "moderator"]}>
-                <CompetitionAnimation />
+                <JuryAssignment />
               </ProtectedRoute>
             )}
           />
