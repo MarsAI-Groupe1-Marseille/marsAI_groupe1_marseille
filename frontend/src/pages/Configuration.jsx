@@ -849,7 +849,9 @@ const Configuration = () => {
     const fetchFilmsAndJury = async () => {
       try {
         const [filmsRes, usersRes] = await Promise.all([
-          axios.get('/submissions'),
+          axios.get('/submissions', {
+            params: { status: 'approved', page: 1, limit: 1000 }
+          }),
           axios.get('/users')
         ])
         console.log('Films response:', filmsRes.data)

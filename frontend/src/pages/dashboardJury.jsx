@@ -28,7 +28,7 @@ export default function DashboardJury() {
     if (!poster) return '/images/placeholder.jpg';
     if (poster.startsWith('http://') || poster.startsWith('https://')) return poster;
     const normalized = poster.startsWith('/') ? poster : `/${poster}`;
-    return `http://localhost:3000${normalized}`;
+    return `${import.meta.env.VITE_API_URL}${normalized}`;
   };
 
   // Récupérer les playlists et les votes de l'API
