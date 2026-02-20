@@ -135,7 +135,9 @@ exports.resetPassword = async (req, res) => {
 exports.activateAccount = async (req, res) => {
     try {
         const { token, new_password, specialite } = req.body;
-        const avatar = req.file ? req.file.path : null;
+        // Avec multer-s3, utiliser req.file.location au lieu de req.file.path
+        const avatar = req.file ? req.file.location : null;
+        
         if (!token || !new_password) {
             return res.status(400).json({ error: "Le token et le nouveau mot de passe sont requis." });
         }
@@ -147,12 +149,21 @@ exports.activateAccount = async (req, res) => {
         user.password_hash = password_hash;
         user.invite_token = null;
         user.invite_token_expires_at = null;
-        user.avatar_url = avatar;
         
-        // Gérer specialite : s'il vient du frontend en tant que string, le convertir en array
+        // Mise à jour de l'avatar seulement si un fichier a été uploadé
+        if (avatar) {
+            user.avatar_url = avatar;
+        }
+        
+        // Gérer specialite : parser le JSON si c'est une string
         if (specialite) {
-            // Si c'est une string, la mettre dans un array ; sinon, garder le array
-            user.specialite = typeof specialite === 'string' ? [specialite] : specialite;
+            try {
+                // Le frontend envoie JSON.stringify(specialiteList), donc on doit parser
+                user.specialite = typeof specialite === 'string' ? JSON.parse(specialite) : specialite;
+            } catch (e) {
+                // Si le parsing échoue, traiter comme un simple array avec une seule valeur
+                user.specialite = [specialite];
+            }
         }
         await user.save();
 
