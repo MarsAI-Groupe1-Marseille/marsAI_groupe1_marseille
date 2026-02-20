@@ -63,8 +63,7 @@ const Header = () => { //
   const navLinks = useMemo( //
     () => [
       { label: lang === "fr" ? "ACCUEIL" : "HOME", to: "/" },
-      { label: lang === "fr" ? "GALERIE" : "GALLERY", to: "/galerie" },
-      { label: "FAQ", to: "/faq" },
+      { label: lang === "fr" ? "GALERIE" : "GALLERY", to: "/galerie" },      
       { label: "JURY", to: "/jury" },
       { label: "SPONSORS", to: "/sponsors" },
     ],
