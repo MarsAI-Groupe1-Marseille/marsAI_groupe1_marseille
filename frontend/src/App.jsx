@@ -25,6 +25,7 @@ import NotFound from './pages/NotFound.jsx';
 import JuryAssignment from './pages/jury_assignment.jsx';
 import { useAuth } from './context/AuthContext.jsx';
 import JuryPage from './pages/JuryPage.jsx';
+import SelectFinaliste from './pages/SelectFinaliste.jsx';
 
 
 function App() {
@@ -39,6 +40,7 @@ function App() {
     "/Configuration",
     "/jury-assignment",
     "/dashboardJury",
+    "/SelectFinaliste",
   ];
 
   const isPrivateRoute =
@@ -71,6 +73,15 @@ function App() {
           <Route path="/forgotpass" element={<Forgotpass />} />
           <Route path="/jury" element={<JuryPage />} />
 
+
+          <Route
+            path="/selectfinaliste"
+            element={(
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <SelectFinaliste/>
+              </ProtectedRoute>
+            )}
+          />
 
           <Route
             path="/dashboard"
