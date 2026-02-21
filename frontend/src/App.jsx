@@ -40,7 +40,7 @@ function App() {
     "/Configuration",
     "/jury-assignment",
     "/dashboardJury",
-    "/SelectFinaliste",
+    "/selectfinaliste",
   ];
 
   const isPrivateRoute =
