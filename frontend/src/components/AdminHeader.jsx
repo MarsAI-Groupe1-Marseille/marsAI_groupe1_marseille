@@ -61,6 +61,15 @@ const AdminHeader = () => {
           >
             Films
           </Link>
+
+          <Link
+            to="/selectfinaliste"
+            className="mars-btn mars-glow inline-flex items-center justify-center"
+            aria-label="Sélection finale"
+          >
+            Sélection Finale
+          </Link>
+
           <Link
             to="/distribution_jury"
             className="mars-btn mars-glow inline-flex items-center justify-center"
