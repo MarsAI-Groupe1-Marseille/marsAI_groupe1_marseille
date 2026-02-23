@@ -222,24 +222,85 @@ export default function NotationJury() {
   const [submitting, setSubmitting]   = useState(false);
   // FIX: "fr" = synopsis_original (texte français), "en" = synopsis_french (traduction anglaise)
   const [synopsisLang, setSynopsisLang] = useState("fr");
+  const [draftReady, setDraftReady]   = useState(false);
 
-  // Fetch film
+  const getDraftKey = (submissionId) => {
+    try {
+      const rawUser = localStorage.getItem("user");
+      const user = rawUser ? JSON.parse(rawUser) : null;
+      const userId = user?.id || user?.user_id || user?.userId || "anon";
+      return `juryVoteDraft:${userId}:${submissionId}`;
+    } catch (err) {
+      return `juryVoteDraft:anon:${submissionId}`;
+    }
+  };
+
+  const loadDraft = (submissionId) => {
+    try {
+      const raw = localStorage.getItem(getDraftKey(submissionId));
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== "object") return null;
+      return parsed;
+    } catch (err) {
+      return null;
+    }
+  };
+
+  const saveDraft = (submissionId, data) => {
+    try {
+      localStorage.setItem(getDraftKey(submissionId), JSON.stringify(data));
+    } catch (err) {
+      // ignore localStorage failures
+    }
+  };
+
+  const clearDraft = (submissionId) => {
+    try {
+      localStorage.removeItem(getDraftKey(submissionId));
+    } catch (err) {
+      // ignore localStorage failures
+    }
+  };
+
+  // Fetch film + vérifier si ce jury a déjà évalué ce film
   useEffect(() => {
     const fetchFilm = async () => {
       try {
         setLoading(true);
         await new Promise((r) => setTimeout(r, 500));
-         const res = await axios.get(`/submissions/${id}`);
-         if(!res.data) throw new Error("Film non trouvé");
-         setFilm(res.data);
-         setError(null);       
-        const saved = JSON.parse(localStorage.getItem(`vote-${id}`) || "null");
-        if (saved) {
-          setSelectedVote(saved.vote);
-          setComment(saved.comment || "");
-          setSubmitted(true);
+        
+        // Récupérer le film
+        const filmRes = await axios.get(`/submissions/${id}`);
+        if(!filmRes.data) throw new Error("Film non trouvé");
+        setFilm(filmRes.data);
+        setError(null);
+        
+        // Récupérer les votes du jury connecté
+        const votesRes = await axios.get('/jury/my-votes');
+        let hasServerVote = false;
+        if (votesRes.data.success && votesRes.data.votes) {
+          // Chercher si ce jury a déjà voté pour ce film
+          const myVote = votesRes.data.votes.find(v => v.submission_id === parseInt(id));
+          
+          if (myVote) {
+            // Ce jury a déjà évalué ce film
+            setSelectedVote(myVote.vote_status.toLowerCase());
+            setComment(myVote.comment || "");
+            setSubmitted(true);
+            clearDraft(id);
+            hasServerVote = true;
+          }
         }
-      } catch {
+
+        const draft = !hasServerVote ? loadDraft(id) : null;
+        if (draft && !draft.submitted) {
+          if (draft.selectedVote) setSelectedVote(draft.selectedVote);
+          if (typeof draft.comment === "string") setComment(draft.comment);
+        }
+        setDraftReady(true);
+      } catch (err) {
+        console.error("Erreur:", err);
         setError("Impossible de charger le film");
       } finally {
         setLoading(false);
@@ -247,6 +308,27 @@ export default function NotationJury() {
     };
     fetchFilm();
   }, [id]);
+
+  useEffect(() => {
+    if (!draftReady) return;
+
+    if (submitted) {
+      clearDraft(id);
+      return;
+    }
+
+    if (!selectedVote && !comment) {
+      clearDraft(id);
+      return;
+    }
+
+    saveDraft(id, {
+      selectedVote,
+      comment,
+      submitted: false,
+      updatedAt: Date.now(),
+    });
+  }, [selectedVote, comment, submitted, id, draftReady]);
 
   // Escape → close modal
   useEffect(() => {
@@ -262,14 +344,14 @@ export default function NotationJury() {
       // Envoyer le vote à l'API backend
       const response = await axios.post('/jury/vote', {
         submissionId: id,
-        vote_status: selectedVote,
+        vote_status: selectedVote.toUpperCase(),
         comment: comment
       });
 
       if (response.data) {
-        // Sauvegarder aussi en localStorage comme backup
-        localStorage.setItem(`vote-${id}`, JSON.stringify({ vote: selectedVote, comment }));
+        // Marquer comme soumis
         setSubmitted(true);
+        clearDraft(id);
       }
     } catch (error) {
       console.error('Erreur lors de la soumission du vote:', error);
