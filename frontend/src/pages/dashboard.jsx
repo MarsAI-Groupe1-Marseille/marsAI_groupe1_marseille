@@ -180,10 +180,10 @@ const Dashboard = () => {
                     icon={<Users size={28} />}
                 />
              </Link>
-               <Link to="/gestion-films" className="block">
+               <Link to="/selectfinaliste" className="block">
                 <ActionCard
-                    title="Gestion des films"
-                    buttonText="Voir les films"
+                    title="selection des finalistes"
+                    buttonText="Gérer les finalistes"
                     icon={<Film size={28} />}
                 />
                </Link>

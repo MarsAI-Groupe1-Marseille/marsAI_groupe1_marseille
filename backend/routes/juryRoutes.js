@@ -6,6 +6,9 @@ const authMiddleware = require('../middlewares/authMiddleware');
 // Route pour récupérer tous les jurys
 router.get('/all', juryController.getAllJury);
 
+// Route pour récupérer tous les jurys avec statistiques
+router.get('/with-stats', juryController.getAllJuryWithStats);
+
 // Route pour soumettre ou modifier un vote
 router.post('/vote', authMiddleware.verifyToken, juryController.submitVote);
 

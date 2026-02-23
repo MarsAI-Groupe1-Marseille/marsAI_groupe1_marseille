@@ -75,14 +75,7 @@ const AdminHeader = () => {
             aria-label="Distribution jury"
           >
             Config
-          </Link>
-            <Link
-            to="/selectfinaliste"
-            className="mars-btn mars-glow inline-flex items-center justify-center"
-            aria-label="Sélection finale"
-          >
-            Sélection Finale
-          </Link>
+          </Link>          
           <button
             type="button"
             onClick={handleLogout}
