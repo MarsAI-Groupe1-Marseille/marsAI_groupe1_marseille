@@ -1,46 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useFilms } from '../../hooks/useFilms';
-import { BarChart3, Users, FileText, ThumbsUp, ThumbsDown, Clock, Trophy, Scale, UserCheck } from 'lucide-react';
-
-const INITIAL_JURY_MEMBERS = [
-  {
-    id: 1,
-    full_name: 'Dr. Sophie Leclerc',
-    email: 'sophie.leclerc@ai-festival.fr',
-    role: 'lead',
-    specialty: 'IA Créative',
-    votes_cast: 12,
-    total_films: 15,
-    approved: 9,
-    rejected: 3,
-    pending: 0
-  },
-  {
-    id: 2,
-    full_name: 'Marc Dubois',
-    email: 'marc.dubois@ai-festival.fr',
-    role: 'jury',
-    specialty: 'Production Vidéo',
-    votes_cast: 15,
-    total_films: 15,
-    approved: 12,
-    rejected: 3,
-    pending: 0
-  }
-  
-];
+import axios from '../../config/axiosConfig';
+import { BarChart3, Users, ThumbsUp, ThumbsDown, MessageCircle, Trophy, Scale, UserCheck, FileText } from 'lucide-react';
 
 export default function JuryTab() {
   const { films } = useFilms();
   const [juryMembers, setJuryMembers] = useState([]);
-  const [showForm, setShowForm] = useState(false);
-  const [selectedMember, setSelectedMember] = useState(null);
-  const [formData, setFormData] = useState({
-    full_name: '',
-    email: '',
-    role: 'jury',
-    specialty: ''
-  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Fonction pour générer les initiales et les couleurs
   const getAvatarData = (name) => {
@@ -61,54 +28,38 @@ export default function JuryTab() {
     return { initials, colorGradient: colors[index] };
   };
 
-  useEffect(() => {
-    const stored = localStorage.getItem('mars_ai_jury_members');
-    if (stored) {
-      setJuryMembers(JSON.parse(stored));
-    } else {
-      setJuryMembers(INITIAL_JURY_MEMBERS);
-      localStorage.setItem('mars_ai_jury_members', JSON.stringify(INITIAL_JURY_MEMBERS));
+  const parseSpecialite = (specialite) => {
+    if (!specialite) return ['Expert Festival'];
+    if (typeof specialite === 'string') {
+      try {
+        const parsed = JSON.parse(specialite);
+        return Array.isArray(parsed) ? parsed : [parsed];
+      } catch {
+        return [specialite];
+      }
     }
-  }, []);
+    if (Array.isArray(specialite)) {
+      return specialite.length > 0 ? specialite : ['Expert Festival'];
+    }
+    return [specialite];
+  };
 
-  const handleAddMember = (e) => {
-    e.preventDefault();
-    const newMember = {
-      id: Math.max(...juryMembers.map(m => m.id), 0) + 1,
-      full_name: formData.full_name,
-      email: formData.email,
-      role: formData.role,
-      specialty: formData.specialty,
-      votes_cast: 0,
-      total_films: films.length,
-      approved: 0,
-      rejected: 0,
-      pending: films.length
+  useEffect(() => {
+    const fetchJury = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get('/jury/with-stats');
+        setJuryMembers(response.data.juryMembers || []);
+      } catch (err) {
+        console.error('Erreur récupération jurys:', err);
+        setError('Impossible de charger les jurys');
+      } finally {
+        setLoading(false);
+      }
     };
 
-    const updated = [...juryMembers, newMember];
-    setJuryMembers(updated);
-    localStorage.setItem('mars_ai_jury_members', JSON.stringify(updated));
-    setFormData({ full_name: '', email: '', role: 'jury', specialty: '' });
-    setShowForm(false);
-  };
-
-  const handleVote = (memberId, decision) => {
-    const updated = juryMembers.map(member => {
-      if (member.id === memberId && member.pending > 0) {
-        return {
-          ...member,
-          votes_cast: member.votes_cast + 1,
-          pending: Math.max(0, member.pending - 1),
-          approved: decision === 'approved' ? member.approved + 1 : member.approved,
-          rejected: decision === 'rejected' ? member.rejected + 1 : member.rejected
-        };
-      }
-      return member;
-    });
-    setJuryMembers(updated);
-    localStorage.setItem('mars_ai_jury_members', JSON.stringify(updated));
-  };
+    fetchJury();
+  }, []);
 
   return (
     <div className="space-y-8">
@@ -131,96 +82,42 @@ export default function JuryTab() {
             <p className="text-sm text-neutral-400">Progression totale</p>
             <p className="text-3xl font-bold mt-2 text-violet-400">
               {Math.round(
-                (juryMembers.reduce((acc, m) => acc + m.votes_cast, 0) /
+                (juryMembers.reduce((acc, m) => acc + (m.stats?.votes_cast || 0), 0) /
                   (juryMembers.length * films.length || 1)) * 100
               )}%
             </p>
           </div>
           <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 hover:bg-neutral-800 transition">
             <p className="text-sm text-neutral-400">Films approuvés</p>
-            <p className="text-3xl font-bold mt-2 text-violet-400">{juryMembers.reduce((acc, m) => acc + m.approved, 0)}</p>
+            <p className="text-3xl font-bold mt-2 text-violet-400">
+              {juryMembers.reduce((acc, m) => acc + (m.stats?.like || 0), 0)}
+            </p>
           </div>
         </div>
       </section>
 
-      {/* Section Gestion des Membres */}
+      {/* Section Membres du Jury */}
       <section className="space-y-4">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <Users size={22} className="text-violet-400" />
-            <h3 className="text-xl font-bold text-violet-400">Membres du Jury</h3>
-          </div>
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="bg-violet-500 hover:bg-violet-600 text-white font-semibold py-2 px-6 rounded-lg transition"
-          >
-            + Ajouter un membre
-          </button>
+        <div className="flex items-center gap-2">
+          <Users size={22} className="text-violet-400" />
+          <h3 className="text-xl font-bold text-violet-400">Membres du Jury</h3>
         </div>
 
-        {showForm && (
-          <form
-            onSubmit={handleAddMember}
-            className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 space-y-4"
-          >
-            <input
-              type="text"
-              placeholder="Nom complet"
-              value={formData.full_name}
-              onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-              required
-              className="w-full px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:border-violet-500"
-            />
-            <input
-              type="email"
-              placeholder="Email"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              required
-              className="w-full px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:border-violet-500"
-            />
-            <input
-              type="text"
-              placeholder="Spécialité"
-              value={formData.specialty}
-              onChange={(e) => setFormData({ ...formData, specialty: e.target.value })}
-              className="w-full px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:border-violet-500"
-            />
-            <select
-              value={formData.role}
-              onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-              className="w-full px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-violet-500"
-            >
-              <option value="jury">Membre du Jury</option>
-              <option value="lead">Leader du Jury</option>
-              <option value="moderator">Modérateur</option>
-            </select>
-            <div className="flex gap-3">
-              <button
-                type="submit"
-                className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition"
-              >
-                Ajouter
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowForm(false)}
-                className="flex-1 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700 font-semibold rounded-lg transition"
-              >
-                Annuler
-              </button>
-            </div>
-          </form>
+        {loading && (
+          <div className="text-sm text-neutral-400">Chargement des jurys...</div>
+        )}
+        {error && (
+          <div className="text-sm text-red-400">{error}</div>
         )}
 
         {/* Cartes des Membres */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {juryMembers.map((member) => {
-            const progressPercentage = (member.votes_cast / member.total_films) * 100;
-            const approvalRate = member.votes_cast > 0
-              ? (member.approved / member.votes_cast) * 100
-              : 0;
             const { initials, colorGradient } = getAvatarData(member.full_name);
+            const stats = member.stats || { like: 0, dislike: 0, discuss: 0, approval_rate: 0 };
+            const totalFilms = stats.total_films || films.length || 0;
+            const votesCast = stats.votes_cast || 0;
+            const progressPercentage = totalFilms > 0 ? Math.round((votesCast / totalFilms) * 100) : 0;
             
             const getRoleIcon = (role) => {
               switch(role) {
@@ -233,15 +130,20 @@ export default function JuryTab() {
             return (
               <div
                 key={member.id}
-                onClick={() => setSelectedMember(selectedMember?.id === member.id ? null : member)}
-                className={`bg-neutral-900 border border-neutral-800 rounded-xl p-6 cursor-pointer hover:bg-neutral-800 transition ${
-                  selectedMember?.id === member.id ? 'ring-2 ring-violet-500' : ''
-                }`}
+                className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 hover:bg-neutral-800 transition"
               >
                 <div className="flex items-start gap-4 mb-6">
-                  <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${colorGradient} flex items-center justify-center flex-shrink-0 shadow-lg border border-white/10`}>
-                    <span className="text-white font-bold text-lg">{initials}</span>
-                  </div>
+                  {member.avatar_url ? (
+                    <img
+                      src={member.avatar_url}
+                      alt={member.full_name}
+                      className="w-16 h-16 rounded-full object-cover border border-white/10 shadow-lg flex-shrink-0"
+                    />
+                  ) : (
+                    <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${colorGradient} flex items-center justify-center flex-shrink-0 shadow-lg border border-white/10`}>
+                      <span className="text-white font-bold text-lg">{initials}</span>
+                    </div>
+                  )}
                   <div className="flex-1">
                     <h4 className="text-lg font-semibold text-violet-400 mb-1">
                       {member.full_name}
@@ -264,9 +166,14 @@ export default function JuryTab() {
                         {member.role === 'moderator' && 'Modérateur'}
                         {member.role === 'jury' && 'Jury'}
                       </span>
-                      <span className="px-3 py-1 rounded-full text-xs font-semibold text-violet-300 bg-violet-900/30">
-                        {member.specialty}
-                      </span>
+                      {parseSpecialite(member.specialite).map((item, index) => (
+                        <span
+                          key={`${member.id}-spec-${index}`}
+                          className="px-3 py-1 rounded-full text-xs font-semibold text-violet-300 bg-violet-900/30"
+                        >
+                          {item}
+                        </span>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -277,7 +184,7 @@ export default function JuryTab() {
                       Progression
                     </span>
                     <span className="text-sm text-neutral-400">
-                      {member.votes_cast}/{member.total_films}
+                      {votesCast}/{totalFilms}
                     </span>
                   </div>
                   <div className="w-full h-2 bg-neutral-800 rounded-full overflow-hidden border border-neutral-700">
@@ -288,39 +195,39 @@ export default function JuryTab() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 mb-6">
+                <div className="grid grid-cols-2 gap-3">
                   <div className="bg-green-900/30 border border-green-700/30 rounded-lg p-3">
                     <div className="flex items-center gap-2 mb-1">
                       <ThumbsUp size={18} className="text-green-400" />
                       <div className="text-2xl font-bold text-green-400">
-                        {member.approved}
+                        {stats.like}
                       </div>
                     </div>
-                    <div className="text-xs text-neutral-400">Approuvé</div>
+                    <div className="text-xs text-neutral-400">Aimé</div>
                   </div>
                   <div className="bg-red-900/30 border border-red-700/30 rounded-lg p-3">
                     <div className="flex items-center gap-2 mb-1">
                       <ThumbsDown size={18} className="text-red-400" />
                       <div className="text-2xl font-bold text-red-400">
-                        {member.rejected}
+                        {stats.dislike}
                       </div>
                     </div>
-                    <div className="text-xs text-neutral-400">Rejeté</div>
+                    <div className="text-xs text-neutral-400">Pas aimé</div>
                   </div>
                   <div className="bg-yellow-900/30 border border-yellow-700/30 rounded-lg p-3">
                     <div className="flex items-center gap-2 mb-1">
-                      <Clock size={18} className="text-yellow-400" />
+                      <MessageCircle size={18} className="text-yellow-400" />
                       <div className="text-2xl font-bold text-yellow-400">
-                        {member.pending}
+                        {stats.discuss}
                       </div>
                     </div>
-                    <div className="text-xs text-neutral-400">En attente</div>
+                    <div className="text-xs text-neutral-400">A discuter</div>
                   </div>
                   <div className="bg-violet-900/30 border border-violet-700/30 rounded-lg p-3">
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-xs text-neutral-400">Approbation</span>
                       <div className="text-2xl font-bold text-violet-400">
-                        {approvalRate.toFixed(0)}%
+                        {stats.approval_rate}%
                       </div>
                     </div>
                   </div>
@@ -331,11 +238,11 @@ export default function JuryTab() {
         </div>
       </section>
 
-      {/* Section Résumé */}
+      {/* Section Resume */}
       <section className="space-y-4">
         <div className="flex items-center gap-2">
           <FileText size={22} className="text-violet-400" />
-          <h3 className="text-xl font-bold text-violet-400">Résumé des Membres</h3>
+          <h3 className="text-xl font-bold text-violet-400">Resume des Membres</h3>
         </div>
         <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
           <div className="overflow-x-auto">
@@ -346,7 +253,7 @@ export default function JuryTab() {
                     Nom
                   </th>
                   <th className="text-center px-6 py-4 text-sm font-semibold text-violet-400">
-                    Rôle
+                    Role
                   </th>
                   <th className="text-center px-6 py-4 text-sm font-semibold text-violet-400">
                     Progression
@@ -354,13 +261,13 @@ export default function JuryTab() {
                   <th className="text-center px-6 py-4 text-sm font-semibold text-violet-400">
                     <div className="flex items-center justify-center gap-1">
                       <ThumbsUp size={16} />
-                      Approuvé
+                      Aime
                     </div>
                   </th>
                   <th className="text-center px-6 py-4 text-sm font-semibold text-violet-400">
                     <div className="flex items-center justify-center gap-1">
                       <ThumbsDown size={16} />
-                      Rejeté
+                      Pas aime
                     </div>
                   </th>
                   <th className="text-center px-6 py-4 text-sm font-semibold text-violet-400">
@@ -370,23 +277,31 @@ export default function JuryTab() {
               </thead>
               <tbody className="divide-y divide-neutral-800">
                 {juryMembers.map((member) => {
-                  const progressPercentage = (member.votes_cast / member.total_films) * 100;
-                  const approvalRate = member.votes_cast > 0
-                    ? (member.approved / member.votes_cast) * 100
-                    : 0;
                   const { initials, colorGradient } = getAvatarData(member.full_name);
+                  const stats = member.stats || { like: 0, dislike: 0, discuss: 0, approval_rate: 0 };
+                  const totalFilms = stats.total_films || films.length || 0;
+                  const votesCast = stats.votes_cast || 0;
+                  const progressPercentage = totalFilms > 0 ? Math.round((votesCast / totalFilms) * 100) : 0;
 
                   return (
                     <tr key={member.id} className="hover:bg-neutral-800/50 transition">
                       <td className="text-center px-6 py-4 text-neutral-300">
                         <div className="flex items-center gap-3">
-                          <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${colorGradient} flex items-center justify-center flex-shrink-0 border border-white/10`}>
-                            <span className="text-white font-bold text-sm">{initials}</span>
-                          </div>
+                          {member.avatar_url ? (
+                            <img
+                              src={member.avatar_url}
+                              alt={member.full_name}
+                              className="w-10 h-10 rounded-full object-cover border border-white/10"
+                            />
+                          ) : (
+                            <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${colorGradient} flex items-center justify-center flex-shrink-0 border border-white/10`}>
+                              <span className="text-white font-bold text-sm">{initials}</span>
+                            </div>
+                          )}
                           <div className="text-left">
                             <div className="font-semibold">{member.full_name}</div>
                             <div className="text-xs text-neutral-500">
-                              {member.specialty}
+                              {parseSpecialite(member.specialite).join(', ')}
                             </div>
                           </div>
                         </div>
@@ -402,7 +317,7 @@ export default function JuryTab() {
                           {member.role === 'moderator' && (
                             <>
                               <Scale size={14} />
-                              Modérateur
+                              Moderateur
                             </>
                           )}
                           {member.role === 'jury' && (
@@ -415,7 +330,7 @@ export default function JuryTab() {
                       </td>
                       <td className="text-center px-6 py-4">
                         <span className="text-violet-400 font-semibold">
-                          {member.votes_cast}/{member.total_films}
+                          {votesCast}/{totalFilms}
                         </span>
                         <div className="w-20 h-1 bg-neutral-700 rounded-full mx-auto mt-2">
                           <div
@@ -425,22 +340,22 @@ export default function JuryTab() {
                         </div>
                       </td>
                       <td className="text-center px-6 py-4 text-green-400 font-semibold">
-                        {member.approved}
+                        {stats.like}
                       </td>
                       <td className="text-center px-6 py-4 text-red-400 font-semibold">
-                        {member.rejected}
+                        {stats.dislike}
                       </td>
                       <td className="text-center px-6 py-4">
                         <span
                           className={`font-semibold ${
-                            approvalRate > 70
+                            stats.approval_rate > 70
                               ? 'text-green-400'
-                              : approvalRate > 50
+                              : stats.approval_rate > 50
                               ? 'text-yellow-400'
                               : 'text-violet-400'
                           }`}
                         >
-                          {approvalRate.toFixed(0)}%
+                          {stats.approval_rate}%
                         </span>
                       </td>
                     </tr>

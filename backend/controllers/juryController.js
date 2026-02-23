@@ -1,5 +1,5 @@
-const { JuryEvaluation, JuryList, Submission, JuryMember, JuryListSubmission, User } = require('../models');
-const { Op } = require('sequelize');
+const { JuryEvaluation, JuryList, Submission, JuryMember, JuryListSubmission, User, sequelize } = require('../models');
+const { Op, QueryTypes } = require('sequelize');
 
 exports.getAllJury = async (req, res) => {
     try {
@@ -14,6 +14,80 @@ exports.getAllJury = async (req, res) => {
         res.status(200).json({ success: true, juryMembers });
     } catch (error) {
         console.error('Erreur récupération jurys:', error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.getAllJuryWithStats = async (req, res) => {
+    try {
+        const [juryMembers, assignedCounts, evaluationStats] = await Promise.all([
+            User.findAll({
+                where: { role: 'jury' },
+                attributes: ['id', 'full_name', 'email', 'avatar_url', 'specialite', 'role', 'created_at'],
+                raw: true
+            }),
+            sequelize.query(
+                `SELECT jm.user_id, COUNT(DISTINCT jls.submission_id) AS assigned_count
+                 FROM jury_members jm
+                 INNER JOIN jury_list_submissions jls ON jm.jury_list_id = jls.jury_list_id
+                 GROUP BY jm.user_id`,
+                { type: QueryTypes.SELECT }
+            ),
+            sequelize.query(
+                `SELECT jm.user_id, je.vote_status, COUNT(DISTINCT je.submission_id) AS count
+                 FROM jury_members jm
+                 INNER JOIN jury_list_submissions jls ON jm.jury_list_id = jls.jury_list_id
+                 INNER JOIN jury_evaluations je
+                   ON je.user_id = jm.user_id
+                  AND je.submission_id = jls.submission_id
+                 GROUP BY jm.user_id, je.vote_status`,
+                { type: QueryTypes.SELECT }
+            )
+        ]);
+
+        const assignedByUser = assignedCounts.reduce((acc, row) => {
+            acc[row.user_id] = Number(row.assigned_count);
+            return acc;
+        }, {});
+
+        const statsByUser = evaluationStats.reduce((acc, row) => {
+            const userId = row.user_id;
+            if (!acc[userId]) {
+                acc[userId] = { like: 0, dislike: 0, discuss: 0 };
+            }
+            if (row.vote_status === 'LIKE') {
+                acc[userId].like = Number(row.count);
+            } else if (row.vote_status === 'DISLIKE') {
+                acc[userId].dislike = Number(row.count);
+            } else if (row.vote_status === 'DISCUSS') {
+                acc[userId].discuss = Number(row.count);
+            }
+            return acc;
+        }, {});
+
+        const juryMembersWithStats = juryMembers.map((member) => {
+            const stats = statsByUser[member.id] || { like: 0, dislike: 0, discuss: 0 };
+            const votesCast = stats.like + stats.dislike + stats.discuss;
+            const approvalRate = votesCast > 0 ? Math.round((stats.like / votesCast) * 100) : 0;
+            const totalFilms = assignedByUser[member.id] || 0;
+
+            return {
+                ...member,
+                stats: {
+                    like: stats.like,
+                    dislike: stats.dislike,
+                    discuss: stats.discuss,
+                    votes_cast: votesCast,
+                    total_films: totalFilms,
+                    pending: Math.max(0, totalFilms - votesCast),
+                    approval_rate: approvalRate
+                }
+            };
+        });
+
+        res.status(200).json({ success: true, juryMembers: juryMembersWithStats });
+    } catch (error) {
+        console.error('Erreur récupération jurys avec stats:', error);
         res.status(500).json({ error: error.message });
     }
 };
