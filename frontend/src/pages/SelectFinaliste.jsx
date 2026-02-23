@@ -6,13 +6,46 @@ import {
 } from "lucide-react";
 import axios from "../config/axiosConfig";
 
+/* ─── GÉNÉRATEUR DE COULEURS D'AVATAR ─── */
+function getInitialColors(initials) {
+  const colorMap = {
+    MC: "from-violet-500 to-purple-700",
+    PR: "from-blue-500 to-blue-700",
+    LS: "from-emerald-500 to-teal-700",
+    HB: "from-amber-500 to-orange-700",
+    CV: "from-rose-500 to-pink-700",
+    JD: "from-cyan-500 to-blue-700",
+    AB: "from-pink-500 to-rose-700",
+    CD: "from-indigo-500 to-purple-700",
+    EF: "from-lime-500 to-emerald-700",
+    GH: "from-orange-500 to-amber-700"
+  };
+  if (colorMap[initials]) return colorMap[initials];
+  
+  // Générer une couleur basée sur le hash des initiales
+  let hash = 0;
+  for (let i = 0; i < initials.length; i++) {
+    hash = initials.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const palettes = [
+    "from-indigo-500 to-purple-700",
+    "from-pink-500 to-red-700",
+    "from-cyan-500 to-teal-700",
+    "from-lime-500 to-green-700",
+    "from-orange-500 to-red-700",
+    "from-fuchsia-500 to-pink-700",
+    "from-sky-500 to-blue-700",
+    "from-violet-500 to-indigo-700"
+  ];
+  return palettes[Math.abs(hash) % palettes.length];
+}
+
 /* ─── COMPOSANTS UTILITAIRES ─── */
 function Avatar({ initials, size = "md" }) {
   const sizes = { sm: "w-8 h-8 text-xs", md: "w-10 h-10 text-sm" };
-  const colors = { MC: "from-violet-500 to-purple-700", PR: "from-blue-500 to-blue-700", LS: "from-emerald-500 to-teal-700", HB: "from-amber-500 to-orange-700", CV: "from-rose-500 to-pink-700" };
-  const grad = colors[initials] || "from-neutral-500 to-neutral-700";
+  const grad = getInitialColors(initials);
   return (
-    <div className={`${sizes[size]} rounded-full bg-gradient-to-br ${grad} flex items-center justify-center font-bold text-white flex-shrink-0`}>
+    <div className={`${sizes[size]} rounded-full bg-gradient-to-br ${grad} flex items-center justify-center font-bold text-white flex-shrink-0 shadow-lg`}>
       {initials}
     </div>
   );
@@ -50,18 +83,24 @@ function VotesModal({ film, voteStatus, onClose }) {
   if (!film || !voteStatus) return null;
   const evaluations = (film.comments || []).filter(c => c.vote_status === voteStatus);
   const statusLabel = voteStatus === 'LIKE' ? 'Likes' : 'À discuter';
-  const statusColor = voteStatus === 'LIKE' ? 'emerald' : 'amber';
+  const isLike = voteStatus === 'LIKE';
+  const headerGradient = isLike ? "from-emerald-950/40 to-teal-950/40" : "from-amber-950/40 to-orange-950/40";
+  const borderColor = isLike ? "border-emerald-700/50" : "border-amber-700/50";
+  const iconColor = isLike ? "text-emerald-400" : "text-amber-400";
+  const badgeColor = isLike ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-300" : "bg-amber-500/20 border-amber-500/50 text-amber-300";
+  const cardBgHover = isLike ? "hover:bg-emerald-950/20" : "hover:bg-amber-950/20";
+  const cardBorderHover = isLike ? "hover:border-emerald-600/50" : "hover:border-amber-600/50";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-neutral-900 border border-neutral-700 rounded-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden shadow-2xl">
-        <div className="px-6 py-5 border-b border-neutral-800 bg-gradient-to-r from-neutral-900 to-neutral-900">
+      <div className={`relative bg-neutral-900 border ${borderColor} rounded-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden shadow-2xl`}>
+        <div className={`px-6 py-5 border-b ${borderColor} bg-gradient-to-r ${headerGradient}`}>
           <div className="flex items-start justify-between">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                {voteStatus === 'LIKE' ? <ThumbsUp size={16} className="text-emerald-400" /> : <AlertCircle size={16} className="text-amber-400" />}
-                <span className={`text-xs font-bold uppercase tracking-widest text-${statusColor}-400`}>{statusLabel} du Jury</span>
+                {isLike ? <ThumbsUp size={16} className={iconColor} /> : <AlertCircle size={16} className={iconColor} />}
+                <span className={`text-xs font-bold uppercase tracking-widest ${iconColor}`}>{statusLabel} du Jury</span>
               </div>
               <h2 className="text-xl font-black text-white">{film.titre}</h2>
               <p className="text-sm text-neutral-400 mt-0.5">{film.real}</p>
@@ -74,19 +113,20 @@ function VotesModal({ film, voteStatus, onClose }) {
         <div className="overflow-y-auto max-h-[60vh] p-6 space-y-4">
           {evaluations.length === 0 ? (
             <div className="text-center py-12 text-neutral-500">
-              {voteStatus === 'LIKE' ? <ThumbsUp size={32} className="mx-auto mb-3 opacity-30" /> : <AlertCircle size={32} className="mx-auto mb-3 opacity-30" />}
+              {isLike ? <ThumbsUp size={32} className="mx-auto mb-3 opacity-30" /> : <AlertCircle size={32} className="mx-auto mb-3 opacity-30" />}
               <p className="text-sm">Aucun {statusLabel.toLowerCase()} pour ce film</p>
             </div>
           ) : evaluations.map((c, idx) => (
-            <div key={idx} className="bg-neutral-800 rounded-xl p-4 border border-neutral-700 hover:border-neutral-600 transition">
+            <div key={idx} className={`bg-neutral-800/60 border border-neutral-700/60 ${cardBgHover} ${cardBorderHover} rounded-xl p-4 transition duration-300`}>
               <div className="flex items-start gap-3">
                 <Avatar initials={c.avatar} />
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2 mb-1">
+                  <div className="flex items-center justify-between gap-2 mb-2">
                     <span className="font-bold text-sm text-white">{c.jury}</span>
-                    <span className="text-xs text-neutral-500 flex-shrink-0">{c.date}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full border font-semibold ${badgeColor}`}>{statusLabel}</span>
                   </div>
-                  <p className="text-sm text-neutral-300 leading-relaxed">{c.text || "(Pas de commentaire)"}</p>
+                  <span className="text-xs text-neutral-500 flex-shrink-0">{c.date}</span>
+                  <p className="text-sm text-neutral-200 leading-relaxed mt-2">{c.text || "(Pas de commentaire)"}</p>
                 </div>
               </div>
             </div>
@@ -128,11 +168,23 @@ function CommentsModal({ film, onClose }) {
               </button>
               {film.comments.length > 0 && (
                 <div className="text-right">
-                  <div className="text-xs text-neutral-500">{film.comments.length} avis</div>
-                  <div className="mt-2 flex flex-col gap-1 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                    <span>Like: {voteCounts.LIKE}</span>
-                    <span>A discuter: {voteCounts.DISCUSS}</span>
-                    <span>Dislike: {voteCounts.DISLIKE}</span>
+                  <div className="text-xs text-neutral-500 mb-2">{film.comments.length} avis du jury</div>
+                  <div className="mt-3 flex flex-col gap-1.5">
+                    {voteCounts.LIKE > 0 && (
+                      <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 px-2 py-1 rounded-full">
+                        <ThumbsUp size={10} /> Like: {voteCounts.LIKE}
+                      </span>
+                    )}
+                    {voteCounts.DISCUSS > 0 && (
+                      <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider bg-amber-500/20 border border-amber-500/50 text-amber-300 px-2 py-1 rounded-full">
+                        <AlertCircle size={10} /> À discuter: {voteCounts.DISCUSS}
+                      </span>
+                    )}
+                    {voteCounts.DISLIKE > 0 && (
+                      <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider bg-rose-500/20 border border-rose-500/50 text-rose-300 px-2 py-1 rounded-full">
+                        Dislike: {voteCounts.DISLIKE}
+                      </span>
+                    )}
                   </div>
                 </div>
               )}
@@ -145,23 +197,28 @@ function CommentsModal({ film, onClose }) {
               <MessageSquare size={32} className="mx-auto mb-3 opacity-30" />
               <p className="text-sm">Aucun commentaire pour ce film</p>
             </div>
-          ) : film.comments.map((c, idx) => (
-            <div key={idx} className="bg-neutral-800 rounded-xl p-4 border border-neutral-700 hover:border-neutral-600 transition">
-              <div className="flex items-start gap-3">
-                <Avatar initials={c.avatar} />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2 mb-1">
-                    <span className="font-bold text-sm text-white">{c.jury}</span>
-                    <span className="text-xs text-neutral-500 flex-shrink-0">{c.date}</span>
+          ) : film.comments.map((c, idx) => {
+              const getBgClass = () => {
+                if (c.vote_status === 'LIKE') return 'bg-emerald-500/10 border-emerald-600/30 hover:bg-emerald-500/15 hover:border-emerald-500/50';
+                if (c.vote_status === 'DISCUSS') return 'bg-amber-500/10 border-amber-600/30 hover:bg-amber-500/15 hover:border-amber-500/50';
+                return 'bg-rose-500/10 border-rose-600/30 hover:bg-rose-500/15 hover:border-rose-500/50';
+              };
+              return (
+                <div key={idx} className={`${getBgClass()} border rounded-xl p-4 transition duration-300`}>
+                  <div className="flex items-start gap-3">
+                    <Avatar initials={c.avatar} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <span className="font-bold text-sm text-white">{c.jury}</span>
+                        <VoteBadge status={c.vote_status} />
+                      </div>
+                      <span className="text-xs text-neutral-500 flex-shrink-0">{c.date}</span>
+                      <p className="text-sm text-neutral-200 mt-2 leading-relaxed">{c.text || "(Pas de commentaire)"}</p>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <VoteBadge status={c.vote_status} />
-                  </div>
-                  <p className="text-sm text-neutral-300 mt-2 leading-relaxed">{c.text || "(Pas de commentaire)"}</p>
                 </div>
-              </div>
-            </div>
-          ))}
+              );
+            })}
         </div>
       </div>
     </div>
