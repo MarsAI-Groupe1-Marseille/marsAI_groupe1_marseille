@@ -174,6 +174,19 @@ exports.getMyPlaylists = async (req, res) => {
             ]
         });
 
+        // Récupérer toutes les évaluations du jury connecté
+        const myEvaluations = await JuryEvaluation.findAll({
+            where: { user_id: userId },
+            attributes: ['submission_id', 'vote_status', 'comment', 'created_at'],
+            raw: true
+        });
+
+        // Créer une map submission_id => evaluation pour accès rapide
+        const evaluationsMap = myEvaluations.reduce((acc, eval) => {
+            acc[eval.submission_id] = eval;
+            return acc;
+        }, {});
+
         // Filtrer les playlists qui contiennent ce jury (via JuryMember)
         const myPlaylists = [];
         for (const playlist of playlists) {
@@ -188,18 +201,27 @@ exports.getMyPlaylists = async (req, res) => {
                 myPlaylists.push({
                     id: playlist.id,
                     name: playlist.name,
-                    videos: playlist.Submissions.map(sub => ({
-                        id: sub.id,
-                        title: sub.title_original,
-                        duration_seconds: sub.duration_seconds,
-                        youtubeId: sub.youtube_id,
-                        poster: sub.poster_url,
-                        director: sub.Director ? { 
-                            first_name: sub.Director.first_name,
-                            last_name: sub.Director.last_name,
-                            full_name: `${sub.Director.first_name} ${sub.Director.last_name}`
-                        } : null
-                    }))
+                    videos: playlist.Submissions.map(sub => {
+                        const myEvaluation = evaluationsMap[sub.id];
+                        return {
+                            id: sub.id,
+                            title: sub.title_original,
+                            duration_seconds: sub.duration_seconds,
+                            youtubeId: sub.youtube_id,
+                            poster: sub.poster_url,
+                            director: sub.Director ? { 
+                                first_name: sub.Director.first_name,
+                                last_name: sub.Director.last_name,
+                                full_name: `${sub.Director.first_name} ${sub.Director.last_name}`
+                            } : null,
+                            // Ajouter l'évaluation du jury connecté s'il existe
+                            my_evaluation: myEvaluation ? {
+                                vote_status: myEvaluation.vote_status,
+                                comment: myEvaluation.comment,
+                                created_at: myEvaluation.created_at
+                            } : null
+                        };
+                    })
                 });
             }
         }

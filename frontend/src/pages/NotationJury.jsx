@@ -223,23 +223,34 @@ export default function NotationJury() {
   // FIX: "fr" = synopsis_original (texte français), "en" = synopsis_french (traduction anglaise)
   const [synopsisLang, setSynopsisLang] = useState("fr");
 
-  // Fetch film
+  // Fetch film + vérifier si ce jury a déjà évalué ce film
   useEffect(() => {
     const fetchFilm = async () => {
       try {
         setLoading(true);
         await new Promise((r) => setTimeout(r, 500));
-         const res = await axios.get(`/submissions/${id}`);
-         if(!res.data) throw new Error("Film non trouvé");
-         setFilm(res.data);
-         setError(null);       
-        const saved = JSON.parse(localStorage.getItem(`vote-${id}`) || "null");
-        if (saved) {
-          setSelectedVote(saved.vote);
-          setComment(saved.comment || "");
-          setSubmitted(true);
+        
+        // Récupérer le film
+        const filmRes = await axios.get(`/submissions/${id}`);
+        if(!filmRes.data) throw new Error("Film non trouvé");
+        setFilm(filmRes.data);
+        setError(null);
+        
+        // Récupérer les votes du jury connecté
+        const votesRes = await axios.get('/jury/my-votes');
+        if (votesRes.data.success && votesRes.data.votes) {
+          // Chercher si ce jury a déjà voté pour ce film
+          const myVote = votesRes.data.votes.find(v => v.submission_id === parseInt(id));
+          
+          if (myVote) {
+            // Ce jury a déjà évalué ce film
+            setSelectedVote(myVote.vote_status.toLowerCase());
+            setComment(myVote.comment || "");
+            setSubmitted(true);
+          }
         }
-      } catch {
+      } catch (err) {
+        console.error("Erreur:", err);
         setError("Impossible de charger le film");
       } finally {
         setLoading(false);
@@ -262,13 +273,12 @@ export default function NotationJury() {
       // Envoyer le vote à l'API backend
       const response = await axios.post('/jury/vote', {
         submissionId: id,
-        vote_status: selectedVote,
+        vote_status: selectedVote.toUpperCase(),
         comment: comment
       });
 
       if (response.data) {
-        // Sauvegarder aussi en localStorage comme backup
-        localStorage.setItem(`vote-${id}`, JSON.stringify({ vote: selectedVote, comment }));
+        // Marquer comme soumis
         setSubmitted(true);
       }
     } catch (error) {
