@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const adminController = require('../controllers/adminController');
+const finalistController = require('../controllers/finalistController');
 const { verifyToken, checkRole } = require('../middlewares/authMiddleware');
 
 
@@ -54,6 +55,19 @@ router.post('/assigne-jury',
     verifyToken,
     checkRole('admin'),
     adminController.assignedJuryToPlaylist);
+
+// route pour recuperer les films candidats finalistes (votes jury)
+router.get('/finalists',
+    verifyToken,
+    checkRole('admin'),
+    finalistController.getFinalistCandidates);
+
+// route pour mettre à jour la sélection et le prix d'un finalist
+// Body : { is_selected: true/false, award_winner: 'Nom du prix' }
+router.put('/finalists/:submissionId',
+    verifyToken,
+    checkRole('admin'),
+    finalistController.updateFinalistSelection);
 
 // route qui retire un jury d'une playlist
 router.delete('/assigne-jury',
