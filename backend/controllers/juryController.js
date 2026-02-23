@@ -182,8 +182,8 @@ exports.getMyPlaylists = async (req, res) => {
         });
 
         // Créer une map submission_id => evaluation pour accès rapide
-        const evaluationsMap = myEvaluations.reduce((acc, eval) => {
-            acc[eval.submission_id] = eval;
+        const evaluationsMap = myEvaluations.reduce((acc, evaluation) => {
+            acc[evaluation.submission_id] = evaluation;
             return acc;
         }, {});
 
