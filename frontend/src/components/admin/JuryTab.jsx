@@ -6,8 +6,24 @@ import { BarChart3, Users, ThumbsUp, ThumbsDown, MessageCircle, Trophy, Scale, U
 export default function JuryTab() {
   const { films } = useFilms();
   const [juryMembers, setJuryMembers] = useState([]);
+  const [globalStats, setGlobalStats] = useState({
+    jury_count: 0,
+    approved_films: 0,
+    total_progress: 0,
+    films_liked: 0,
+    films_disliked: 0,
+    films_discuss: 0
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState({
+    email: '',
+    full_name: '',
+    role: 'jury'
+  });
+  const [formError, setFormError] = useState(null);
+  const [formLoading, setFormLoading] = useState(false);
 
   // Fonction pour générer les initiales et les couleurs
   const getAvatarData = (name) => {
@@ -29,37 +45,80 @@ export default function JuryTab() {
   };
 
   const parseSpecialite = (specialite) => {
-    if (!specialite) return ['Expert Festival'];
+    if (!specialite) return [];
     if (typeof specialite === 'string') {
       try {
         const parsed = JSON.parse(specialite);
-        return Array.isArray(parsed) ? parsed : [parsed];
+        if (Array.isArray(parsed)) {
+          return parsed.filter(Boolean);
+        }
+        return parsed ? [parsed] : [];
       } catch {
-        return [specialite];
+        return specialite ? [specialite] : [];
       }
     }
     if (Array.isArray(specialite)) {
-      return specialite.length > 0 ? specialite : ['Expert Festival'];
+      return specialite.filter(Boolean);
     }
-    return [specialite];
+    return specialite ? [specialite] : [];
   };
 
   useEffect(() => {
-    const fetchJury = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get('/jury/with-stats');
-        setJuryMembers(response.data.juryMembers || []);
-      } catch (err) {
-        console.error('Erreur récupération jurys:', err);
-        setError('Impossible de charger les jurys');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchJury();
   }, []);
+
+  const fetchJury = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get('/jury/with-stats');
+      setJuryMembers(response.data.juryMembers || []);
+      if (response.data.globalStats) {
+        setGlobalStats(response.data.globalStats);
+      }
+    } catch (err) {
+      console.error('Erreur récupération jurys:', err);
+      setError('Impossible de charger les jurys');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddMember = async (e) => {
+    e.preventDefault();
+    setFormError(null);
+    setFormLoading(true);
+
+    try {
+      const response = await axios.post('/users/invite', {
+        email: formData.email,
+        full_name: formData.full_name,
+        role: formData.role
+      });
+
+      if (response.data.message) {
+        // Réinitialiser le formulaire et rafraîchir la liste
+        setFormData({ email: '', full_name: '', role: 'jury' });
+        setShowForm(false);
+        await fetchJury();
+      }
+    } catch (err) {
+      console.error('Erreur création utilisateur:', err);
+      setFormError(err.response?.data?.error || 'Erreur lors de la création du membre');
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
+  const totalDecisions = globalStats.films_liked + globalStats.films_disliked + globalStats.films_discuss;
+  const likedRatio = totalDecisions > 0 ? globalStats.films_liked / totalDecisions : 0;
+  const dislikedRatio = totalDecisions > 0 ? globalStats.films_disliked / totalDecisions : 0;
+  const discussRatio = totalDecisions > 0 ? globalStats.films_discuss / totalDecisions : 0;
+
+  const donutSegments = [
+    { label: 'Aimé', ratio: likedRatio, color: '#22c55e' },
+    { label: 'Pas aimé', ratio: dislikedRatio, color: '#ef4444' },
+    { label: 'A discuter', ratio: discussRatio, color: '#f59e0b' }
+  ];
 
   return (
     <div className="space-y-8">
@@ -69,39 +128,149 @@ export default function JuryTab() {
           <BarChart3 size={22} className="text-violet-400" />
           <h3 className="text-xl font-bold text-violet-400">Statistiques Globales</h3>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 hover:bg-neutral-800 transition">
             <p className="text-sm text-neutral-400">Membres du jury</p>
-            <p className="text-3xl font-bold mt-2 text-violet-400">{juryMembers.length}</p>
+            <p className="text-3xl font-bold mt-2 text-violet-400">{globalStats.jury_count || juryMembers.length}</p>
           </div>
           <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 hover:bg-neutral-800 transition">
             <p className="text-sm text-neutral-400">Films à évaluer</p>
-            <p className="text-3xl font-bold mt-2 text-violet-400">{films.length}</p>
+            <p className="text-3xl font-bold mt-2 text-violet-400">{globalStats.approved_films}</p>
           </div>
           <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 hover:bg-neutral-800 transition">
             <p className="text-sm text-neutral-400">Progression totale</p>
-            <p className="text-3xl font-bold mt-2 text-violet-400">
-              {Math.round(
-                (juryMembers.reduce((acc, m) => acc + (m.stats?.votes_cast || 0), 0) /
-                  (juryMembers.length * films.length || 1)) * 100
-              )}%
-            </p>
+            <p className="text-3xl font-bold mt-2 text-violet-400">{globalStats.total_progress}%</p>
           </div>
           <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 hover:bg-neutral-800 transition">
-            <p className="text-sm text-neutral-400">Films approuvés</p>
-            <p className="text-3xl font-bold mt-2 text-violet-400">
-              {juryMembers.reduce((acc, m) => acc + (m.stats?.like || 0), 0)}
-            </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-neutral-400">Decisions globales</p>
+                <p className="text-xs text-neutral-500 mt-1">Aimé / Pas aimé / A discuter</p>
+              </div>
+              <div className="relative w-20 h-20">
+                <svg viewBox="0 0 42 42" className="w-20 h-20">
+                  <circle cx="21" cy="21" r="16" fill="none" stroke="#1f2937" strokeWidth="6" />
+                  {(() => {
+                    let offset = 0;
+                    return donutSegments.map((seg, index) => {
+                      const dash = seg.ratio * 100;
+                      const gap = 100 - dash;
+                      const dashArray = `${dash} ${gap}`;
+                      const dashOffset = 25 - offset;
+                      offset += dash;
+                      return (
+                        <circle
+                          key={`donut-${index}`}
+                          cx="21"
+                          cy="21"
+                          r="16"
+                          fill="none"
+                          stroke={seg.color}
+                          strokeWidth="6"
+                          strokeDasharray={dashArray}
+                          strokeDashoffset={dashOffset}
+                          strokeLinecap="round"
+                        />
+                      );
+                    });
+                  })()}
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center text-xs text-neutral-300 font-semibold">
+                  {totalDecisions}
+                </div>
+              </div>
+            </div>
+            <div className="mt-4 grid grid-cols-3 gap-2 text-xs text-neutral-300">
+              <div className="flex items-center gap-2">
+                <span className="inline-block w-2 h-2 rounded-full bg-green-500"></span>
+                {globalStats.films_liked}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="inline-block w-2 h-2 rounded-full bg-red-500"></span>
+                {globalStats.films_disliked}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="inline-block w-2 h-2 rounded-full bg-amber-400"></span>
+                {globalStats.films_discuss}
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Section Membres du Jury */}
       <section className="space-y-4">
-        <div className="flex items-center gap-2">
-          <Users size={22} className="text-violet-400" />
-          <h3 className="text-xl font-bold text-violet-400">Membres du Jury</h3>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Users size={22} className="text-violet-400" />
+            <h3 className="text-xl font-bold text-violet-400">Membres du Jury</h3>
+          </div>
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="bg-violet-500 hover:bg-violet-600 text-white font-semibold py-2 px-6 rounded-lg transition"
+          >
+            + Ajouter un membre
+          </button>
         </div>
+
+        {showForm && (
+          <form
+            onSubmit={handleAddMember}
+            className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 space-y-4"
+          >
+            <input
+              type="email"
+              placeholder="Email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              required
+              disabled={formLoading}
+              className="w-full px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:border-violet-500 disabled:opacity-50"
+            />
+            <input
+              type="text"
+              placeholder="Nom complet"
+              value={formData.full_name}
+              onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+              required
+              disabled={formLoading}
+              className="w-full px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:border-violet-500 disabled:opacity-50"
+            />
+            <select
+              value={formData.role}
+              onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+              disabled={formLoading}
+              className="w-full px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-violet-500 disabled:opacity-50"
+            >
+              <option value="jury">Jury</option>
+            </select>
+            {formError && (
+              <div className="text-sm text-red-400 bg-red-900/20 border border-red-700/30 rounded-lg p-3">
+                {formError}
+              </div>
+            )}
+            <div className="flex gap-3">
+              <button
+                type="submit"
+                disabled={formLoading}
+                className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition disabled:opacity-50"
+              >
+                {formLoading ? 'En cours...' : 'Ajouter'}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowForm(false);
+                  setFormError(null);
+                }}
+                disabled={formLoading}
+                className="flex-1 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700 font-semibold rounded-lg transition disabled:opacity-50"
+              >
+                Annuler
+              </button>
+            </div>
+          </form>
+        )}
 
         {loading && (
           <div className="text-sm text-neutral-400">Chargement des jurys...</div>
@@ -253,7 +422,7 @@ export default function JuryTab() {
                     Nom
                   </th>
                   <th className="text-center px-6 py-4 text-sm font-semibold text-violet-400">
-                    Role
+                    Specialite
                   </th>
                   <th className="text-center px-6 py-4 text-sm font-semibold text-violet-400">
                     Progression
@@ -307,26 +476,13 @@ export default function JuryTab() {
                         </div>
                       </td>
                       <td className="text-center px-6 py-4 text-sm text-neutral-400">
-                        <span className="inline-flex items-center gap-1">
-                          {member.role === 'lead' && (
-                            <>
-                              <Trophy size={14} />
-                              Leader
-                            </>
+                        <div className="text-neutral-300">
+                          {parseSpecialite(member.specialite).length > 0 ? (
+                            parseSpecialite(member.specialite).join(', ')
+                          ) : (
+                            <span className="text-neutral-500 italic">-</span>
                           )}
-                          {member.role === 'moderator' && (
-                            <>
-                              <Scale size={14} />
-                              Moderateur
-                            </>
-                          )}
-                          {member.role === 'jury' && (
-                            <>
-                              <UserCheck size={14} />
-                              Jury
-                            </>
-                          )}
-                        </span>
+                        </div>
                       </td>
                       <td className="text-center px-6 py-4">
                         <span className="text-violet-400 font-semibold">

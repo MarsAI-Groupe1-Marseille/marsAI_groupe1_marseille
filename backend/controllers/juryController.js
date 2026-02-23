@@ -20,7 +20,7 @@ exports.getAllJury = async (req, res) => {
 
 exports.getAllJuryWithStats = async (req, res) => {
     try {
-        const [juryMembers, assignedCounts, evaluationStats] = await Promise.all([
+        const [juryMembers, assignedCounts, evaluationStats, approvedFilmsCount] = await Promise.all([
             User.findAll({
                 where: { role: 'jury' },
                 attributes: ['id', 'full_name', 'email', 'avatar_url', 'specialite', 'role', 'created_at'],
@@ -42,7 +42,8 @@ exports.getAllJuryWithStats = async (req, res) => {
                   AND je.submission_id = jls.submission_id
                  GROUP BY jm.user_id, je.vote_status`,
                 { type: QueryTypes.SELECT }
-            )
+            ),
+            Submission.count({ where: { approval_status: 'approved' } })
         ]);
 
         const assignedByUser = assignedCounts.reduce((acc, row) => {
@@ -85,7 +86,25 @@ exports.getAllJuryWithStats = async (req, res) => {
             };
         });
 
-        res.status(200).json({ success: true, juryMembers: juryMembersWithStats });
+        const totalAssigned = Object.values(assignedByUser).reduce((sum, count) => sum + count, 0);
+        const totalLikes = Object.values(statsByUser).reduce((sum, s) => sum + s.like, 0);
+        const totalDislikes = Object.values(statsByUser).reduce((sum, s) => sum + s.dislike, 0);
+        const totalDiscuss = Object.values(statsByUser).reduce((sum, s) => sum + s.discuss, 0);
+        const totalVotes = totalLikes + totalDislikes + totalDiscuss;
+        const totalProgress = totalAssigned > 0 ? Math.round((totalVotes / totalAssigned) * 100) : 0;
+
+        const globalStats = {
+            jury_count: juryMembers.length,
+            approved_films: approvedFilmsCount,
+            total_progress: totalProgress,
+            films_liked: totalLikes,
+            films_disliked: totalDislikes,
+            films_discuss: totalDiscuss,
+            total_assigned: totalAssigned,
+            total_votes: totalVotes
+        };
+
+        res.status(200).json({ success: true, juryMembers: juryMembersWithStats, globalStats });
     } catch (error) {
         console.error('Erreur récupération jurys avec stats:', error);
         res.status(500).json({ error: error.message });
