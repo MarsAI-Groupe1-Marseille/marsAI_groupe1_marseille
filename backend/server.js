@@ -59,7 +59,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // ==========================================
 // On synchronise la base de données avant de lancer le serveur
 // (Utile pour vérifier que tout est calé)
-sequelize.sync({alter:true}).then(async () => {
+sequelize.sync({force: false}).then(async () => {
     console.log("Base de données synchronisée.");
     // 👇 APPEL DE La FONCTION POUR CREER UN ADMIN
   await createDefaultAdmin();
