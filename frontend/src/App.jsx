@@ -3,6 +3,7 @@ import Home from './pages/home.jsx';
 import Galerie from './pages/galerie.jsx';
 import Login from './pages/login.jsx';
 import Faq from './pages/faq.jsx';
+import Contact from './pages/contact.jsx';
 import FilmDetail from './pages/film_detail.jsx';
 import Dashboard from './pages/dashboard.jsx';
 import DashboardUser from './pages/dashboardUser.jsx';
@@ -65,9 +66,10 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/galerie" element={<Galerie />} />
           <Route path="/faq" element={<Faq />} />
+          <Route path="/contact" element={<Contact />} />
           <Route path="/galerie/:id" element={<FilmDetail />} />
           <Route path="/login" element={<Login />} />
-          <Route path='/submission' element ={<SubmissionForm/>}/>
+          <Route path='/submission' element={<SubmissionForm />} />
           <Route path="/active-compte" element={<ActiveCompte />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/forgotpass" element={<Forgotpass />} />
@@ -78,7 +80,7 @@ function App() {
             path="/selectfinaliste"
             element={(
               <ProtectedRoute allowedRoles={["admin"]}>
-                <SelectFinaliste/>
+                <SelectFinaliste />
               </ProtectedRoute>
             )}
           />

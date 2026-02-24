@@ -109,6 +109,7 @@ const Footer = () => {
                 <Link className="hover:text-[var(--color-secondary)] transition-colors" to="/">Accueil</Link>
                 <Link className="hover:text-[var(--color-secondary)] transition-colors" to="/galerie">Galerie</Link>
                 <Link className="hover:text-[var(--color-secondary)] transition-colors" to="/faq">FAQ</Link>
+                <Link className="hover:text-[var(--color-secondary)] transition-colors" to="/contact">Contact</Link>
                 <Link className="hover:text-[var(--color-secondary)] transition-colors" to="/jury">Jury</Link>
                 <Link className="hover:text-[var(--color-secondary)] transition-colors" to="/sponsors">Sponsors</Link>
                 <Link className="hover:text-[var(--color-secondary)] transition-colors" to="/submission">Soumission</Link>
