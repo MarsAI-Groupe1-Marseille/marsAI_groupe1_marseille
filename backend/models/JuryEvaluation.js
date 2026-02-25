@@ -21,7 +21,14 @@ const JuryEvaluation = sequelize.define('JuryEvaluation', {
   }
 }, {
   tableName: 'jury_evaluations',
-  timestamps: false
+  timestamps: false,
+  indexes: [
+    {
+      unique: true,
+      fields: ['user_id', 'submission_id'] // Bloque physiquement les doublons en BDD
+    }
+  ]
 });
+
 
 module.exports = JuryEvaluation;
