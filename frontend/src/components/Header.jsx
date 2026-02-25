@@ -14,6 +14,7 @@ import {
   Palette,
 } from "lucide-react"; //
 import { useTheme } from "../providers/ThemeProvider.jsx"; //
+import { useLanguage } from "../context/LanguageContext.jsx"; //
 
 // ---------------------------------------------------------- //
 // Flags SVG (pro) //
@@ -53,21 +54,21 @@ const FlagEN = ({ className = "" }) => ( //
 
 const Header = () => { //
   const { mode, toggleMode, toggleTheme } = useTheme(); //
+  const { lang, toggleLanguage, t } = useLanguage(); //
 
   const [isScrolled, setIsScrolled] = useState(false); //
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); //
-  const [lang, setLang] = useState("fr"); //
 
   const location = useLocation(); //
 
   const navLinks = useMemo( //
     () => [
-      { label: lang === "fr" ? "ACCUEIL" : "HOME", to: "/" },
-      { label: lang === "fr" ? "GALERIE" : "GALLERY", to: "/galerie" },
+      { label: t('home'), to: "/" },
+      { label: t('gallery'), to: "/galerie" },      
       { label: "JURY", to: "/jury" },
-      { label: "SPONSORS", to: "/sponsors" },
+      { label: t('sponsors'), to: "/sponsors" },
     ],
-    [lang]
+    [lang, t]
   ); //
 
   useEffect(() => { //
@@ -90,7 +91,7 @@ const Header = () => { //
 
   const toggleMobileMenu = () => setIsMobileMenuOpen((v) => !v); //
 
-  const submitLabel = lang === "fr" ? "Soumettre un film" : "Submit a film"; //
+  const submitLabel = t('submit'); //
 
   return ( //
     <header //
@@ -110,26 +111,13 @@ const Header = () => { //
           <div className="mars-btn mars-btn-compact inline-flex items-center gap-2">
             <button
               type="button"
-              onClick={() => setLang("fr")}
-              className={`rounded-full ${
-                lang === "fr" ? "bg-[var(--color-surface-2)]" : "opacity-70"
-              }`}
-              aria-label="Français"
-              title="FR"
+              onClick={toggleLanguage}
+              className={`rounded-full ${lang === "fr" ? "bg-[var(--color-surface-2)]" : "opacity-70"
+                }`}
+              aria-label="Français/English"
+              title={lang === 'fr' ? 'English' : 'Français'}
             >
-              <FlagFR />
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setLang("en")}
-              className={`rounded-full ${
-                lang === "en" ? "bg-[var(--color-surface-2)]" : "opacity-70"
-              }`}
-              aria-label="English"
-              title="EN"
-            >
-              <FlagEN />
+              {lang === 'fr' ? <FlagFR /> : <FlagEN />}
             </button>
           </div>
 
@@ -194,12 +182,12 @@ const Header = () => { //
         </div>
 
         {/* NAV DESKTOP (inchangé) */}
-        <nav className="hidden md:flex items-center shrink-0" style={{ gap: "var(--header-nav-gap)" }}>
+        <nav className="hidden md:flex items-center shrink-0 flex-wrap" style={{ gap: "var(--header-nav-gap)" }}>
           {navLinks.map((item) => (
             <Link
               key={item.to}
               to={item.to}
-              className="font-semibold text-[var(--color-text)] hover:text-[var(--color-secondary)] transition-colors"
+              className="font-semibold text-[var(--color-text)] hover:text-[var(--color-secondary)] transition-colors text-xs lg:text-sm"
               style={{ fontSize: "var(--btn-font)" }}
             >
               {item.label}
@@ -209,21 +197,12 @@ const Header = () => { //
           <div className="mars-btn inline-flex items-center gap-1">
             <button
               type="button"
-              onClick={() => setLang("fr")}
-              className={`rounded-full px-2 py-1 ${lang === "fr" ? "bg-[var(--color-surface-2)]" : "opacity-70"}`}
-              aria-label="Français"
-              title="FR"
+              onClick={toggleLanguage}
+              className={`rounded-full px-1.5 lg:px-2 py-1 ${lang === "fr" ? "bg-[var(--color-surface-2)]" : "opacity-70"}`}
+              aria-label="Français/English"
+              title={lang === 'fr' ? 'English' : 'Français'}
             >
-              <FlagFR />
-            </button>
-            <button
-              type="button"
-              onClick={() => setLang("en")}
-              className={`rounded-full px-2 py-1 ${lang === "en" ? "bg-[var(--color-surface-2)]" : "opacity-70"}`}
-              aria-label="English"
-              title="EN"
-            >
-              <FlagEN />
+              {lang === 'fr' ? <FlagFR /> : <FlagEN />}
             </button>
           </div>
 
@@ -234,7 +213,7 @@ const Header = () => { //
             aria-label="Changer le thème"
             title="Thème"
           >
-            <Palette size={18} />
+            <Palette size={16} className="md:size-[18px]" />
           </button>
 
           <button
@@ -244,12 +223,12 @@ const Header = () => { //
             aria-label="Mode clair/sombre"
             title="Mode"
           >
-            {mode === "light" ? <Moon size={18} /> : <Sun size={18} />}
+            {mode === "light" ? <Moon size={16} className="md:size-[18px]" /> : <Sun size={16} className="md:size-[18px]" />}
           </button>
 
-          <Link to="/submission" className="mars-cta mars-glow inline-flex items-center gap-2">
-            <Clapperboard size={18} />
-            {submitLabel}
+          <Link to="/submission" className="mars-cta mars-glow inline-flex items-center gap-1 md:gap-2 text-xs lg:text-sm px-2 md:px-3 py-1.5 md:py-2">
+            <Clapperboard size={14} className="md:size-[16px]" />
+            <span className="hidden lg:inline">{submitLabel}</span>
           </Link>
 
           <Link
@@ -257,7 +236,7 @@ const Header = () => { //
             className="mars-btn mars-glow inline-flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
             aria-label="Connexion / Dashboard"
           >
-            <LayoutDashboard size={18} />
+            <LayoutDashboard size={16} className="md:size-[18px]" />
           </Link>
         </nav>
       </div>
@@ -273,7 +252,7 @@ const Header = () => { //
             onClick={() => setIsMobileMenuOpen(false)}
             aria-label="Fermer overlay"
           />
-{/* <div className="mars-drawer absolute left-0 right-0 top-full mx-3 rounded-2xl ..."> */}
+          {/* <div className="mars-drawer absolute left-0 right-0 top-full mx-3 rounded-2xl ..."> */}
 
           <div className="mars-drawer absolute left-0 right-0 top-4 mx-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-xl">
             {/* Header du drawer : logo + close */}
