@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import axios from '../config/axiosConfig';
+import axios from 'axios';
+import { useLanguage } from '../context/LanguageContext';
 
 const SubmissionForm = () => {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     director_civility: 'M',
     director_firstname: '',
@@ -93,16 +95,16 @@ const SubmissionForm = () => {
     data.append('director_social_links', JSON.stringify({ instagram: '', linkedin: '' }));
 
     try {
-      const response = await axios.post('/submissions', data, {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/submissions`, data, {
         headers: { 'Content-Type': 'multipart/form-data' },
         onUploadProgress: (progressEvent) => {
           const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
           setUploadProgress(percentCompleted);
         }
       });
-      setStatusMessage({ type: 'success', text: `Succès ! Film reçu et envoyé sur YouTube (ID: ${response.data.youtube_id})` });
+      setStatusMessage({ type: 'success', text: t('submission_success').replace('{youtube_id}', response.data.youtube_id) });
     } catch (error) {
-      setStatusMessage({ type: 'error', text: error.response?.data?.message || "Erreur lors de l'envoi." });
+      setStatusMessage({ type: 'error', text: error.response?.data?.message || t('submission_error') });
     } finally {
       setIsLoading(false);
     }
@@ -112,86 +114,86 @@ const SubmissionForm = () => {
     <div className="min-h-screen bg-gradient-to-b from-[#0a1628] via-[#1a0b2e] to-[#16001e] relative overflow-hidden font-sans">
       <div className="max-w-5xl mx-auto px-4 py-12 relative z-10">
         <div className="text-center mb-12">
-          <h1 className="text-5xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent tracking-tight">MarsAI Festival</h1>
-          <p className="text-purple-300 text-lg font-light tracking-wider italic">Générations du Futur</p>
+          <h1 className="text-5xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent tracking-tight">{t('submission_form_title')}</h1>
+          <p className="text-purple-300 text-lg font-light tracking-wider italic">{t('submission_form_subtitle')}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
           
           {/* SECTION 1 : RÉALISATEUR */}
           <section className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-8 border border-purple-500/20 shadow-2xl">
-            <h2 className="text-2xl font-bold text-purple-300 mb-6 border-b border-purple-500/30 pb-4">Informations Réalisateur</h2>
+            <h2 className="text-2xl font-bold text-purple-300 mb-6 border-b border-purple-500/30 pb-4">{t('submission_director_section')}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="md:col-span-2">
-                <label className="block text-sm text-purple-200 mb-2">Civilité</label>
+                <label className="block text-sm text-purple-200 mb-2">{t('submission_civility')}</label>
                 <select name="director_civility" onChange={handleChange} className="w-full bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400">
-                  <option value="M">Monsieur</option>
-                  <option value="F">Madame</option>
-                  <option value="NB">Non-binaire</option>
+                  <option value="M">{t('submission_civility_mr')}</option>
+                  <option value="F">{t('submission_civility_ms')}</option>
+                  <option value="NB">{t('submission_civility_nb')}</option>
                 </select>
               </div>
-              <input type="text" name="director_firstname" placeholder="Prénom *" onChange={handleChange} required className="w-full bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
-              <input type="text" name="director_lastname" placeholder="Nom *" onChange={handleChange} required className="w-full bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
-              <input type="email" name="director_email" placeholder="Email *" onChange={handleChange} required className="w-full bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
-              <input type="tel" name="director_mobile" placeholder="Mobile *" onChange={handleChange} required className="w-full bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
-              <input type="date" name="director_birth_date" onChange={handleChange} className="w-full bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
-              <input type="text" name="director_job_title" placeholder="Fonction / Job Title" onChange={handleChange} className="w-full bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
+              <input type="text" name="director_firstname" placeholder={t('submission_firstname')} onChange={handleChange} required className="w-full bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
+              <input type="text" name="director_lastname" placeholder={t('submission_lastname')} onChange={handleChange} required className="w-full bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
+              <input type="email" name="director_email" placeholder={t('submission_email')} onChange={handleChange} required className="w-full bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
+              <input type="tel" name="director_mobile" placeholder={t('submission_mobile')} onChange={handleChange} required className="w-full bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
+              <input type="date" name="director_birth_date" onChange={handleChange} className="w-full bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" title={t('submission_birth_date')} />
+              <input type="text" name="director_job_title" placeholder={t('submission_job_title')} onChange={handleChange} className="w-full bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
               
               <div className="md:col-span-2 space-y-4">
-                <input type="text" name="director_address" placeholder="Adresse (Rue, numéro...)" onChange={handleChange} className="w-full bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
+                <input type="text" name="director_address" placeholder={t('submission_address')} onChange={handleChange} className="w-full bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <input type="text" name="director_zip_code" placeholder="Code Postal" onChange={handleChange} className="bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
-                  <input type="text" name="director_city" placeholder="Ville" onChange={handleChange} className="bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
-                  <input type="text" name="director_country" placeholder="Pays" onChange={handleChange} className="bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
+                  <input type="text" name="director_zip_code" placeholder={t('submission_zip_code')} onChange={handleChange} className="bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
+                  <input type="text" name="director_city" placeholder={t('submission_city')} onChange={handleChange} className="bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
+                  <input type="text" name="director_country" placeholder={t('submission_country')} onChange={handleChange} className="bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
                 </div>
               </div>
 
               <div className="md:col-span-2 flex items-center">
                 <input type="checkbox" name="director_newsletter" onChange={handleChange} className="h-5 w-5 text-purple-500 bg-slate-900/50 border-purple-500/30" />
-                <label className="ml-3 text-sm text-purple-100">S'inscrire à la newsletter MarsAI</label>
+                <label className="ml-3 text-sm text-purple-100">{t('submission_newsletter')}</label>
               </div>
             </div>
           </section>
 
           {/* SECTION 2 : FILM */}
           <section className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-8 border border-violet-500/20 shadow-2xl">
-            <h2 className="text-2xl font-bold text-violet-300 mb-6 border-b border-violet-500/30 pb-4">Votre Film</h2>
+            <h2 className="text-2xl font-bold text-violet-300 mb-6 border-b border-violet-500/30 pb-4">{t('submission_film_section')}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <input type="text" name="title_original" placeholder="Titre Original *" required onChange={handleChange} className="w-full bg-slate-900/50 border border-violet-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-violet-400" />
-              <input type="text" name="title_english" placeholder="Titre Anglais" onChange={handleChange} className="w-full bg-slate-900/50 border border-violet-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-violet-400" />
-              <textarea name="synopsis_original" placeholder="Synopsis Original" rows="3" onChange={handleChange} className="md:col-span-2 w-full bg-slate-900/50 border border-violet-500/30 rounded-lg px-4 py-3 text-white resize-none focus:outline-none focus:border-violet-400"></textarea>
-              <textarea name="synopsis_english" placeholder="Synopsis Anglais" rows="3" onChange={handleChange} className="md:col-span-2 w-full bg-slate-900/50 border border-violet-500/30 rounded-lg px-4 py-3 text-white resize-none focus:outline-none focus:border-violet-400"></textarea>
+              <input type="text" name="title_original" placeholder={t('submission_title_original')} required onChange={handleChange} className="w-full bg-slate-900/50 border border-violet-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-violet-400" />
+              <input type="text" name="title_english" placeholder={t('submission_title_english')} onChange={handleChange} className="w-full bg-slate-900/50 border border-violet-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-violet-400" />
+              <textarea name="synopsis_original" placeholder={t('submission_synopsis_original')} rows="3" onChange={handleChange} className="md:col-span-2 w-full bg-slate-900/50 border border-violet-500/30 rounded-lg px-4 py-3 text-white resize-none focus:outline-none focus:border-violet-400"></textarea>
+              <textarea name="synopsis_english" placeholder={t('submission_synopsis_english')} rows="3" onChange={handleChange} className="md:col-span-2 w-full bg-slate-900/50 border border-violet-500/30 rounded-lg px-4 py-3 text-white resize-none focus:outline-none focus:border-violet-400"></textarea>
               
-              <input type="number" name="duration_seconds" placeholder="Durée (secondes)" onChange={handleChange} className="bg-slate-900/50 border border-violet-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-violet-400" />
-              <input type="text" name="language_main" placeholder="Langue principale" onChange={handleChange} className="bg-slate-900/50 border border-violet-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-violet-400" />
+              <input type="number" name="duration_seconds" placeholder={t('submission_duration')} onChange={handleChange} className="bg-slate-900/50 border border-violet-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-violet-400" />
+              <input type="text" name="language_main" placeholder={t('submission_language')} onChange={handleChange} className="bg-slate-900/50 border border-violet-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-violet-400" />
               
               {/* INPUT THEME AVEC PLACEHOLDER EXPLICITE */}
               <input 
                 type="text" 
                 name="theme_tags" 
-                placeholder="Thèmes / Tags (ex: Science-fiction, Cyberpunk, Drame, IA...)" 
+                placeholder={t('submission_themes')} 
                 onChange={handleChange} 
                 className="bg-slate-900/50 border border-violet-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-violet-400" 
               />
 
               <select name="ai_classification" onChange={handleChange} className="bg-slate-900/50 border border-violet-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-violet-400">
-                <option value="Hybrid">Hybride</option>
-                <option value="100% IA">100% IA</option>
+                <option value="Hybrid">{t('submission_ai_hybrid')}</option>
+                <option value="100% IA">{t('submission_ai_100percent')}</option>
               </select>
-              <textarea name="ai_tools" placeholder="Outils IA utilisés (ex: Sora, Runway, Midjourney...)" onChange={handleChange} className="md:col-span-2 bg-slate-900/50 border border-violet-500/30 rounded-lg px-4 py-3 text-white resize-none focus:outline-none focus:border-violet-400"></textarea>
-              <textarea name="ai_methodology" placeholder="Méthodologie (Prompt engineering, process...)" onChange={handleChange} className="md:col-span-2 bg-slate-900/50 border border-violet-500/30 rounded-lg px-4 py-3 text-white resize-none focus:outline-none focus:border-violet-400"></textarea>
+              <textarea name="ai_tools" placeholder={t('submission_ai_tools')} onChange={handleChange} className="md:col-span-2 bg-slate-900/50 border border-violet-500/30 rounded-lg px-4 py-3 text-white resize-none focus:outline-none focus:border-violet-400"></textarea>
+              <textarea name="ai_methodology" placeholder={t('submission_ai_methodology')} onChange={handleChange} className="md:col-span-2 bg-slate-900/50 border border-violet-500/30 rounded-lg px-4 py-3 text-white resize-none focus:outline-none focus:border-violet-400"></textarea>
             </div>
           </section>
 
           {/* SECTION 3 : FICHIERS (HARMONISÉS) */}
           <section className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-8 border border-fuchsia-500/20 shadow-2xl">
-            <h2 className="text-2xl font-bold text-fuchsia-300 mb-6 border-b border-fuchsia-500/30 pb-4">Fichiers Médias</h2>
+            <h2 className="text-2xl font-bold text-fuchsia-300 mb-6 border-b border-fuchsia-500/30 pb-4">{t('submission_media_section')}</h2>
             <div className="space-y-6">
               {[
-                { label: 'Vidéo du film (MP4, MOV, AVI, MKV) *', name: 'video_file', accept: 'video/*', required: true },
-                { label: 'Affiche / Poster (PNG, JPG, WEBP, JPEG) *', name: 'poster_file', accept: 'image/*', required: true },
-                { label: 'Sous-titres (.srt, .vtt)', name: 'subtitle_file', accept: '.srt,.vtt', required: false },
-                { label: "Galerie d'images (Plusieurs fichiers possibles)", name: 'gallery_files', accept: 'image/*', required: false, multiple: true }
+                { label: t('submission_video_file'), name: 'video_file', accept: 'video/*', required: true },
+                { label: t('submission_poster_file'), name: 'poster_file', accept: 'image/*', required: true },
+                { label: t('submission_subtitle_file'), name: 'subtitle_file', accept: '.srt,.vtt', required: false },
+                { label: t('submission_gallery_files'), name: 'gallery_files', accept: 'image/*', required: false, multiple: true }
               ].map((input) => (
                 <div key={input.name}>
                   <label className="block text-sm text-fuchsia-200 mb-2">{input.label}</label>
@@ -212,16 +214,16 @@ const SubmissionForm = () => {
           {/* SECTION 4 : COLLABORATEURS */}
           <section className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-8 border border-purple-500/20 shadow-2xl">
             <div className="flex items-center justify-between mb-6 pb-4 border-b border-purple-500/30">
-              <h2 className="text-2xl font-bold text-purple-300">Collaborateurs</h2>
-              <button type="button" onClick={addCollaborator} className="px-5 py-2 rounded-full bg-gradient-to-r from-purple-500 to-violet-500 text-white text-sm font-semibold hover:scale-105 transition-transform">+ Ajouter</button>
+              <h2 className="text-2xl font-bold text-purple-300">{t('submission_collaborators_section')}</h2>
+              <button type="button" onClick={addCollaborator} className="px-5 py-2 rounded-full bg-gradient-to-r from-purple-500 to-violet-500 text-white text-sm font-semibold hover:scale-105 transition-transform">{t('submission_add_collaborator')}</button>
             </div>
             <div className="space-y-4">
               {collaborators.map((collab, index) => (
                 <div key={index} className="relative bg-slate-900/30 border border-purple-500/20 rounded-xl p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <input type="text" name="first_name" placeholder="Prénom" value={collab.first_name} onChange={(e) => handleCollaboratorChange(index, e)} className="bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-purple-400" />
-                  <input type="text" name="last_name" placeholder="Nom" value={collab.last_name} onChange={(e) => handleCollaboratorChange(index, e)} className="bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-purple-400" />
-                  <input type="text" name="role" placeholder="Rôle (ex: Monteur, Sound Designer)" value={collab.role} onChange={(e) => handleCollaboratorChange(index, e)} className="bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-purple-400" />
-                  <input type="email" name="email" placeholder="Email" value={collab.email} onChange={(e) => handleCollaboratorChange(index, e)} className="bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-purple-400" />
+                  <input type="text" name="first_name" placeholder={t('submission_collab_firstname')} value={collab.first_name} onChange={(e) => handleCollaboratorChange(index, e)} className="bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-purple-400" />
+                  <input type="text" name="last_name" placeholder={t('submission_collab_lastname')} value={collab.last_name} onChange={(e) => handleCollaboratorChange(index, e)} className="bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-purple-400" />
+                  <input type="text" name="role" placeholder={t('submission_collab_role')} value={collab.role} onChange={(e) => handleCollaboratorChange(index, e)} className="bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-purple-400" />
+                  <input type="email" name="email" placeholder={t('submission_collab_email')} value={collab.email} onChange={(e) => handleCollaboratorChange(index, e)} className="bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-purple-400" />
                   {index > 0 && (
                     <button type="button" onClick={() => removeCollaborator(index)} className="absolute -right-2 -top-2 bg-pink-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">✕</button>
                   )}
@@ -243,9 +245,9 @@ const SubmissionForm = () => {
                 {isLoading ? (
                   <>
                     <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                    {uploadProgress < 100 ? `Upload Cloud : ${uploadProgress}%` : "Finalisation YouTube..."}
+                    {uploadProgress < 100 ? t('submission_uploading').replace('{progress}', uploadProgress) : t('submission_finalizing')}
                   </>
-                ) : "Soumettre mon film"}
+                ) : t('submission_button')}
               </span>
             </button>
           </div>
