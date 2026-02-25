@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from '../config/axiosConfig.js'
-
 // ─── Icônes SVG ──────────────────────────────────────────────────────────────
-
 const IconHome = () => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
     <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9.5z"/><path d="M9 21V12h6v9"/>
@@ -99,14 +97,33 @@ const IconUpload = () => (
     <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
   </svg>
 )
-const IconMousePointer = () => (
+const IconPalette = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="m4 4 7.07 17 2.51-7.39L21 11.07z"/>
+    <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/>
+    <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/>
+    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>
   </svg>
 )
-
 // ─── Config Home par défaut ───────────────────────────────────────────────────
-
+// ✅ FIX 1 : doublon buttonTextColor supprimé + subtitleColor dédié ajouté
+const DEFAULT_COLORS = {
+  primary: '#7c3aed',
+  primaryLight: '#a855f7',
+  accent: '#4ade80',
+  accentSecondary: '#818cf8',
+  bgMain: '#0f0f1a',
+  bgCard: '#1a1a2e',
+  bgCardSecondary: '#16213e',
+  textPrimary: '#ffffff',
+  titleColor: '#ffffff',
+  subtitleColor: '#cccccc',
+  textMuted: '#666688',
+  heroGradientFrom: '#7c3aed',
+  heroGradientTo: '#a855f7',
+  buttonPrimary: '#7c3aed',
+  buttonPrimaryLight: '#a855f7',
+  buttonTextColor: '#ffffff',
+}
 const DEFAULT_HOME_CONFIG = {
   hero: {
     enabled: true,
@@ -122,10 +139,10 @@ const DEFAULT_HOME_CONFIG = {
   categories: {
     enabled: true,
     items: [
-      { title: 'SCI-FI',  title_en: 'SCI-FI',  desc: 'Exploration des futurs possibles.',  desc_en: 'Exploring possible futures.' },
-      { title: 'HORREUR', title_en: 'HORROR',  desc: "Frissons garantis par l'IA.",        desc_en: 'AI-powered thrills guaranteed.' },
-      { title: 'ACTION',  title_en: 'ACTION',  desc: 'Adrénaline et cinématiques.',        desc_en: 'Adrenaline and cinematics.' },
-      { title: 'DRAME',   title_en: 'DRAMA',   desc: 'Émotions profondes et récits.',      desc_en: 'Deep emotions and narratives.' },
+      { title: 'SCI-FI', title_en: 'SCI-FI', desc: 'Exploration des futurs possibles.', desc_en: 'Exploring possible futures.' },
+      { title: 'HORREUR', title_en: 'HORROR', desc: "Frissons garantis par l'IA.", desc_en: 'AI-powered thrills guaranteed.' },
+      { title: 'ACTION', title_en: 'ACTION', desc: 'Adrénaline et cinématiques.', desc_en: 'Adrenaline and cinematics.' },
+      { title: 'DRAME', title_en: 'DRAMA', desc: 'Émotions profondes et récits.', desc_en: 'Deep emotions and narratives.' },
     ],
   },
   awards: {
@@ -133,9 +150,9 @@ const DEFAULT_HOME_CONFIG = {
     title: 'Reconnaissance & Awards',
     title_en: 'Recognition & Awards',
     stats: [
-      { label: 'Prix à gagner', sub: 'Dotations mensuelles',   sub_en: 'Monthly grants' },
-      { label: 'Global',        sub: 'Ouvert au monde entier',  sub_en: 'Open worldwide' },
-      { label: 'AI Only',       sub: '100% généré par IA',      sub_en: '100% AI-generated' },
+      { label: 'Prix à gagner', sub: 'Dotations mensuelles', sub_en: 'Monthly grants' },
+      { label: 'Global', sub: 'Ouvert au monde entier', sub_en: 'Open worldwide' },
+      { label: 'AI Only', sub: '100% généré par IA', sub_en: '100% AI-generated' },
     ],
   },
   partners: {
@@ -144,10 +161,9 @@ const DEFAULT_HOME_CONFIG = {
     subtitle: 'Ils font confiance à la plateforme',
     subtitle_en: 'They trust our platform',
   },
+  colors: DEFAULT_COLORS,
 }
-
 // ─── Composants utilitaires du modal ─────────────────────────────────────────
-
 const Toggle = ({ checked, onChange }) => (
   <button
     onClick={() => onChange(!checked)}
@@ -158,7 +174,6 @@ const Toggle = ({ checked, onChange }) => (
       style={{ left: checked ? '22px' : '2px' }} />
   </button>
 )
-
 const Field = ({ label, value, onChange, multiline = false, placeholder = '' }) => (
   <div className="mb-3">
     <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{label}</label>
@@ -177,8 +192,6 @@ const Field = ({ label, value, onChange, multiline = false, placeholder = '' }) 
     )}
   </div>
 )
-
-// ─── Champ EN : même structure que Field, badge rouge EN dans le label ────────
 const FieldEN = ({ label, value, onChange, multiline = false, placeholder = '' }) => (
   <div className="mb-3">
     <label className="flex items-center gap-1.5 text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.4)' }}>
@@ -200,7 +213,6 @@ const FieldEN = ({ label, value, onChange, multiline = false, placeholder = '' }
     )}
   </div>
 )
-
 const SectionHeader = ({ label, enabled, onChange }) => (
   <div className="flex items-center justify-between mb-4 pb-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
     <span className="text-sm font-bold text-white">{label}</span>
@@ -212,7 +224,6 @@ const SectionHeader = ({ label, enabled, onChange }) => (
     </div>
   </div>
 )
-
 const TabBtn = ({ active, onClick, children }) => (
   <button onClick={onClick} className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap"
     style={{
@@ -223,11 +234,8 @@ const TabBtn = ({ active, onClick, children }) => (
     {children}
   </button>
 )
-
 // ─── ImageUpload ──────────────────────────────────────────────────────────────
-
 const ImageUpload = ({ value, onChange, label = 'Image' }) => {
-  const inputRef = useState(null)
   const handleFile = (e) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -243,7 +251,6 @@ const ImageUpload = ({ value, onChange, label = 'Image' }) => {
     reader.onload = (ev) => onChange(ev.target.result)
     reader.readAsDataURL(file)
   }
-
   return (
     <div className="mb-3">
       <label className="block text-xs font-medium mb-1.5 flex items-center gap-1.5" style={{ color: 'rgba(255,255,255,0.4)' }}>
@@ -289,28 +296,427 @@ const ImageUpload = ({ value, onChange, label = 'Image' }) => {
     </div>
   )
 }
+// ─── ColorPicker ──────────────────────────────────────────────────────────────
+const ColorField = ({ label, value, onChange, description }) => {
+  const [inputVal, setInputVal] = useState(value)
+  const [focused, setFocused] = useState(false)
+  useEffect(() => { setInputVal(value) }, [value])
+  const toPickerHex = (v) => {
+    if (/^#([0-9a-fA-F]{6})$/.test(v)) return v
+    if (/^#([0-9a-fA-F]{3})$/.test(v)) {
+      const [, r, g, b] = v.match(/^#([0-9a-fA-F])([0-9a-fA-F])([0-9a-fA-F])$/)
+      return `#${r}${r}${g}${g}${b}${b}`
+    }
+    const m = v.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/)
+    if (m) return `#${(+m[1]).toString(16).padStart(2,'0')}${(+m[2]).toString(16).padStart(2,'0')}${(+m[3]).toString(16).padStart(2,'0')}`
+    return '#ffffff'
+  }
+  const handleText = (v) => {
+    setInputVal(v)
+    if (/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(v)) onChange(v)
+  }
+  const handleBlur = () => {
+    setFocused(false)
+    if (!/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(inputVal)) setInputVal(toPickerHex(value))
+  }
+  return (
+    <div className="flex items-center gap-3 py-2.5 px-3 rounded-xl transition-colors"
+      style={{ background: focused ? 'rgba(139,92,246,0.06)' : 'rgba(255,255,255,0.03)', border: `1px solid ${focused ? 'rgba(139,92,246,0.3)' : 'rgba(255,255,255,0.07)'}` }}>
+      <label className="relative cursor-pointer shrink-0" style={{ width: 36, height: 36 }}>
+        <div className="w-9 h-9 rounded-lg shadow-inner border-2 transition-transform hover:scale-105"
+          style={{ background: value, borderColor: 'rgba(255,255,255,0.15)' }} />
+        <input
+          type="color"
+          value={toPickerHex(value)}
+          onChange={e => { onChange(e.target.value); setInputVal(e.target.value) }}
+          className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+          style={{ padding: 0, border: 'none' }}
+        />
+      </label>
+      <div className="flex-1 min-w-0">
+        <p className="text-xs font-semibold text-white truncate">{label}</p>
+        {description && <p className="text-xs truncate mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>{description}</p>}
+      </div>
+      <input
+        type="text"
+        value={inputVal}
+        onChange={e => handleText(e.target.value)}
+        onFocus={() => setFocused(true)}
+        onBlur={handleBlur}
+        maxLength={7}
+        className="text-xs font-mono rounded-lg px-2 py-1 text-white focus:outline-none transition-colors"
+        style={{ width: 76, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.12)', letterSpacing: '0.05em' }}
+      />
+    </div>
+  )
+}
+// ✅ FIX 2 : subtitleColor ajouté dans chaque preset
+const COLOR_PRESETS = [
+  {
+    name: 'Violet (défaut)',
+    colors: {
+      primary: '#7c3aed', primaryLight: '#a855f7',
+      accent: '#4ade80', accentSecondary: '#818cf8',
+      bgMain: '#0f0f1a', bgCard: '#1a1a2e', bgCardSecondary: '#16213e',
+      textPrimary: '#ffffff', titleColor: '#ffffff', subtitleColor: '#cccccc', textMuted: '#666688',
+      heroGradientFrom: '#7c3aed', heroGradientTo: '#a855f7',
+      buttonPrimary: '#7c3aed', buttonPrimaryLight: '#a855f7', buttonTextColor: '#ffffff',
+    },
+  },
+  {
+    name: 'Rouge Cinéma',
+    colors: {
+      primary: '#dc2626', primaryLight: '#ef4444',
+      accent: '#fbbf24', accentSecondary: '#f97316',
+      bgMain: '#0f0a0a', bgCard: '#1c0f0f', bgCardSecondary: '#1a1010',
+      textPrimary: '#ffffff', titleColor: '#ffffff', subtitleColor: '#e8d0d0', textMuted: '#887766',
+      heroGradientFrom: '#dc2626', heroGradientTo: '#ef4444',
+      buttonPrimary: '#dc2626', buttonPrimaryLight: '#ef4444', buttonTextColor: '#ffffff',
+    },
+  },
+  {
+    name: 'Cyan Néon',
+    colors: {
+      primary: '#0891b2', primaryLight: '#06b6d4',
+      accent: '#a3e635', accentSecondary: '#22d3ee',
+      bgMain: '#020f14', bgCard: '#041520', bgCardSecondary: '#051a26',
+      textPrimary: '#e0f7fa', titleColor: '#e0f7fa', subtitleColor: '#b0e8f0', textMuted: '#4a7a8a',
+      heroGradientFrom: '#0891b2', heroGradientTo: '#06b6d4',
+      buttonPrimary: '#0891b2', buttonPrimaryLight: '#06b6d4', buttonTextColor: '#ffffff',
+    },
+  },
+  {
+    name: 'Or & Sombre',
+    colors: {
+      primary: '#b45309', primaryLight: '#d97706',
+      accent: '#f59e0b', accentSecondary: '#fbbf24',
+      bgMain: '#0c0b08', bgCard: '#1a1710', bgCardSecondary: '#161410',
+      textPrimary: '#fef3c7', titleColor: '#fef3c7', subtitleColor: '#e8d89a', textMuted: '#78716c',
+      heroGradientFrom: '#b45309', heroGradientTo: '#d97706',
+      buttonPrimary: '#b45309', buttonPrimaryLight: '#d97706', buttonTextColor: '#ffffff',
+    },
+  },
+  {
+    name: 'Rose Électrique',
+    colors: {
+      primary: '#be185d', primaryLight: '#ec4899',
+      accent: '#a78bfa', accentSecondary: '#f472b6',
+      bgMain: '#0f080f', bgCard: '#1a0f1a', bgCardSecondary: '#180e18',
+      textPrimary: '#fdf2f8', titleColor: '#fdf2f8', subtitleColor: '#e8c8d8', textMuted: '#7a6078',
+      heroGradientFrom: '#be185d', heroGradientTo: '#ec4899',
+      buttonPrimary: '#be185d', buttonPrimaryLight: '#ec4899', buttonTextColor: '#ffffff',
+    },
+  },
+  {
+    name: 'Vert Matrix',
+    colors: {
+      primary: '#15803d', primaryLight: '#22c55e',
+      accent: '#4ade80', accentSecondary: '#86efac',
+      bgMain: '#030f06', bgCard: '#06130a', bgCardSecondary: '#071208',
+      textPrimary: '#f0fdf4', titleColor: '#f0fdf4', subtitleColor: '#c0e8c8', textMuted: '#3a6050',
+      heroGradientFrom: '#15803d', heroGradientTo: '#22c55e',
+      buttonPrimary: '#15803d', buttonPrimaryLight: '#22c55e', buttonTextColor: '#ffffff',
+    },
+  },
+]
+// ✅ FIX 3 : subtitleColor ajouté dans le groupe Textes
+const COLOR_GROUPS = [
+  {
+    label: 'Couleurs principales',
+    fields: [
+      { key: 'primary', label: 'Primaire', description: 'Couleur principale (boutons, accents)' },
+      { key: 'primaryLight', label: 'Primaire clair', description: 'Variante claire de la couleur principale' },
+      { key: 'accent', label: 'Accent', description: 'Indicateurs de succès, badges actifs' },
+      { key: 'accentSecondary', label: 'Accent secondaire', description: 'Badges films, éléments secondaires' },
+    ],
+  },
+  {
+    label: 'Arrière-plans',
+    fields: [
+      { key: 'bgMain', label: 'Fond principal', description: 'Fond global de la page' },
+      { key: 'bgCard', label: 'Fond carte', description: 'Fond des cartes et sections' },
+      { key: 'bgCardSecondary', label: 'Fond carte (alt)', description: 'Variante secondaire des cartes' },
+    ],
+  },
+  {
+    label: 'Textes',
+    fields: [
+      { key: 'titleColor', label: 'Couleur du titre', description: 'Couleur du titre principal (MARS)' },
+      { key: 'subtitleColor', label: 'Couleur sous-titre', description: 'Couleur du sous-titre hero (indépendant du bouton)' },
+      { key: 'textPrimary', label: 'Texte principal', description: 'Texte de corps général' },
+      { key: 'textMuted', label: 'Texte secondaire', description: 'Descriptions et labels discrets' },
+    ],
+  },
+  {
+    label: 'Dégradé Hero',
+    fields: [
+      { key: 'heroGradientFrom', label: 'Dégradé début', description: 'Couleur de départ du gradient hero' },
+      { key: 'heroGradientTo', label: 'Dégradé fin', description: 'Couleur de fin du gradient hero' },
+    ],
+  },
+  {
+    label: 'Boutons',
+    fields: [
+      { key: 'buttonPrimary', label: 'Bouton principal', description: 'Couleur de début du gradient bouton' },
+      { key: 'buttonPrimaryLight', label: 'Bouton principal (fin)', description: 'Couleur de fin du gradient bouton' },
+      { key: 'buttonTextColor', label: 'Texte du bouton', description: 'Couleur du texte dans le bouton CTA' },
+    ],
+  },
+]
+const ColorsTab = ({
+  colors: initialColors,
+  onChange,
+  heroTitle = 'MARS',
+  heroTitleHighlight = 'AI',
+  heroSubtitle = "L'intelligence artificielle au cinéma"
+}) => {
+  const [localColors, setLocalColors] = useState(initialColors);
 
+  // Synchronisation si les couleurs changent depuis l'extérieur (rare ici)
+  useEffect(() => {
+    setLocalColors(initialColors);
+  }, [initialColors]);
+
+  const setColor = (key, val) => {
+    const newColors = { ...localColors, [key]: val };
+    setLocalColors(newColors);
+    onChange(newColors); // on prévient le parent pour la sauvegarde
+  };
+
+  const applyPreset = (preset) => {
+    const newColors = { ...localColors, ...preset.colors };
+    setLocalColors(newColors);
+    onChange(newColors);
+  };
+
+  const handleReset = () => {
+    setLocalColors(DEFAULT_COLORS);
+    onChange(DEFAULT_COLORS);
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4 pb-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+        <span className="text-sm font-bold text-white">Couleurs du site</span>
+        <button
+          onClick={handleReset}
+          className="px-2.5 py-1 rounded-lg text-xs font-medium cursor-pointer transition-colors"
+          style={{
+            background: 'rgba(255,255,255,0.05)',
+            color: 'rgba(255,255,255,0.35)',
+            border: '1px solid rgba(255,255,255,0.1)'
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+            e.currentTarget.style.color = 'rgba(255,255,255,0.6)';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+            e.currentTarget.style.color = 'rgba(255,255,255,0.35)';
+          }}
+        >
+          Réinitialiser
+        </button>
+      </div>
+
+      {/* Presets */}
+      <div className="mb-5">
+        <p className="text-xs font-semibold mb-2.5" style={{ color: 'rgba(255,255,255,0.4)' }}>
+          Palettes prédéfinies
+        </p>
+        <div className="grid grid-cols-3 gap-2">
+          {COLOR_PRESETS.map((preset) => (
+            <button
+              key={preset.name}
+              onClick={() => applyPreset(preset)}
+              className="rounded-xl p-2.5 cursor-pointer transition-all text-left group"
+              style={{
+                background: 'rgba(255,255,255,0.03)',
+                border: '1px solid rgba(255,255,255,0.08)'
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.borderColor = 'rgba(139,92,246,0.4)';
+                e.currentTarget.style.background = 'rgba(139,92,246,0.06)';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+                e.currentTarget.style.background = 'rgba(255,255,255,0.03)';
+              }}
+            >
+              <div className="flex gap-1 mb-2">
+                {[preset.colors.primary, preset.colors.primaryLight, preset.colors.accent, preset.colors.bgMain].map((c, i) => (
+                  <div key={i} className="flex-1 h-3 rounded-sm" style={{ background: c, minWidth: 0 }} />
+                ))}
+              </div>
+              <p className="text-xs font-medium truncate" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                {preset.name}
+              </p>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Groups */}
+      <div className="space-y-4">
+        {COLOR_GROUPS.map(group => (
+          <div key={group.label}>
+            <p className="text-xs font-semibold mb-2" style={{ color: 'rgba(255,255,255,0.35)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+              {group.label}
+            </p>
+            <div className="space-y-1.5">
+              {group.fields.map(f => (
+                <ColorField
+                  key={f.key}
+                  label={f.label}
+                  description={f.description}
+                  value={localColors[f.key] || '#ffffff'}
+                  onChange={val => setColor(f.key, val)}
+                />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Aperçu live – utilise maintenant localColors */}
+      <div className="mt-5 rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
+        <div className="px-3 py-2 text-xs font-semibold" style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.35)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          Aperçu live
+        </div>
+        <div className="p-4 flex flex-col gap-3" style={{ background: localColors.bgMain || '#0f0f1a' }}>
+          <div className="rounded-xl p-4 text-center" style={{ background: localColors.bgCard || '#1a1a2e' }}>
+            <p className="text-base font-black">
+              <span style={{ color: localColors.titleColor || '#ffffff' }}>{heroTitle} </span>
+              <span
+                style={{
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  backgroundImage: `linear-gradient(to right, ${localColors.heroGradientFrom || '#7c3aed'}, ${localColors.heroGradientTo || '#a855f7'})`,
+                }}
+              >
+                {heroTitleHighlight}
+              </span>
+            </p>
+
+            <p className="text-xs mt-1 line-clamp-2" style={{ color: localColors.subtitleColor || '#cccccc' }}>
+              {heroSubtitle}
+            </p>
+
+            <p className="text-xs mt-0.5" style={{ color: localColors.textMuted || '#666688' }}>
+              Texte secondaire / muted
+            </p>
+
+            <div className="flex gap-2 mt-3 justify-center">
+              <button
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold"
+                style={{
+                  background: `linear-gradient(135deg, ${localColors.buttonPrimary || '#7c3aed'}, ${localColors.buttonPrimaryLight || '#a855f7'})`,
+                  color: localColors.buttonTextColor || '#ffffff',
+                }}
+              >
+                Commencer
+              </button>
+
+              <button
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold"
+                style={{
+                  background: 'rgba(255,255,255,0.07)',
+                  color: localColors.buttonTextColor || '#ffffff',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                }}
+              >
+                En savoir plus
+              </button>
+            </div>
+          </div>
+
+          {/* Légende des couleurs */}
+          <div className="grid grid-cols-2 gap-1.5">
+            {[
+              { label: 'Titre', color: localColors.titleColor || '#ffffff' },
+              { label: 'Sous-titre', color: localColors.subtitleColor || '#cccccc' },
+              { label: 'Texte muted', color: localColors.textMuted || '#666688' },
+              { label: 'Texte bouton', color: localColors.buttonTextColor || '#ffffff' },
+            ].map(({ label, color }) => (
+              <div key={label} className="flex items-center gap-1.5 px-2 py-1 rounded-lg" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                <div className="w-3 h-3 rounded-full shrink-0 border border-white/20" style={{ background: color }} />
+                <span className="text-xs truncate" style={{ color: 'rgba(255,255,255,0.4)' }}>{label}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Mini badges */}
+          <div className="flex gap-2 flex-wrap">
+            <span
+              className="px-2 py-0.5 rounded-full text-xs font-semibold"
+              style={{
+                background: `${localColors.primary || '#7c3aed'}22`,
+                color: localColors.primaryLight || '#a855f7',
+                border: `1px solid ${localColors.primary || '#7c3aed'}44`
+              }}
+            >
+              Primaire
+            </span>
+            <span
+              className="px-2 py-0.5 rounded-full text-xs font-semibold"
+              style={{
+                background: `${localColors.accent || '#4ade80'}22`,
+                color: localColors.accent || '#4ade80',
+                border: `1px solid ${localColors.accent || '#4ade80'}44`
+              }}
+            >
+              Accent
+            </span>
+            <span
+              className="px-2 py-0.5 rounded-full text-xs font-semibold"
+              style={{
+                background: `${localColors.accentSecondary || '#818cf8'}22`,
+                color: localColors.accentSecondary || '#818cf8',
+                border: `1px solid ${localColors.accentSecondary || '#818cf8'}44`
+              }}
+            >
+              Secondaire
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 // ─── Modal Configuration Home ─────────────────────────────────────────────────
-
 const HomeConfigModal = ({ onClose }) => {
   const [config, setConfig] = useState(DEFAULT_HOME_CONFIG)
   const [activeTab, setActiveTab] = useState('hero')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
-
   useEffect(() => {
     const load = async () => {
       try {
         const { data } = await axios.get('/admin/home-config')
-        if (data?.config) setConfig({ ...DEFAULT_HOME_CONFIG, ...data.config })
+        if (data?.config) setConfig({ ...DEFAULT_HOME_CONFIG, ...data.config, colors: { ...DEFAULT_COLORS, ...(data.config.colors || {}) } })
       } catch {
         const local = localStorage.getItem('home_config')
-        if (local) setConfig(JSON.parse(local))
+        if (local) {
+          const parsed = JSON.parse(local)
+          const migrateColors = (c) => {
+            if (!c) return DEFAULT_COLORS
+            const out = { ...DEFAULT_COLORS, ...c }
+            Object.keys(out).forEach(k => {
+              const v = out[k]
+              if (typeof v === 'string' && v.startsWith('rgba')) {
+                const m = v.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/)
+                if (m) out[k] = `#${(+m[1]).toString(16).padStart(2,'0')}${(+m[2]).toString(16).padStart(2,'0')}${(+m[3]).toString(16).padStart(2,'0')}`
+              }
+            })
+            return out
+          }
+          setConfig({ ...DEFAULT_HOME_CONFIG, ...parsed, colors: migrateColors(parsed.colors) })
+        }
       }
     }
     load()
   }, [])
-
   const handleSave = async () => {
     setSaving(true)
     try {
@@ -319,29 +725,28 @@ const HomeConfigModal = ({ onClose }) => {
       // fallback localStorage si pas d'API encore
     }
     localStorage.setItem('home_config', JSON.stringify(config))
+    window.dispatchEvent(new Event('home_config_saved'))
     setSaving(false)
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
   }
-
   const set = (section, value) => setConfig(prev => ({ ...prev, [section]: value }))
-
   const TABS = [
     { key: 'hero', icon: <IconLayout />, label: 'Hero' },
     { key: 'categories', icon: <IconGrid />, label: 'Catégories' },
     { key: 'awards', icon: <IconAward />, label: 'Awards' },
     { key: 'partners', icon: <IconHandshake />, label: 'Partenaires' },
+    { key: 'colors', icon: <IconPalette />, label: 'Couleurs' },
   ]
-
-  const activeSections = Object.values(config).filter(s => s.enabled).length
-
+  const activeSections = Object.entries(config)
+    .filter(([k, s]) => k !== 'colors' && s?.enabled)
+    .length
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
       <div className="relative w-full max-w-2xl max-h-[90vh] flex flex-col rounded-2xl shadow-2xl overflow-hidden"
         style={{ background: 'linear-gradient(160deg, #12122a 0%, #0f0f1e 100%)', border: '1px solid rgba(255,255,255,0.1)' }}>
-
-        {/* Header — identique */}
+        {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl flex items-center justify-center"
@@ -360,39 +765,39 @@ const HomeConfigModal = ({ onClose }) => {
             <IconX />
           </button>
         </div>
-
-        {/* Tabs — identiques */}
+        {/* Tabs */}
         <div className="flex gap-1.5 px-6 py-3 shrink-0 overflow-x-auto" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', scrollbarWidth: 'none' }}>
           {TABS.map(t => (
             <TabBtn key={t.key} active={activeTab === t.key} onClick={() => setActiveTab(t.key)}>
-              <span className="flex items-center gap-1.5">{t.icon}{t.label}</span>
+              <span className="flex items-center gap-1.5">
+                {t.icon}{t.label}
+                {t.key === 'colors' && (
+                  <span className="w-2 h-2 rounded-full shrink-0"
+                    style={{ background: config.colors?.primary || '#7c3aed', boxShadow: `0 0 4px ${config.colors?.primary || '#7c3aed'}` }} />
+                )}
+              </span>
             </TabBtn>
           ))}
         </div>
-
         {/* Content scrollable */}
         <div className="flex-1 overflow-y-auto px-6 py-5" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(139,92,246,0.3) transparent' }}>
-
           {/* ── Hero ── */}
           {activeTab === 'hero' && (
             <div>
               <SectionHeader label="Section Hero" enabled={config.hero.enabled}
                 onChange={v => set('hero', { ...config.hero, enabled: v })} />
               <div className={config.hero.enabled ? '' : 'opacity-30 pointer-events-none'}>
-                {/* Titre + mot coloré : pas traduits (même texte) */}
                 <div className="grid grid-cols-2 gap-3">
                   <Field label="Titre principal" value={config.hero.title}
                     onChange={v => set('hero', { ...config.hero, title: v })} placeholder="MARS" />
                   <Field label="Mot en couleur (violet)" value={config.hero.titleHighlight}
                     onChange={v => set('hero', { ...config.hero, titleHighlight: v })} placeholder="AI" />
                 </div>
-                {/* Sous-titre FR puis EN */}
                 <Field label="Sous-titre" value={config.hero.subtitle} multiline
                   onChange={v => set('hero', { ...config.hero, subtitle: v })} />
                 <FieldEN label="Sous-titre" value={config.hero.subtitle_en ?? ''} multiline
                   onChange={v => set('hero', { ...config.hero, subtitle_en: v })}
                   placeholder="English subtitle..." />
-                {/* Boutons FR + EN côte à côte */}
                 <div className="grid grid-cols-2 gap-3">
                   <Field label="Bouton principal" value={config.hero.ctaPrimary}
                     onChange={v => set('hero', { ...config.hero, ctaPrimary: v })} placeholder="Commencer" />
@@ -405,7 +810,6 @@ const HomeConfigModal = ({ onClose }) => {
                   <FieldEN label="Bouton secondaire" value={config.hero.ctaSecondary_en ?? ''}
                     onChange={v => set('hero', { ...config.hero, ctaSecondary_en: v })} placeholder="Learn More" />
                 </div>
-                {/* Aperçu mini — identique */}
                 <div className="mt-2 rounded-xl p-4 text-center" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
                   <p className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.3)' }}>Aperçu</p>
                   <p className="text-lg font-black text-white">
@@ -416,7 +820,6 @@ const HomeConfigModal = ({ onClose }) => {
               </div>
             </div>
           )}
-
           {/* ── Catégories ── */}
           {activeTab === 'categories' && (
             <div>
@@ -438,7 +841,6 @@ const HomeConfigModal = ({ onClose }) => {
                           <IconTrash size={12} />
                         </button>
                       </div>
-                      {/* Titre (pas traduit) + Description FR */}
                       <div className="grid grid-cols-2 gap-2">
                         <div>
                           <label className="block text-xs mb-1" style={{ color: 'rgba(255,255,255,0.35)' }}>Titre</label>
@@ -513,14 +915,12 @@ const HomeConfigModal = ({ onClose }) => {
               </div>
             </div>
           )}
-
           {/* ── Awards ── */}
           {activeTab === 'awards' && (
             <div>
               <SectionHeader label="Section Awards" enabled={config.awards.enabled}
                 onChange={v => set('awards', { ...config.awards, enabled: v })} />
               <div className={config.awards.enabled ? '' : 'opacity-30 pointer-events-none'}>
-                {/* Titre section FR + EN */}
                 <Field label="Titre de la section" value={config.awards.title}
                   onChange={v => set('awards', { ...config.awards, title: v })} placeholder="Reconnaissance & Awards" />
                 <FieldEN label="Titre de la section" value={config.awards.title_en ?? ''}
@@ -549,7 +949,6 @@ const HomeConfigModal = ({ onClose }) => {
                             style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }} />
                         </div>
                       </div>
-                      {/* Sous-titre EN */}
                       <div className="mb-2">
                         <label className="flex items-center gap-1.5 text-xs mb-1" style={{ color: 'rgba(255,255,255,0.35)' }}>
                           Sous-titre
@@ -580,7 +979,6 @@ const HomeConfigModal = ({ onClose }) => {
               </div>
             </div>
           )}
-
           {/* ── Partenaires ── */}
           {activeTab === 'partners' && (
             <div>
@@ -596,9 +994,18 @@ const HomeConfigModal = ({ onClose }) => {
               </div>
             </div>
           )}
+          {/* ── Couleurs ── */}
+          {activeTab === 'colors' && (
+            <ColorsTab
+              colors={config.colors || DEFAULT_COLORS}
+              onChange={colors => set('colors', colors)}
+              heroTitle={config.hero.title || 'MARS'}
+              heroTitleHighlight={config.hero.titleHighlight || 'AI'}
+              heroSubtitle={config.hero.subtitle || "L'intelligence artificielle au cinéma"}
+            />
+          )}
         </div>
-
-        {/* Footer — identique */}
+        {/* Footer */}
         <div className="flex items-center justify-between px-6 py-4 shrink-0" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
           <button onClick={onClose} className="px-4 py-2 rounded-xl text-sm font-medium cursor-pointer transition-colors"
             style={{ color: 'rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.05)' }}
@@ -620,12 +1027,9 @@ const HomeConfigModal = ({ onClose }) => {
     </div>
   )
 }
-
 // ─── Modal Nouvelle Playlist ──────────────────────────────────────────────────
-
 const NewPlaylistModal = ({ onClose, onCreate }) => {
   const [name, setName] = useState('')
-
   const handleSubmit = async (e) => {
     e?.preventDefault()
     if (!name.trim()) return
@@ -634,7 +1038,6 @@ const NewPlaylistModal = ({ onClose, onCreate }) => {
     onCreate({ id: created?.id || Date.now(), name: created?.name || name.trim(), films: 0, jury: 0, status: 'draft' })
     onClose()
   }
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
@@ -669,9 +1072,7 @@ const NewPlaylistModal = ({ onClose, onCreate }) => {
     </div>
   )
 }
-
 // ─── Cards ────────────────────────────────────────────────────────────────────
-
 const HomeConfigCard = ({ onClick, activeSections }) => (
   <div onClick={onClick} className="rounded-2xl p-6 cursor-pointer group transition-all duration-300 relative overflow-hidden flex flex-col"
     style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', border: '1px solid rgba(255,255,255,0.08)' }}
@@ -698,13 +1099,11 @@ const HomeConfigCard = ({ onClick, activeSections }) => (
     </div>
   </div>
 )
-
 const PlaylistsCard = ({ playlists, onNew, onDelete, onDeleteMany }) => {
   const [selected, setSelected] = useState([])
   const [selectMode, setSelectMode] = useState(false)
   const toggleSelect = (id) => setSelected(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
   const handleDeleteMany = () => { onDeleteMany(selected); setSelected([]); setSelectMode(false) }
-
   return (
     <div className="rounded-2xl p-6 transition-all duration-300 flex flex-col"
       style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', border: '1px solid rgba(255,255,255,0.08)' }}>
@@ -776,7 +1175,6 @@ const PlaylistsCard = ({ playlists, onNew, onDelete, onDeleteMany }) => {
     </div>
   )
 }
-
 const AssignCard = ({ filmsCount, juryCount, onClick }) => (
   <div
     onClick={onClick}
@@ -809,9 +1207,7 @@ const AssignCard = ({ filmsCount, juryCount, onClick }) => (
     </div>
   </div>
 )
-
 // ─── Page Configuration ───────────────────────────────────────────────────────
-
 const Configuration = () => {
   const navigate = useNavigate()
   const [playlists, setPlaylists] = useState([])
@@ -820,7 +1216,6 @@ const Configuration = () => {
   const [showModal, setShowModal] = useState(false)
   const [showHomeModal, setShowHomeModal] = useState(false)
   const [activeSections, setActiveSections] = useState(4)
-
   useEffect(() => {
     const fetchPlaylists = async () => {
       try {
@@ -836,43 +1231,31 @@ const Configuration = () => {
         console.error('Erreur chargement playlists :', error)
       }
     }
-    // Charge le nombre de sections actives depuis le localStorage
     const local = localStorage.getItem('home_config')
     if (local) {
       const cfg = JSON.parse(local)
-      setActiveSections(Object.values(cfg).filter(s => s.enabled).length)
+      setActiveSections(Object.entries(cfg).filter(([k, s]) => k !== 'colors' && s?.enabled).length)
     }
     fetchPlaylists()
   }, [])
-
   useEffect(() => {
     const fetchFilmsAndJury = async () => {
       try {
         const [filmsRes, usersRes] = await Promise.all([
-          axios.get('/submissions', {
-            params: { status: 'approved', page: 1, limit: 1000 }
-          }),
+          axios.get('/submissions', { params: { status: 'approved', page: 1, limit: 1000 } }),
           axios.get('/users')
         ])
-        console.log('Films response:', filmsRes.data)
-        console.log('Users response:', usersRes.data)
-        
-        // Films retourne { data: [...], totalItems, ... }
         const films = filmsRes.data?.data || []
         setFilmsCount(films.length)
-        
         const allUsers = Array.isArray(usersRes.data) ? usersRes.data : usersRes.data?.users || []
         const juries = allUsers.filter(u => u.role === 'jury')
-        console.log('Films count:', films.length, 'Jury count:', juries.length)
         setJuryCount(juries.length)
       } catch (error) {
         console.error('Erreur chargement films/jury :', error)
       }
     }
-
     fetchFilmsAndJury()
   }, [])
-
   const handleDelete = async (id) => {
     try { await axios.delete(`/admin/jury-list/${id}`); setPlaylists(prev => prev.filter(p => p.id !== id)) }
     catch (e) { console.error(e) }
@@ -881,7 +1264,6 @@ const Configuration = () => {
     try { await axios.delete('/admin/jury-lists', { data: { ids } }); setPlaylists(prev => prev.filter(p => !ids.includes(p.id))) }
     catch (e) { console.error(e) }
   }
-
   return (
     <div className="p-6 min-h-screen" style={{ background: '#0f0f1a' }}>
       <div className="max-w-5xl mx-auto">
@@ -900,20 +1282,20 @@ const Configuration = () => {
           <AssignCard filmsCount={filmsCount} juryCount={juryCount} onClick={() => navigate('/jury-assignment')} />
         </div>
       </div>
-
       {showModal && <NewPlaylistModal onClose={() => setShowModal(false)} onCreate={p => setPlaylists(prev => [...prev, p])} />}
       {showHomeModal && (
         <HomeConfigModal
           onClose={() => {
             setShowHomeModal(false)
-            // Met à jour le compteur de sections actives après fermeture
             const local = localStorage.getItem('home_config')
-            if (local) setActiveSections(Object.values(JSON.parse(local)).filter(s => s.enabled).length)
+            if (local) {
+              const cfg = JSON.parse(local)
+              setActiveSections(Object.entries(cfg).filter(([k, s]) => k !== 'colors' && s?.enabled).length)
+            }
           }}
         />
       )}
     </div>
   )
 }
-
 export default Configuration
