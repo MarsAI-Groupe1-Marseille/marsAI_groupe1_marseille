@@ -503,3 +503,56 @@ body {
 .mars-flag{
   flex: 0 0 auto;
 }
+
+
+/* ================================================ */
+/* --- SKELETON ANIMATION (Chargement fantôme) --- */
+.skeleton {
+  background: linear-gradient(90deg, var(--color-surface) 25%, var(--color-border) 50%, var(--color-surface) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: var(--radius-lg);
+}
+
+@keyframes skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* --- EFFET SCANLINE (Lignes de vieux moniteur sur les photos) --- */
+.scanline-effect::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.1) 51%);
+  background-size: 100% 4px;
+  pointer-events: none;
+  opacity: 0.3;
+}
+
+/* --- PARTILES DÉCORATIVES (Derrière le titre) --- */
+.floating-dots {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-image: radial-gradient(var(--color-primary) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: radial-gradient(circle, white, transparent 70%);
+  opacity: 0.1;
+  z-index: -1;
+}
+
+/* --- GLITCH TEXT AU HOVER --- */
+.group:hover .glitch-title {
+  animation: text-glitch 0.3s cubic-bezier(.25,.46,.45,.94) both infinite;
+  text-shadow: 0.05em 0 0 var(--color-accent), -0.05em -0.025em 0 var(--color-primary);
+}
+
+@keyframes text-glitch {
+  0% { transform: translate(0); }
+  20% { transform: translate(-2px, 2px); }
+  40% { transform: translate(-2px, -2px); }
+  60% { transform: translate(2px, 2px); }
+  80% { transform: translate(2px, -2px); }
+  100% { transform: translate(0); }
+}

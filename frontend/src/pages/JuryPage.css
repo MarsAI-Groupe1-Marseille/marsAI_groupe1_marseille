@@ -1,0 +1,62 @@
+/* --- 1. L'OVALE ICONIQUE & SON SHADOW --- */
+.jury-ovale-frame {
+  /* Ratio ovale pro */
+  border-radius: 100% / 125%; 
+  overflow: hidden;
+  position: relative;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-2);
+  /* Shadow sombre au repos */
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.7);
+  transition: all 0.7s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.group:hover .jury-ovale-frame {
+  border-color: var(--color-primary);
+  /* Shadow clair au survol (Halo Cyan) */
+  box-shadow: 0 0 35px rgba(34, 211, 238, 0.25);
+  transform: translateY(-8px) scale(1.02);
+}
+
+/* --- 2. MODALE PREMIUM : L'EFFET MONOLITHE --- */
+.modal-monolith {
+  background: rgba(8, 10, 15, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  /* Double Shadow : Profondeur noire + Halo Violet signature */
+  box-shadow: 
+    0 40px 100px rgba(0, 0, 0, 0.9),
+    0 0 60px rgba(168, 85, 247, 0.12);
+  border-radius: 40px;
+  animation: modalReveal 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalReveal {
+  from { opacity: 0; transform: scale(0.95) translateY(20px); filter: blur(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+}
+
+/* --- 3. MICRO-ANIMATIONS --- */
+.scanline-subtle {
+  background: linear-gradient(to bottom, transparent 50%, rgba(34, 211, 238, 0.03) 51%);
+  background-size: 100% 4px;
+}
+
+.skeleton-pulse {
+  background: linear-gradient(90deg, #121b2d 25%, #1e293b 50%, #121b2d 75%);
+  background-size: 200% 100%;
+  animation: skeletonMove 1.5s infinite linear;
+}
+
+@keyframes skeletonMove {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.animate-spin-slow {
+  animation: spin 8s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

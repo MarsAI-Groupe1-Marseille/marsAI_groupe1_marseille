@@ -72,6 +72,9 @@ function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/forgotpass" element={<Forgotpass />} />
           <Route path="/jury" element={<JuryPage />} />
+          
+          
+          
 
 
           <Route
