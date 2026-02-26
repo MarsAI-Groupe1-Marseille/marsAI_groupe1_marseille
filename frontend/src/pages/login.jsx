@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import PageTransition from '../components/PageTransition.jsx';
 
 const Connexion = () => {
   const navigate = useNavigate();
@@ -25,7 +26,7 @@ const Connexion = () => {
       const user = await login(formData.email, formData.password);
       console.log('Login successful:', user);
       // Rediriger selon le rôle
-      user.role === 'admin' ? navigate('/dashboard') : navigate('/');    
+      user.role === 'admin' ? navigate('/dashboard') : navigate('/dashboardJury');    
     } catch (error) {
       setError(error.response?.data?.message || 'Erreur de connexion');
     }   
@@ -33,9 +34,8 @@ const Connexion = () => {
   };
 
   const handleGoogleLogin = () => {
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-    window.location.href = `${apiUrl}/api/auth/google`;
-    console.log('Google login redirect to:', `${apiUrl}/api/auth/google`);
+    window.location.href = "http://localhost:3000/api/auth/google";
+    console.log('Google login');
   };
 
  
@@ -43,6 +43,7 @@ const Connexion = () => {
   
 
   return (
+    <PageTransition pageKey="login">
     <div className="min-h-screen bg-black text-white">
       <div className="flex flex-col min-h-screen">
 
@@ -156,6 +157,7 @@ const Connexion = () => {
         </div>
       </div>
     </div>
+    </PageTransition>
   );
 };
 

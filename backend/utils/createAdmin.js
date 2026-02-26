@@ -3,8 +3,8 @@ const { User } = require('../models');
 
 const createDefaultAdmin = async () => {
   try {
-    const adminEmail = 'admin@test.com'; // L'email de l'admin par défaut
-    const adminPassword = 'admin123'; // Le mot de passe par défaut
+    const adminEmail = 'admin@gmail.com'; // L'email de l'admin par défaut
+    const adminPassword = 'AdminPassword123!'; // Le mot de passe par défaut
 
     // 1. On vérifie si l'admin existe déjà
     const existingAdmin = await User.findOne({ where: { email: adminEmail } });
@@ -19,7 +19,7 @@ const createDefaultAdmin = async () => {
       await User.create({
         email: adminEmail,
         password_hash: hashedPassword, // On stocke le hash, JAMAIS le mot de passe clair
-        full_name: 'Admin Test',
+        full_name: 'Super Admin',
         role: 'admin'
         // invite_token, avatar_url, google_id restent null pour l'instant
       });

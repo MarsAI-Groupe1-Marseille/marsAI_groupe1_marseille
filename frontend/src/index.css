@@ -99,6 +99,8 @@
 /* ======================================================== */
 /* ======================================================== */
 /* ======================================================== */
+/* ======================================================== */
+/* ======================================================== */
 
 :root[data-mode="light"]{
 
@@ -313,7 +315,7 @@ body {
     --header-py: 1rem;
     --header-logo-size: 32px;
     --header-title-size: 1.5rem;  /* ~ text-2xl */
-    --header-nav-gap: 1.25rem;
+    --header-nav-gap: 0.75rem;    /* Réduit pour md (800px) */
 
     --btn-px: 0.875rem;
     --btn-py: 0.55rem;
@@ -330,7 +332,7 @@ body {
     --header-py: 1rem;
     --header-logo-size: 34px;
     --header-title-size: 1.6rem;
-    --header-nav-gap: 1.5rem;
+    --header-nav-gap: 1.25rem;    /* Revert à 1.25rem pour lg+ */
 
     --btn-px: 1rem;
     --btn-py: 0.6rem;

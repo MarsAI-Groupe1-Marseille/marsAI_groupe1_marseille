@@ -62,6 +62,15 @@ app.use('/api/users', userRoutes);
 app.use('/api/submissions', submissionRoutes); 
 app.use('/api/admin', adminRoutes); // Routes admin (validation des films, modération, etc.)
 
+// ... Tes autres routes
+app.use('/api/submissions', submissionRoutes); 
+app.use('/api/admin', adminRoutes);
+
+// AJOUTE CETTE LIGNE ICI 👇
+app.use('/api/jury', juryRoutes); 
+
+// ...
+
 
 // Servir les fichiers statiques du dossier uploads avec chemin absolu
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

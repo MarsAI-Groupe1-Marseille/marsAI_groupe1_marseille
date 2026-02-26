@@ -619,7 +619,7 @@ const Home = () => {
                                         }`}
                                     >
                                         <div className="flex items-start gap-3">
-                                            <div className="text-2xl">🤝</div>
+                                            <div className="text-2xl">📋</div>
                                             <div>
                                                 <h4 className="font-bold text-white mb-1 group-hover:text-violet-400 transition-colors">
                                                     {t('home_video_part2')}
@@ -675,7 +675,7 @@ const Home = () => {
                                     controls
                                     className="rounded-xl sm:rounded-2xl w-full"
                                 >
-                                    <source src="/_Présentation_Site_MarsAI.mp4" type="video/mp4" />
+                                    <source src="/presentation_site.mp4" type="video/mp4" />
                                     {lang === 'fr' ? 'Votre navigateur ne supporte pas la vidéo.' : 'Your browser does not support the video tag.'}
                                 </video>
                             ) : (
@@ -686,7 +686,7 @@ const Home = () => {
                                     controls
                                     className="rounded-xl sm:rounded-2xl w-full"
                                 >
-                                    <source src="/Suite_à_une_Requête.mp4" type="video/mp4" />
+                                    <source src="/presentation_formulaire.mp4" type="video/mp4" />
                                     {lang === 'fr' ? 'Votre navigateur ne supporte pas la vidéo.' : 'Your browser does not support the video tag.'}
                                 </video>
                             )}
