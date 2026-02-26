@@ -5,6 +5,7 @@ import {
   ThumbsUp, AlertCircle
 } from "lucide-react";
 import axios from "../config/axiosConfig";
+import { useLanguage } from "../context/LanguageContext";
 
 /* ─── GÉNÉRATEUR DE COULEURS D'AVATAR ─── */
 function getInitialColors(initials) {
@@ -53,9 +54,10 @@ function Avatar({ initials, size = "md" }) {
 
 function VoteBadge({ status }) {
   const normalized = status || "";
+  const { t } = useLanguage();
   const labels = {
-    LIKE: "Like",
-    DISCUSS: "A discuter",
+    LIKE: t('selectfinaliste_liked'),
+    DISCUSS: t('selectfinaliste_to_discuss'),
     DISLIKE: "Dislike"
   };
   const styles = {
@@ -80,9 +82,10 @@ function countVotesByStatus(evaluations, status) {
 
 /* ─── MODAL VOTES ─── */
 function VotesModal({ film, voteStatus, onClose }) {
+  const { t } = useLanguage();
   if (!film || !voteStatus) return null;
   const evaluations = (film.comments || []).filter(c => c.vote_status === voteStatus);
-  const statusLabel = voteStatus === 'LIKE' ? 'Likes' : 'À discuter';
+  const statusLabel = voteStatus === 'LIKE' ? t('selectfinaliste_jury_likes') : t('selectfinaliste_to_discuss');
   const isLike = voteStatus === 'LIKE';
   const headerGradient = isLike ? "from-emerald-950/40 to-teal-950/40" : "from-amber-950/40 to-orange-950/40";
   const borderColor = isLike ? "border-emerald-700/50" : "border-amber-700/50";
@@ -100,7 +103,7 @@ function VotesModal({ film, voteStatus, onClose }) {
             <div>
               <div className="flex items-center gap-2 mb-1">
                 {isLike ? <ThumbsUp size={16} className={iconColor} /> : <AlertCircle size={16} className={iconColor} />}
-                <span className={`text-xs font-bold uppercase tracking-widest ${iconColor}`}>{statusLabel} du Jury</span>
+                <span className={`text-xs font-bold uppercase tracking-widest ${iconColor}`}>{statusLabel} {t('selectfinaliste_jury_opinion')}</span>
               </div>
               <h2 className="text-xl font-black text-white">{film.titre}</h2>
               <p className="text-sm text-neutral-400 mt-0.5">{film.real}</p>
@@ -114,7 +117,7 @@ function VotesModal({ film, voteStatus, onClose }) {
           {evaluations.length === 0 ? (
             <div className="text-center py-12 text-neutral-500">
               {isLike ? <ThumbsUp size={32} className="mx-auto mb-3 opacity-30" /> : <AlertCircle size={32} className="mx-auto mb-3 opacity-30" />}
-              <p className="text-sm">Aucun {statusLabel.toLowerCase()} pour ce film</p>
+              <p className="text-sm">{isLike ? t('selectfinaliste_no_likes_for_film') : t('selectfinaliste_no_discusses_for_film')}</p>
             </div>
           ) : evaluations.map((c, idx) => (
             <div key={idx} className={`bg-neutral-800/60 border border-neutral-700/60 ${cardBgHover} ${cardBorderHover} rounded-xl p-4 transition duration-300`}>
@@ -126,7 +129,7 @@ function VotesModal({ film, voteStatus, onClose }) {
                     <span className={`text-xs px-2 py-0.5 rounded-full border font-semibold ${badgeColor}`}>{statusLabel}</span>
                   </div>
                   <span className="text-xs text-neutral-500 flex-shrink-0">{c.date}</span>
-                  <p className="text-sm text-neutral-200 leading-relaxed mt-2">{c.text || "(Pas de commentaire)"}</p>
+                  <p className="text-sm text-neutral-200 leading-relaxed mt-2">{c.text || `(${t('selectfinaliste_no_comment')})`}</p>
                 </div>
               </div>
             </div>
@@ -139,6 +142,7 @@ function VotesModal({ film, voteStatus, onClose }) {
 
 /* ─── MODAL COMMENTAIRES ─── */
 function CommentsModal({ film, onClose }) {
+  const { t } = useLanguage();
   if (!film) return null;
   const voteCounts = film.comments.reduce((acc, c) => {
     const status = c.vote_status || "";
@@ -157,7 +161,7 @@ function CommentsModal({ film, onClose }) {
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <MessageSquare size={16} className="text-violet-400" />
-                <span className="text-xs font-bold uppercase tracking-widest text-violet-400">Avis du Jury</span>
+                <span className="text-xs font-bold uppercase tracking-widest text-violet-400">{t('selectfinaliste_jury_opinion')}</span>
               </div>
               <h2 className="text-xl font-black text-white">{film.titre}</h2>
               <p className="text-sm text-neutral-400 mt-0.5">{film.real}</p>
@@ -168,16 +172,16 @@ function CommentsModal({ film, onClose }) {
               </button>
               {film.comments.length > 0 && (
                 <div className="text-right">
-                  <div className="text-xs text-neutral-500 mb-2">{film.comments.length} avis du jury</div>
+                  <div className="text-xs text-neutral-500 mb-2">{film.comments.length} {t('selectfinaliste_jury_opinions')}</div>
                   <div className="mt-3 flex flex-col gap-1.5">
                     {voteCounts.LIKE > 0 && (
                       <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 px-2 py-1 rounded-full">
-                        <ThumbsUp size={10} /> Like: {voteCounts.LIKE}
+                        <ThumbsUp size={10} /> {t('selectfinaliste_liked')}: {voteCounts.LIKE}
                       </span>
                     )}
                     {voteCounts.DISCUSS > 0 && (
                       <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider bg-amber-500/20 border border-amber-500/50 text-amber-300 px-2 py-1 rounded-full">
-                        <AlertCircle size={10} /> À discuter: {voteCounts.DISCUSS}
+                        <AlertCircle size={10} /> {t('selectfinaliste_to_discuss')}: {voteCounts.DISCUSS}
                       </span>
                     )}
                     {voteCounts.DISLIKE > 0 && (
@@ -195,7 +199,7 @@ function CommentsModal({ film, onClose }) {
           {film.comments.length === 0 ? (
             <div className="text-center py-12 text-neutral-500">
               <MessageSquare size={32} className="mx-auto mb-3 opacity-30" />
-              <p className="text-sm">Aucun commentaire pour ce film</p>
+              <p className="text-sm">{t('selectfinaliste_no_comments_for_film')}</p>
             </div>
           ) : film.comments.map((c, idx) => {
               const getBgClass = () => {
@@ -213,7 +217,7 @@ function CommentsModal({ film, onClose }) {
                         <VoteBadge status={c.vote_status} />
                       </div>
                       <span className="text-xs text-neutral-500 flex-shrink-0">{c.date}</span>
-                      <p className="text-sm text-neutral-200 mt-2 leading-relaxed">{c.text || "(Pas de commentaire)"}</p>
+                      <p className="text-sm text-neutral-200 mt-2 leading-relaxed">{c.text || `(${t('selectfinaliste_no_comment')})`}</p>
                     </div>
                   </div>
                 </div>
@@ -227,6 +231,7 @@ function CommentsModal({ film, onClose }) {
 
 /* ─── GRAPHE SÉLECTION ─── */
 function SelectionChart({ films }) {
+  const { t } = useLanguage();
   const selected = films.filter(f => f.selected).length;
   const total = films.length;
   const pct = Math.round((selected / total) * 100);
@@ -236,8 +241,8 @@ function SelectionChart({ films }) {
   const byTag = {};
   films.filter(f => f.selected).forEach(f => {
     if (!f.tags) return;
-    f.tags.split(",").forEach(t => {
-      const tag = t.trim();
+    f.tags.split(",").forEach(tagStr => {
+      const tag = tagStr.trim();
       if (!tag) return;
       byTag[tag] = (byTag[tag] || 0) + 1;
     });
@@ -271,24 +276,24 @@ function SelectionChart({ films }) {
           </div>
         </div>
         <div>
-          <div className="text-xs font-bold uppercase tracking-widest text-violet-400 mb-1">Films Sélectionnés</div>
+          <div className="text-xs font-bold uppercase tracking-widest text-violet-400 mb-1">{t('selectfinaliste_selected_films')}</div>
           <div className="text-4xl font-black text-white">{pct}<span className="text-xl text-neutral-500">%</span></div>
-          <div className="text-sm text-neutral-400 mt-1">de la sélection officielle</div>
+          <div className="text-sm text-neutral-400 mt-1">{t('selectfinaliste_selection_rate')}</div>
           <div className="flex gap-4 mt-3">
             <div className="flex items-center gap-1.5 text-xs text-neutral-400">
               <span className="w-2 h-2 rounded-full bg-violet-500" />
-              Sélectionné ({selected})
+              {t('selectfinaliste_selected_status')} ({selected})
             </div>
             <div className="flex items-center gap-1.5 text-xs text-neutral-400">
               <span className="w-2 h-2 rounded-full bg-neutral-700" />
-              En attente ({total - selected})
+              {t('selectfinaliste_pending')} ({total - selected})
             </div>
           </div>
         </div>
       </div>
 
       <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
-        <div className="text-xs font-bold uppercase tracking-widest text-violet-400 mb-4">Genres sélectionnés</div>
+        <div className="text-xs font-bold uppercase tracking-widest text-violet-400 mb-4">{t('selectfinaliste_selected_genres')}</div>
         <div className="space-y-3">
           {tagEntries.map(([tag, count]) => (
             <div key={tag}>
@@ -305,7 +310,7 @@ function SelectionChart({ films }) {
             </div>
           ))}
           {tagEntries.length === 0 && (
-            <p className="text-sm text-neutral-500">Aucun film sélectionné</p>
+            <p className="text-sm text-neutral-500">{t('selectfinaliste_no_films_selected')}</p>
           )}
         </div>
       </div>
@@ -315,6 +320,7 @@ function SelectionChart({ films }) {
 
 /* ─── COMPOSANT PRINCIPAL ─── */
 export default function SelectFinaliste() {
+  const { t } = useLanguage();
   const [films, setFilms] = useState([]);
   const [search, setSearch] = useState("");
   const [filterSelected, setFilterSelected] = useState("all");
@@ -397,12 +403,12 @@ export default function SelectFinaliste() {
       setFilms(prev => prev.map(f => {
         if (f.id !== id) return f;
         if (!nowSelected) {
-          showToast("Film retiré de la sélection", "#f05a5a");
+          showToast(t('selectfinaliste_film_removed'), "#f05a5a");
           return { ...f, selected: false, prize: "" };
         }
         setEditingPrize(id);
         setPrizeInput("");
-        showToast("Film sélectionné !", "#2ac98e");
+        showToast(t('selectfinaliste_film_selected'), "#2ac98e");
         return { ...f, selected: true };
       }));
     } catch (error) {
@@ -419,10 +425,10 @@ export default function SelectFinaliste() {
 
       setFilms(prev => prev.map(f => f.id === id ? { ...f, prize: prizeInput } : f));
       setEditingPrize(null);
-      showToast(prizeInput ? `Prix attribué : ${prizeInput}` : "Film sélectionné sans prix", "#2ac98e");
+      showToast(prizeInput ? t('selectfinaliste_award_assigned').replace('{award}', prizeInput) : t('selectfinaliste_film_selected_no_award'), "#2ac98e");
     } catch (error) {
       console.error("Erreur mise à jour prix:", error);
-      showToast("Erreur lors de la sauvegarde du prix", "#f05a5a");
+      showToast(t('selectfinaliste_error_save_award'), "#f05a5a");
     }
   };
 
@@ -447,14 +453,14 @@ export default function SelectFinaliste() {
               <Film size={20} className="text-white" />
             </div>
             <div>
-              <div className="text-xs text-violet-400 font-bold uppercase tracking-widest">Festival Admin</div>
-              <h1 className="text-lg font-black text-white leading-none">Selection Finale</h1>
+              <div className="text-xs text-violet-400 font-bold uppercase tracking-widest">{t('selectfinaliste_admin')}</div>
+              <h1 className="text-lg font-black text-white leading-none">{t('selectfinaliste_title')}</h1>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <div className="hidden sm:flex items-center gap-2 bg-violet-950/60 border border-violet-800/50 rounded-full px-4 py-2">
               <Trophy size={14} className="text-violet-400" />
-              <span className="text-sm font-bold text-violet-300">{selectedCount} film{selectedCount > 1 ? "s" : ""} sélectionné{selectedCount > 1 ? "s" : ""}</span>
+              <span className="text-sm font-bold text-violet-300">{selectedCount} {t('selectfinaliste_selected')}</span>
             </div>
           </div>
         </div>
@@ -465,10 +471,10 @@ export default function SelectFinaliste() {
         {/* Stats Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
           {[
-            { icon: Film, label: "Total soumis", value: films.length, color: "text-blue-400", bg: "bg-blue-950/40 border-blue-800/40" },
-            { icon: Check, label: "Sélectionnés", value: selectedCount, color: "text-violet-400", bg: "bg-violet-950/40 border-violet-800/40" },
-            { icon: Award, label: "Prix attribués", value: films.filter(f => f.prize).length, color: "text-amber-400", bg: "bg-amber-950/40 border-amber-800/40" },
-            { icon: MessageSquare, label: "Commentaires", value: films.reduce((s, f) => s + f.comments.length, 0), color: "text-emerald-400", bg: "bg-emerald-950/40 border-emerald-800/40" },
+            { icon: Film, label: t('selectfinaliste_total_submitted'), value: films.length, color: "text-blue-400", bg: "bg-blue-950/40 border-blue-800/40" },
+            { icon: Check, label: t('selectfinaliste_selected'), value: selectedCount, color: "text-violet-400", bg: "bg-violet-950/40 border-violet-800/40" },
+            { icon: Award, label: t('selectfinaliste_awards_given'), value: films.filter(f => f.prize).length, color: "text-amber-400", bg: "bg-amber-950/40 border-amber-800/40" },
+            { icon: MessageSquare, label: t('selectfinaliste_comments'), value: films.reduce((s, f) => s + f.comments.length, 0), color: "text-emerald-400", bg: "bg-emerald-950/40 border-emerald-800/40" },
           ].map(({ icon: Icon, label, value, color, bg }) => (
             <div key={label} className={`rounded-xl border p-4 ${bg}`}>
               <Icon size={18} className={`${color} mb-2`} />
@@ -488,7 +494,7 @@ export default function SelectFinaliste() {
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="Rechercher un film ou un réalisateur..."
+              placeholder={t('selectfinaliste_search_placeholder')}
               className="w-full bg-neutral-900 border border-neutral-800 rounded-xl pl-9 pr-4 py-2.5 text-sm text-neutral-200 placeholder-neutral-600 focus:outline-none focus:border-violet-600 transition"
             />
           </div>
@@ -502,7 +508,7 @@ export default function SelectFinaliste() {
                   : "bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-neutral-200"
               }`}
             >
-              Tous
+              {t('selectfinaliste_all')}
             </button>
 
             {/* Sélectionnés */}
@@ -514,7 +520,7 @@ export default function SelectFinaliste() {
                   : "bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-neutral-200"
               }`}
             >
-              Sélectionnés
+              {t('selectfinaliste_selected')}
             </button>
 
             {/* Like */}
@@ -527,7 +533,7 @@ export default function SelectFinaliste() {
               }`}
             >
               <ThumbsUp size={13} />
-              Like
+              {t('selectfinaliste_liked')}
               {likedCount > 0 && (
                 <span className={`ml-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-black ${filterSelected === "liked" ? "bg-emerald-500 text-white" : "bg-emerald-950 text-emerald-400"}`}>
                   {likedCount}
@@ -545,7 +551,7 @@ export default function SelectFinaliste() {
               }`}
             >
               <AlertCircle size={13} />
-              À discuter
+              {t('selectfinaliste_to_discuss')}
               {toDiscussCount > 0 && (
                 <span className={`ml-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-black ${filterSelected === "toDiscuss" ? "bg-amber-500 text-white" : "bg-amber-950 text-amber-400"}`}>
                   {toDiscussCount}
@@ -559,7 +565,7 @@ export default function SelectFinaliste() {
         <div className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden">
           <div className="hidden sm:grid grid-cols-[64px_1fr_1fr_160px_1fr_auto] gap-0">
             {/* Header */}
-            {["", "Film", "Réalisateur", "Statut", "Prix", "Actions"].map(h => (
+            {["", t('gallery_title'), t('selectfinaliste_director'), t('selectfinaliste_status'), t('selectfinaliste_award'), t('selectfinaliste_actions')].map(h => (
               <div key={h} className="px-4 py-3 text-xs font-bold uppercase tracking-widest text-neutral-500 border-b border-neutral-800 bg-neutral-950/50">
                 {h}
               </div>
@@ -607,7 +613,7 @@ export default function SelectFinaliste() {
                     }`} />
                   </button>
                   <span className={`text-xs font-bold uppercase tracking-wider ${f.selected ? "text-violet-400" : "text-neutral-600"}`}>
-                    {f.selected ? "Sélectionné" : "—"}
+                    {f.selected ? t('selectfinaliste_selected_status') : "—"}
                   </span>
                 </div>
 
@@ -641,7 +647,7 @@ export default function SelectFinaliste() {
                         </span>
                       ) : (
                         <span className="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-violet-400 transition">
-                          <Plus size={12} /> Attribuer un prix
+                          <Plus size={12} /> {t('selectfinaliste_assign_award')}
                         </span>
                       )}
                     </button>
@@ -656,7 +662,7 @@ export default function SelectFinaliste() {
                   <button
                     onClick={() => setCommentFilm(f)}
                     className="relative flex items-center justify-center w-9 h-9 rounded-xl border border-neutral-700 bg-neutral-800 text-neutral-400 hover:text-violet-400 hover:border-violet-600 transition"
-                    title="Voir les commentaires jury"
+                    title={t('selectfinaliste_view_comments')}
                   >
                     <MessageSquare size={15} />
                     {f.comments.length > 0 && (
@@ -669,7 +675,7 @@ export default function SelectFinaliste() {
                   {/* Bouton Like */}
                   <button
                     onClick={() => setVoteFilm({ film: f, status: 'LIKE' })}
-                    title="Voir les likes"
+                    title={t('selectfinaliste_view_likes')}
                     className="relative flex items-center justify-center w-9 h-9 rounded-xl border border-neutral-700 bg-neutral-800 text-neutral-400 hover:text-emerald-400 hover:border-emerald-600 transition"
                   >
                     <ThumbsUp size={15} />
@@ -683,7 +689,7 @@ export default function SelectFinaliste() {
                   {/* Bouton À discuter */}
                   <button
                     onClick={() => setVoteFilm({ film: f, status: 'DISCUSS' })}
-                    title="Voir les à discuter"
+                    title={t('selectfinaliste_view_to_discuss')}
                     className="relative flex items-center justify-center w-9 h-9 rounded-xl border border-neutral-700 bg-neutral-800 text-neutral-400 hover:text-amber-400 hover:border-amber-600 transition"
                   >
                     <AlertCircle size={15} />
@@ -800,7 +806,7 @@ export default function SelectFinaliste() {
 
           {loading && (
             <div className="text-center py-10 text-neutral-500">
-              Chargement des finalistes...
+              {t('selectfinaliste_loading')}
             </div>
           )}
 
@@ -813,7 +819,7 @@ export default function SelectFinaliste() {
           {filtered.length === 0 && !loading && !apiError && (
             <div className="text-center py-16 text-neutral-500">
               <Film size={32} className="mx-auto mb-3 opacity-30" />
-              <p className="text-sm">Aucun film trouvé</p>
+              <p className="text-sm">{t('selectfinaliste_no_films_found')}</p>
             </div>
           )}
         </div>
@@ -824,17 +830,17 @@ export default function SelectFinaliste() {
             disabled={page <= 1 || loading}
             className="px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider border border-neutral-800 text-neutral-400 hover:text-white hover:border-neutral-600 disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            Page precedente
+            {t('selectfinaliste_previous_page')}
           </button>
           <div className="text-xs text-neutral-500">
-            Page {page} / {totalPages}
+            {t('selectfinaliste_title')} {page} / {totalPages}
           </div>
           <button
             onClick={() => setPage(p => Math.min(totalPages, p + 1))}
             disabled={page >= totalPages || loading}
             className="px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider border border-neutral-800 text-neutral-400 hover:text-white hover:border-neutral-600 disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            Page suivante
+            {t('selectfinaliste_next_page')}
           </button>
         </div>
 

@@ -1,19 +1,20 @@
 import React from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, LogOut, ShieldCheck } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { LayoutDashboard, LogOut, ShieldCheck, Globe } from "lucide-react";
 import { useAuth } from "../context/AuthContext.jsx";
+import { useLanguage } from "../context/LanguageContext.jsx";
 
 const AdminHeader = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
+  const { t, lang, toggleLanguage } = useLanguage();
 
   const handleLogout = async () => {
     await logout();
     navigate("/login");
   };
 
-  const roleLabel = user?.role === "moderator" ? "MODERATOR" : "ADMIN";
+  const roleLabel = user?.role === "moderator" ? t('admin_moderator') : "ADMIN";
 
   const headerBg = (() => {
     if (location.pathname.startsWith("/gestion-films")) {
@@ -45,30 +46,52 @@ const AdminHeader = () => {
           <span className="ml-2 text-xs font-semibold tracking-[2px] text-[var(--color-text-muted)]">{roleLabel}</span>
         </Link>
 
-        <nav className="flex items-center gap-4">
+        <nav className="flex items-center gap-2 md:gap-3 lg:gap-4 flex-wrap">
           <Link
             to="/dashboard"
-            className="mars-btn mars-glow inline-flex items-center gap-2"
+            className="mars-btn mars-glow inline-flex items-center gap-1 md:gap-2 text-xs lg:text-sm"
             aria-label="Dashboard"
           >
-            <LayoutDashboard size={18} />
-            Dashboard
+            <LayoutDashboard size={16} className="md:size-[18px]" />
+            <span className="hidden lg:inline">{t('admin_dashboard')}</span>
           </Link>
           <Link
             to="/gestion-films"
-            className="mars-btn mars-glow inline-flex items-center justify-center"
-            aria-label="Gestion films"
+            className="mars-btn mars-glow inline-flex items-center justify-center p-1.5 md:p-2"
+            aria-label="Film management"
+            title={t('admin_films')}
           >
-            Films
+            <span className="text-xs lg:text-sm">{t('admin_films')}</span>
           </Link>
 
           <Link
             to="/distribution_jury"
-            className="mars-btn mars-glow inline-flex items-center justify-center"
-            aria-label="Distribution jury"
+            className="mars-btn mars-glow inline-flex items-center justify-center p-1.5 md:p-2"
+            aria-label="Jury distribution"
+            title={t('admin_jury')}
           >
-            Jury
+            <span className="text-xs lg:text-sm">{t('admin_jury')}</span>
           </Link>
+          <Link
+            to="/Configuration"
+            className="mars-btn mars-glow inline-flex items-center justify-center p-1.5 md:p-2"
+            aria-label="Configuration"
+            title={t('admin_config')}
+          >
+            <span className="text-xs lg:text-sm">{t('admin_config')}</span>
+          </Link>
+          
+          <button
+            type="button"
+            onClick={toggleLanguage}
+            className="mars-btn mars-glow inline-flex items-center gap-1 text-xs lg:text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+            aria-label="Toggle language"
+            title={lang === 'fr' ? 'English' : 'Français'}
+          >
+            <Globe size={16} className="md:size-[18px]" />
+            <span className="hidden lg:inline">{lang === 'fr' ? 'EN' : 'FR'}</span>
+          </button>
+          
           <Link
             to="/Configuration"
             className="mars-btn mars-glow inline-flex items-center justify-center"
@@ -79,11 +102,11 @@ const AdminHeader = () => {
           <button
             type="button"
             onClick={handleLogout}
-            className="mars-btn mars-glow inline-flex items-center gap-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
-            aria-label="Deconnexion"
+            className="mars-btn mars-glow inline-flex items-center gap-1 text-xs lg:text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+            aria-label="Logout"
           >
-            <LogOut size={18} />
-            Deconnexion
+            <LogOut size={16} className="md:size-[18px]" />
+            <span className="hidden lg:inline">{t('admin_logout')}</span>
           </button>
         </nav>
       </div>

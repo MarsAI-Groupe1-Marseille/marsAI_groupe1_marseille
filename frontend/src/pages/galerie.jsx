@@ -12,6 +12,9 @@ import axios from '../config/axiosConfig'
 // useNavigate: Hook pour naviguer vers d'autres pages
 import { useNavigate } from 'react-router-dom'
 
+// useLanguage: Hook pour accéder aux traductions
+import { useLanguage } from '../context/LanguageContext'
+
 // Importe le fichier CSS pour styliser la galerie
 import '../pages/galerie.css'
 
@@ -22,6 +25,9 @@ import '../pages/galerie.css'
 const Galerie = () => {
   // Hook de navigation
   const navigate = useNavigate()
+  
+  // Hook pour les traductions
+  const { t } = useLanguage()
 
   // ========== GESTION DE L'ÉTAT (State Management) ==========
   
@@ -202,7 +208,7 @@ const Galerie = () => {
     return (
       <div className="galerie-container">
         {/* Texte de chargement stylisé avec la classe CSS */}
-        <div className="loading">Chargement des films...</div>
+        <div className="loading">{t('gallery_loading')}</div>
       </div>
     )
   }
@@ -225,9 +231,9 @@ const Galerie = () => {
       {/* EN-TÊTE DE LA GALERIE */}
       <div className="galerie-header">
         {/* Titre principal de la page */}
-        <h1>Galerie des Films</h1>
+        <h1>{t('gallery_title')}</h1>
         {/* Sous-titre descriptif */}
-        <p>Découvrez les films du Festival Mars AI</p>
+        <p>{t('gallery_subtitle')}</p>
       </div>
 
       {/* CONTRÔLES (Recherche et Tri) */}
@@ -236,7 +242,7 @@ const Galerie = () => {
         <div className="search-box">
           <input
             type="text" // Type de l'input: texte
-            placeholder="Rechercher un film..." // Texte affiché quand le champ est vide
+            placeholder={t('gallery_search')} // Texte affiché quand le champ est vide
             value={searchTerm} // Le contenu actuel de la barre
             // onChange: s'exécute chaque fois qu'on tape dans l'input
             onChange={(e) => handleSearchChange(e.target.value)} // Met à jour le searchTerm
@@ -254,7 +260,7 @@ const Galerie = () => {
           >
             {/* Options de genres */}
             {genres.map((genre) => (
-              <option style={{color: "black"}} key={genre} value={genre}>{genre}</option>
+              <option style={{color: "black"}} key={genre} value={genre}>{genre === 'Tous' ? t('gestion_films_all') : genre}</option>
             ))}
           </select>
         </div>
@@ -265,7 +271,7 @@ const Galerie = () => {
       {films.length === 0 ? (
         // CAS 1: Aucun film ne correspond aux critères de recherche
         <div className="no-films">
-          <p>Aucun film ne correspond à votre recherche.</p>
+          <p>{t('gallery_no_results')}</p>
         </div>
       ) : (
         // CAS 2: Affiche la grille des films
@@ -305,20 +311,20 @@ const Galerie = () => {
                   {/* RÉALISATEUR */}
                   {film.Director && (
                     <p className="film-director" style={{fontSize: '0.85rem', color: '#9090b0', marginBottom: '8px'}}>
-                      Par {film.Director.first_name} {film.Director.last_name}
+                      {t('gallery_by')} {film.Director.first_name} {film.Director.last_name}
                     </p>
                   )}
                   
                   {/* SYNOPSIS (Extrait limité à 80 caractères) */}
                   <p className="film-synopsis">
                     {/* Ternaire (? :): Si synopsis existe, affiche 80 premiers caractères + "..." */}
-                    {film.synopsis_original ? film.synopsis_original.substring(0, 80) + '...' : 'Pas de synopsis'}
+                    {film.synopsis_original ? film.synopsis_original.substring(0, 80) + '...' : t('gallery_no_synopsis')}
                   </p>
                   
                   {/* DURÉE DU FILM */}
                   <p className="film-duration">
                     {/* Affiche la durée en minutes (durée est en secondes dans l'API) */}
-                    {film.duration_seconds ? `${Math.floor(film.duration_seconds / 60)} min` : 'Durée inconnue'}
+                    {film.duration_seconds ? `${Math.floor(film.duration_seconds / 60)} ${t('detail_minutes')}` : t('gallery_unknown_duration')}
                   </p>
                 </div>
               </div>
@@ -349,7 +355,7 @@ const Galerie = () => {
                   transition: 'all 0.3s ease'
                 }}
               >
-                &larr; Précédent
+                &larr; {t('gallery_prev')}
               </button>
               
               {/* Numéros de pages */}
@@ -391,7 +397,7 @@ const Galerie = () => {
                   transition: 'all 0.3s ease'
                 }}
               >
-                Suivant &rarr;
+                {t('gallery_next')} &rarr;
               </button>
             </div>
           )}
@@ -403,7 +409,7 @@ const Galerie = () => {
             fontSize: '0.9rem',
             marginTop: '10px'
           }}>
-            {totalItems} film{totalItems > 1 ? 's' : ''} au total
+            {totalItems} {totalItems > 1 ? t('gallery_total').replace('film(s)', 'films') : t('gallery_total').replace('film(s)', 'film')}
           </div>
         </>
       )}
@@ -453,20 +459,20 @@ const Galerie = () => {
                 {/* RÉALISATEUR */}
                 {selectedFilm.Director && (
                   <p style={{color: '#ffb3ff', fontSize: '1rem', marginBottom: '15px'}}>
-                    Réalisé par <strong>{selectedFilm.Director.first_name} {selectedFilm.Director.last_name}</strong>
+                    {t('detail_director')} <strong>{selectedFilm.Director.first_name} {selectedFilm.Director.last_name}</strong>
                   </p>
                 )}
                 
                 {/* SYNOPSIS COMPLET */}
                 <p className="modal-synopsis">
                   {/* Affiche le synopsis ou un message par défaut */}
-                  {selectedFilm.synopsis_original || 'Pas de synopsis disponible'}
+                  {selectedFilm.synopsis_original || t('detail_no_synopsis_available')}
                 </p>
 
                 {/* SYNOPSIS ANGLAIS SI DISPONIBLE */}
                 {selectedFilm.synopsis_english && (
                   <div style={{marginTop: '15px', padding: '15px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px'}}>
-                    <p style={{fontSize: '0.85rem', color: '#9090b0', marginBottom: '5px'}}>English synopsis:</p>
+                    <p style={{fontSize: '0.85rem', color: '#9090b0', marginBottom: '5px'}}>{t('detail_english_synopsis')}</p>
                     <p style={{fontSize: '0.9rem', color: '#c0c0e0', lineHeight: '1.5'}}>
                       {selectedFilm.synopsis_english}
                     </p>
@@ -477,42 +483,42 @@ const Galerie = () => {
                 <div className="modal-meta">
                   {/* Durée */}
                   {selectedFilm.duration_seconds && (
-                    <p><strong>Durée :</strong> {Math.floor(selectedFilm.duration_seconds / 60)} minutes ({selectedFilm.duration_seconds} secondes)</p>
+                    <p><strong>{t('detail_duration')} :</strong> {Math.floor(selectedFilm.duration_seconds / 60)} {t('detail_minutes')} ({selectedFilm.duration_seconds} {t('detail_seconds')})</p>
                   )}
                   
                   {/* Langue principale */}
                   {selectedFilm.language_main && (
-                    <p><strong>Langue :</strong> {selectedFilm.language_main}</p>
+                    <p><strong>{t('detail_language')}</strong> {selectedFilm.language_main}</p>
                   )}
                   
                   {/* Thèmes/Genres */}
                   {selectedFilm.theme_tags && (
-                    <p><strong>Genres :</strong> {selectedFilm.theme_tags}</p>
+                    <p><strong>{t('detail_genres')}</strong> {selectedFilm.theme_tags}</p>
                   )}
                   
                   {/* Classification IA */}
                   {selectedFilm.ai_classification && (
-                    <p><strong>Classification IA :</strong> {selectedFilm.ai_classification}</p>
+                    <p><strong>{t('detail_ai_class')}</strong> {selectedFilm.ai_classification}</p>
                   )}
                   
                   {/* Outils IA */}
                   {selectedFilm.ai_tools && (
-                    <p><strong>Outils IA utilisés :</strong> {selectedFilm.ai_tools}</p>
+                    <p><strong>{t('detail_ai_tools')}</strong> {selectedFilm.ai_tools}</p>
                   )}
                   
                   {/* Méthodologie IA */}
                   {selectedFilm.ai_methodology && (
-                    <p><strong>Méthodologie :</strong> {selectedFilm.ai_methodology}</p>
+                    <p><strong>{t('detail_methodology')} :</strong> {selectedFilm.ai_methodology}</p>
                   )}
                   
                   {/* Sous-titres */}
-                  <p><strong>Sous-titres :</strong> {selectedFilm.has_subtitles ? 'Oui' : 'Non'}</p>
+                  <p><strong>{t('detail_subtitles')}</strong> {selectedFilm.has_subtitles ? t('modal_yes') : t('modal_no')}</p>
                 </div>
 
                 {/* GALERIE D'IMAGES */}
                 {selectedFilm.gallery_urls && selectedFilm.gallery_urls.length > 0 && (
                   <div style={{marginTop: '25px'}}>
-                    <h3 style={{color: '#ffb3ff', fontSize: '1.2rem', marginBottom: '15px'}}>Galerie d'images</h3>
+                    <h3 style={{color: '#ffb3ff', fontSize: '1.2rem', marginBottom: '15px'}}>{t('gallery_images')}</h3>
                     <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '10px'}}>
                       {selectedFilm.gallery_urls.map((url, index) => (
                         <img 

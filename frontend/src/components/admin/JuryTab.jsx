@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useFilms } from '../../hooks/useFilms';
 import axios from '../../config/axiosConfig';
-import { BarChart3, Users, ThumbsUp, ThumbsDown, MessageCircle, Trophy, Scale, UserCheck, FileText } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext.jsx';
+import { BarChart3, Users, ThumbsUp, ThumbsDown, MessageCircle, Trophy, Scale, UserCheck, FileText, TrendingUp } from 'lucide-react';
 
 export default function JuryTab() {
   const { films } = useFilms();
+  const { t } = useLanguage();
   const [juryMembers, setJuryMembers] = useState([]);
   const [globalStats, setGlobalStats] = useState({
     jury_count: 0,
@@ -77,7 +79,7 @@ export default function JuryTab() {
       }
     } catch (err) {
       console.error('Erreur récupération jurys:', err);
-      setError('Impossible de charger les jurys');
+      setError(t('jury_error'));
     } finally {
       setLoading(false);
     }
@@ -103,7 +105,7 @@ export default function JuryTab() {
       }
     } catch (err) {
       console.error('Erreur création utilisateur:', err);
-      setFormError(err.response?.data?.error || 'Erreur lors de la création du membre');
+      setFormError(err.response?.data?.error || t('error_required'));
     } finally {
       setFormLoading(false);
     }
@@ -115,37 +117,37 @@ export default function JuryTab() {
   const discussRatio = totalDecisions > 0 ? globalStats.films_discuss / totalDecisions : 0;
 
   const donutSegments = [
-    { label: 'Aimé', ratio: likedRatio, color: '#22c55e' },
-    { label: 'Pas aimé', ratio: dislikedRatio, color: '#ef4444' },
-    { label: 'A discuter', ratio: discussRatio, color: '#f59e0b' }
+    { label: t('jury_tab_liked'), ratio: likedRatio, color: '#22c55e' },
+    { label: t('jury_tab_disliked'), ratio: dislikedRatio, color: '#ef4444' },
+    { label: t('jury_tab_to_discuss'), ratio: discussRatio, color: '#f59e0b' }
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 md:space-y-12">
       {/* Section Statistiques Globales */}
       <section className="space-y-4">
         <div className="flex items-center gap-2">
           <BarChart3 size={22} className="text-violet-400" />
-          <h3 className="text-xl font-bold text-violet-400">Statistiques Globales</h3>
+          <h3 className="text-lg md:text-xl font-bold text-violet-400">{t('jury_tab_global_stats')}</h3>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 hover:bg-neutral-800 transition">
-            <p className="text-sm text-neutral-400">Membres du jury</p>
-            <p className="text-3xl font-bold mt-2 text-violet-400">{globalStats.jury_count || juryMembers.length}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">
+          <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 md:p-6 hover:bg-neutral-800/50 hover:border-neutral-700 transition">
+            <p className="text-xs md:text-sm text-neutral-400 font-medium">{t('jury_jury_members_label')}</p>
+            <p className="text-2xl sm:text-3xl font-bold mt-3 md:mt-4 text-violet-400">{globalStats.jury_count || juryMembers.length}</p>
+          </div>
+          <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 md:p-6 hover:bg-neutral-800/50 hover:border-neutral-700 transition">
+            <p className="text-xs md:text-sm text-neutral-400 font-medium">{t('jury_tab_films_to_evaluate')}</p>
+            <p className="text-2xl sm:text-3xl font-bold mt-3 md:mt-4 text-violet-400">{globalStats.approved_films}</p>
           </div>
           <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 hover:bg-neutral-800 transition">
-            <p className="text-sm text-neutral-400">Films à évaluer</p>
-            <p className="text-3xl font-bold mt-2 text-violet-400">{globalStats.approved_films}</p>
-          </div>
-          <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 hover:bg-neutral-800 transition">
-            <p className="text-sm text-neutral-400">Progression totale</p>
+            <p className="text-sm text-neutral-400">{t('jury_tab_total_progress')}</p>
             <p className="text-3xl font-bold mt-2 text-violet-400">{globalStats.total_progress}%</p>
           </div>
           <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 hover:bg-neutral-800 transition">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-neutral-400">Decisions globales</p>
-                <p className="text-xs text-neutral-500 mt-1">Aimé / Pas aimé / A discuter</p>
+                <p className="text-sm text-neutral-400">{t('jury_tab_global_decisions')}</p>
+                <p className="text-xs text-neutral-500 mt-1">{t('jury_tab_liked')} / {t('jury_tab_disliked')} / {t('jury_tab_to_discuss')}</p>
               </div>
               <div className="relative w-20 h-20">
                 <svg viewBox="0 0 42 42" className="w-20 h-20">
@@ -199,50 +201,50 @@ export default function JuryTab() {
       </section>
 
       {/* Section Membres du Jury */}
-      <section className="space-y-4">
-        <div className="flex items-center justify-between">
+      <section className="space-y-4 md:space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-2">
             <Users size={22} className="text-violet-400" />
-            <h3 className="text-xl font-bold text-violet-400">Membres du Jury</h3>
+            <h3 className="text-lg md:text-xl font-bold text-violet-400">{t('jury_tab_members')}</h3>
           </div>
           <button
             onClick={() => setShowForm(!showForm)}
-            className="bg-violet-500 hover:bg-violet-600 text-white font-semibold py-2 px-6 rounded-lg transition"
+            className="w-full sm:w-auto bg-violet-500 hover:bg-violet-600 text-white font-semibold py-2 px-6 rounded-lg transition"
           >
-            + Ajouter un membre
+            {t('jury_tab_add_member')}
           </button>
         </div>
 
         {showForm && (
           <form
             onSubmit={handleAddMember}
-            className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 space-y-4"
+            className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 md:p-6 space-y-4"
           >
             <input
               type="email"
-              placeholder="Email"
+              placeholder={t('jury_tab_email')}
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               required
               disabled={formLoading}
-              className="w-full px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:border-violet-500 disabled:opacity-50"
+              className="w-full px-4 py-2 md:py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 text-sm md:text-base focus:outline-none focus:border-violet-500 disabled:opacity-50"
             />
             <input
               type="text"
-              placeholder="Nom complet"
+              placeholder={t('jury_tab_full_name')}
               value={formData.full_name}
               onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
               required
               disabled={formLoading}
-              className="w-full px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:border-violet-500 disabled:opacity-50"
+              className="w-full px-4 py-2 md:py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 text-sm md:text-base focus:outline-none focus:border-violet-500 disabled:opacity-50"
             />
             <select
               value={formData.role}
               onChange={(e) => setFormData({ ...formData, role: e.target.value })}
               disabled={formLoading}
-              className="w-full px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-violet-500 disabled:opacity-50"
+              className="w-full px-4 py-2 md:py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm md:text-base focus:outline-none focus:border-violet-500 disabled:opacity-50"
             >
-              <option value="jury">Jury</option>
+              <option value="jury">{t('jury_tab_role_option')}</option>
             </select>
             {formError && (
               <div className="text-sm text-red-400 bg-red-900/20 border border-red-700/30 rounded-lg p-3">
@@ -253,9 +255,9 @@ export default function JuryTab() {
               <button
                 type="submit"
                 disabled={formLoading}
-                className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition disabled:opacity-50"
+                className="flex-1 px-4 py-2 md:py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition disabled:opacity-50 text-sm md:text-base"
               >
-                {formLoading ? 'En cours...' : 'Ajouter'}
+                {formLoading ? t('jury_tab_in_progress') : t('jury_tab_add_button')}
               </button>
               <button
                 type="button"
@@ -264,23 +266,23 @@ export default function JuryTab() {
                   setFormError(null);
                 }}
                 disabled={formLoading}
-                className="flex-1 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700 font-semibold rounded-lg transition disabled:opacity-50"
+                className="flex-1 px-4 py-2 md:py-3 bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700 font-semibold rounded-lg transition disabled:opacity-50 text-sm md:text-base"
               >
-                Annuler
+                {t('jury_tab_cancel_button')}
               </button>
             </div>
           </form>
         )}
 
         {loading && (
-          <div className="text-sm text-neutral-400">Chargement des jurys...</div>
+          <div className="text-sm text-neutral-400">{t('jury_tab_loading')}</div>
         )}
         {error && (
           <div className="text-sm text-red-400">{error}</div>
         )}
 
         {/* Cartes des Membres */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6 auto-rows-max">
           {juryMembers.map((member) => {
             const { initials, colorGradient } = getAvatarData(member.full_name);
             const stats = member.stats || { like: 0, dislike: 0, discuss: 0, approval_rate: 0 };
@@ -296,151 +298,247 @@ export default function JuryTab() {
               }
             };
 
+            const getRoleLabel = (role) => {
+              switch(role) {
+                case 'lead': return t('jury_tab_leader');
+                case 'moderator': return t('jury_tab_moderator');
+                default: return t('jury_tab_jury');
+              }
+            };
+
+            return (
+          <div key={member.id} className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 md:p-6 hover:bg-neutral-800 transition">
+            <div className="flex items-start gap-4 mb-6">
+              {member.avatar_url ? (
+                <img
+                  src={member.avatar_url}
+                  alt={member.full_name}
+                  className="w-12 sm:w-16 h-12 sm:h-16 rounded-full object-cover border border-white/10 shadow-lg flex-shrink-0"
+                />
+              ) : (
+                <div className={`w-12 sm:w-16 h-12 sm:h-16 rounded-full bg-gradient-to-br ${colorGradient} flex items-center justify-center flex-shrink-0 shadow-lg border border-white/10`}>
+                  <span className="text-white font-bold text-sm sm:text-lg">{initials}</span>
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <h4 className="text-base md:text-lg font-semibold text-violet-400 mb-1 truncate">
+                  {member.full_name}
+                </h4>
+                <p className="text-xs md:text-sm text-neutral-400 mb-3 truncate">
+                  {member.email}
+                </p>
+                <div className="flex gap-2 flex-wrap">
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-semibold text-white flex items-center flex-shrink-0 ${
+                     getRoleLabel(member.role)
+                        ? 'bg-blue-600'
+                        : 'bg-violet-600'
+                    }`}
+                  >
+                    {getRoleIcon(member.role)}
+                    {member.role === 'lead' && 'Leader'}
+                    {member.role === 'moderator' && 'Modérateur'}
+                    {member.role === 'jury' && 'Jury'}
+                  </span>
+                  {parseSpecialite(member.specialite).slice(0, 1).map((item, index) => (
+                    <span
+                      key={`${member.id}-spec-${index}`}
+                      className="px-3 py-1 rounded-full text-xs font-semibold text-violet-300 bg-violet-900/30 truncate"
+                    >
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-xs md:text-sm font-semibold text-violet-300">
+                  {t('jury_tab_progress')}
+                </span>
+                <span className="text-xs md:text-sm text-neutral-400">
+                  {votesCast}/{totalFilms}
+                </span>
+              </div>
+              <div className="w-full h-2 bg-neutral-800 rounded-full overflow-hidden border border-neutral-700">
+                <div
+                  className="h-full bg-gradient-to-r from-violet-500 to-violet-400 transition-all duration-300"
+                  style={{ width: `${progressPercentage}%` }}
+                ></div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 md:gap-3">
+              <div className="bg-green-900/30 border border-green-700/30 rounded-lg p-2 md:p-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <ThumbsUp size={16} className="text-green-400 flex-shrink-0" />
+                  <div className="text-xl md:text-2xl font-bold text-green-400">
+                    {stats.like}
+                  </div>
+                </div>
+                <div className="text-xs text-neutral-400">{t('jury_tab_liked')}</div>
+              </div>
+              <div className="bg-red-900/30 border border-red-700/30 rounded-lg p-2 md:p-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <ThumbsDown size={16} className="text-red-400 flex-shrink-0" />
+                  <div className="text-xl md:text-2xl font-bold text-red-400">
+                    {stats.dislike}
+                  </div>
+                </div>
+                <div className="text-xs text-neutral-400">{t('jury_tab_disliked')}</div>
+              </div>
+              <div className="bg-yellow-900/30 border border-yellow-700/30 rounded-lg p-2 md:p-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <MessageCircle size={16} className="text-yellow-400 flex-shrink-0" />
+                  <div className="text-xl md:text-2xl font-bold text-yellow-400">
+                    {stats.discuss}
+                  </div>
+                </div>
+                <div className="text-xs text-neutral-400">{t('jury_tab_to_discuss')}</div>
+              </div>
+              <div className="bg-violet-900/30 border border-violet-700/30 rounded-lg p-2 md:p-3">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs text-neutral-400">{t('jury_tab_approval_rate')}</span>
+                  <div className="text-xl md:text-2xl font-bold text-violet-400">
+                    {stats.approval_rate}%
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Section Resume - RESPONSIVE */}
+      <section className="space-y-4">
+        <div className="flex items-center gap-2">
+          <FileText size={22} className="text-violet-400" />
+          <h3 className="text-xl font-bold text-violet-400">{t('jury_summary_title')}</h3>
+        </div>
+
+        {/* VERSION MOBILE & TABLETTE (< lg) */}
+        <div className="lg:hidden space-y-3">
+          {juryMembers.map((member) => {
+            const { initials, colorGradient } = getAvatarData(member.full_name);
+            const stats = member.stats || { like: 0, dislike: 0, discuss: 0, approval_rate: 0 };
+            const totalFilms = stats.total_films || films.length || 0;
+            const votesCast = stats.votes_cast || 0;
+            const progressPercentage = totalFilms > 0 ? Math.round((votesCast / totalFilms) * 100) : 0;
+
             return (
               <div
                 key={member.id}
-                className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 hover:bg-neutral-800 transition"
+                className="bg-neutral-900 border border-neutral-800 rounded-lg p-4 hover:bg-neutral-800/70 transition"
               >
-                <div className="flex items-start gap-4 mb-6">
+                {/* Nom & Avatar */}
+                <div className="flex items-center gap-3 mb-3">
                   {member.avatar_url ? (
                     <img
                       src={member.avatar_url}
                       alt={member.full_name}
-                      className="w-16 h-16 rounded-full object-cover border border-white/10 shadow-lg flex-shrink-0"
+                      className="w-10 h-10 rounded-full object-cover border border-white/10"
                     />
                   ) : (
-                    <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${colorGradient} flex items-center justify-center flex-shrink-0 shadow-lg border border-white/10`}>
-                      <span className="text-white font-bold text-lg">{initials}</span>
+                    <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${colorGradient} flex items-center justify-center flex-shrink-0 border border-white/10`}>
+                      <span className="text-white font-bold text-sm">{initials}</span>
                     </div>
                   )}
-                  <div className="flex-1">
-                    <h4 className="text-lg font-semibold text-violet-400 mb-1">
-                      {member.full_name}
-                    </h4>
-                    <p className="text-sm text-neutral-400 mb-3">
-                      {member.email}
-                    </p>
-                    <div className="flex gap-2 flex-wrap">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold text-white flex items-center ${
-                          member.role === 'lead'
-                            ? 'bg-orange-600'
-                            : member.role === 'moderator'
-                            ? 'bg-blue-600'
-                            : 'bg-violet-600'
-                        }`}
-                      >
-                        {getRoleIcon(member.role)}
-                        {member.role === 'lead' && 'Leader'}
-                        {member.role === 'moderator' && 'Modérateur'}
-                        {member.role === 'jury' && 'Jury'}
-                      </span>
-                      {parseSpecialite(member.specialite).map((item, index) => (
-                        <span
-                          key={`${member.id}-spec-${index}`}
-                          className="px-3 py-1 rounded-full text-xs font-semibold text-violet-300 bg-violet-900/30"
-                        >
-                          {item}
-                        </span>
-                      ))}
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-neutral-200 truncate">{member.full_name}</div>
+                    <div className="text-xs text-neutral-500 truncate">
+                      {parseSpecialite(member.specialite).length > 0
+                        ? parseSpecialite(member.specialite).join(', ')
+                        : t('jury_tab_no_specialty')}
                     </div>
                   </div>
                 </div>
 
-                <div className="mb-6">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-semibold text-violet-300">
-                      Progression
-                    </span>
-                    <span className="text-sm text-neutral-400">
-                      {votesCast}/{totalFilms}
-                    </span>
+                {/* Grille 2x3 des stats */}
+                <div className="grid grid-cols-2 gap-2 mb-3">
+                  <div className="bg-neutral-800/50 rounded-lg p-2 text-center">
+                    <div className="text-xs text-neutral-400 mb-1">{t('jury_tab_progress')}</div>
+                    <div className="font-bold text-violet-400 text-sm">{votesCast}/{totalFilms}</div>
+                    <div className="w-full h-1 bg-neutral-700 rounded-full mt-1">
+                      <div
+                        className="h-full bg-violet-500 rounded-full"
+                        style={{ width: `${progressPercentage}%` }}
+                      ></div>
+                    </div>
                   </div>
-                  <div className="w-full h-2 bg-neutral-800 rounded-full overflow-hidden border border-neutral-700">
+
+                  <div className="bg-neutral-800/50 rounded-lg p-2 text-center">
+                    <div className="text-xs text-neutral-400 mb-1">{t('jury_tab_approval_rate')}</div>
                     <div
-                      className="h-full bg-gradient-to-r from-violet-500 to-violet-400 transition-all duration-300"
-                      style={{ width: `${progressPercentage}%` }}
-                    ></div>
+                      className={`font-bold text-sm ${
+                        stats.approval_rate > 70
+                          ? 'text-green-400'
+                          : stats.approval_rate > 50
+                          ? 'text-yellow-400'
+                          : 'text-violet-400'
+                      }`}
+                    >
+                      {stats.approval_rate}%
+                    </div>
                   </div>
-                </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-green-900/30 border border-green-700/30 rounded-lg p-3">
-                    <div className="flex items-center gap-2 mb-1">
-                      <ThumbsUp size={18} className="text-green-400" />
-                      <div className="text-2xl font-bold text-green-400">
-                        {stats.like}
-                      </div>
-                    </div>
-                    <div className="text-xs text-neutral-400">Aimé</div>
+                  <div className="bg-green-900/30 rounded-lg p-2 text-center border border-green-700/30">
+                    <div className="text-xs text-neutral-400 mb-1">{t('jury_table_approved')}</div>
+                    <div className="font-bold text-green-400 text-sm">{stats.like}</div>
                   </div>
-                  <div className="bg-red-900/30 border border-red-700/30 rounded-lg p-3">
-                    <div className="flex items-center gap-2 mb-1">
-                      <ThumbsDown size={18} className="text-red-400" />
-                      <div className="text-2xl font-bold text-red-400">
-                        {stats.dislike}
-                      </div>
-                    </div>
-                    <div className="text-xs text-neutral-400">Pas aimé</div>
+
+                  <div className="bg-red-900/30 rounded-lg p-2 text-center border border-red-700/30">
+                    <div className="text-xs text-neutral-400 mb-1">{t('jury_table_rejected')}</div>
+                    <div className="font-bold text-red-400 text-sm">{stats.dislike}</div>
                   </div>
-                  <div className="bg-yellow-900/30 border border-yellow-700/30 rounded-lg p-3">
-                    <div className="flex items-center gap-2 mb-1">
-                      <MessageCircle size={18} className="text-yellow-400" />
-                      <div className="text-2xl font-bold text-yellow-400">
-                        {stats.discuss}
-                      </div>
-                    </div>
-                    <div className="text-xs text-neutral-400">A discuter</div>
-                  </div>
-                  <div className="bg-violet-900/30 border border-violet-700/30 rounded-lg p-3">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs text-neutral-400">Approbation</span>
-                      <div className="text-2xl font-bold text-violet-400">
-                        {stats.approval_rate}%
-                      </div>
-                    </div>
+
+                  <div className="bg-yellow-900/30 rounded-lg p-2 text-center border border-yellow-700/30 col-span-2">
+                    <div className="text-xs text-neutral-400 mb-1">{t('jury_tab_to_discuss')}</div>
+                    <div className="font-bold text-yellow-400 text-sm">{stats.discuss}</div>
                   </div>
                 </div>
               </div>
             );
           })}
         </div>
-      </section>
 
-      {/* Section Resume */}
-      <section className="space-y-4">
-        <div className="flex items-center gap-2">
-          <FileText size={22} className="text-violet-400" />
-          <h3 className="text-xl font-bold text-violet-400">Resume des Membres</h3>
-        </div>
-        <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
+        {/* VERSION DESKTOP (lg et +) - TABLEAU */}
+        <div className="hidden lg:block bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-neutral-800 bg-neutral-800/50">
-                  <th className="text-center px-6 py-4 text-sm font-semibold text-violet-400">
-                    Nom
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-violet-400 min-w-fit">
+                    {t('jury_table_name')}
                   </th>
-                  <th className="text-center px-6 py-4 text-sm font-semibold text-violet-400">
-                    Specialite
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-violet-400 min-w-fit">
+                    {t('jury_tab_specialty')}
                   </th>
-                  <th className="text-center px-6 py-4 text-sm font-semibold text-violet-400">
-                    Progression
+                  <th className="px-6 py-4 text-center text-sm font-semibold text-violet-400 min-w-fit">
+                    {t('jury_tab_progress')}
                   </th>
-                  <th className="text-center px-6 py-4 text-sm font-semibold text-violet-400">
+                  <th className="px-6 py-4 text-center text-sm font-semibold text-violet-400 min-w-fit">
                     <div className="flex items-center justify-center gap-1">
                       <ThumbsUp size={16} />
-                      Aime
+                      {t('jury_table_approved')}
                     </div>
                   </th>
-                  <th className="text-center px-6 py-4 text-sm font-semibold text-violet-400">
+                  <th className="px-6 py-4 text-center text-sm font-semibold text-violet-400 min-w-fit">
                     <div className="flex items-center justify-center gap-1">
                       <ThumbsDown size={16} />
-                      Pas aime
+                      {t('jury_table_rejected')}
                     </div>
                   </th>
-                  <th className="text-center px-6 py-4 text-sm font-semibold text-violet-400">
-                    Approbation
+                  <th className="px-6 py-4 text-center text-sm font-semibold text-violet-400 min-w-fit">
+                    <div className="flex items-center justify-center gap-1">
+                      <MessageCircle size={16} />
+                      {t('jury_tab_to_discuss')}
+                    </div>
+                  </th>
+                  <th className="px-6 py-4 text-center text-sm font-semibold text-violet-400 min-w-fit">
+                    {t('jury_tab_approval_rate')}
                   </th>
                 </tr>
               </thead>
@@ -454,13 +552,13 @@ export default function JuryTab() {
 
                   return (
                     <tr key={member.id} className="hover:bg-neutral-800/50 transition">
-                      <td className="text-center px-6 py-4 text-neutral-300">
-                        <div className="flex items-center gap-3">
+                      <td className="px-6 py-4 text-neutral-300 sticky left-0 z-10 bg-neutral-900 hover:bg-neutral-800/30">
+                        <div className="flex items-center gap-3 min-w-fit">
                           {member.avatar_url ? (
                             <img
                               src={member.avatar_url}
                               alt={member.full_name}
-                              className="w-10 h-10 rounded-full object-cover border border-white/10"
+                              className="w-10 h-10 rounded-full object-cover border border-white/10 flex-shrink-0"
                             />
                           ) : (
                             <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${colorGradient} flex items-center justify-center flex-shrink-0 border border-white/10`}>
@@ -469,46 +567,56 @@ export default function JuryTab() {
                           )}
                           <div className="text-left">
                             <div className="font-semibold">{member.full_name}</div>
-                            <div className="text-xs text-neutral-500">
-                              {parseSpecialite(member.specialite).join(', ')}
-                            </div>
+                            <div className="text-xs text-neutral-500">{member.email}</div>
                           </div>
                         </div>
                       </td>
-                      <td className="text-center px-6 py-4 text-sm text-neutral-400">
-                        <div className="text-neutral-300">
+                      <td className="px-6 py-4 text-sm text-neutral-400">
+                        <div className="max-w-xs">
                           {parseSpecialite(member.specialite).length > 0 ? (
                             parseSpecialite(member.specialite).join(', ')
                           ) : (
-                            <span className="text-neutral-500 italic">-</span>
+                            <span className="text-neutral-500 italic">{t('jury_tab_no_specialty')}</span>
                           )}
                         </div>
                       </td>
-                      <td className="text-center px-6 py-4">
-                        <span className="text-violet-400 font-semibold">
-                          {votesCast}/{totalFilms}
-                        </span>
-                        <div className="w-20 h-1 bg-neutral-700 rounded-full mx-auto mt-2">
-                          <div
-                            className="h-full bg-violet-500 rounded-full"
-                            style={{ width: `${progressPercentage}%` }}
-                          ></div>
+                      <td className="px-6 py-4 text-center">
+                        <div className="flex flex-col items-center gap-2">
+                          <span className="text-violet-400 font-semibold whitespace-nowrap">
+                            {votesCast}/{totalFilms}
+                          </span>
+                          <div className="w-24 h-2 bg-neutral-700 rounded-full">
+                            <div
+                              className="h-full bg-gradient-to-r from-violet-500 to-violet-400 rounded-full transition-all duration-300"
+                              style={{ width: `${progressPercentage}%` }}
+                            ></div>
+                          </div>
+                          <span className="text-xs text-neutral-500">{progressPercentage}%</span>
                         </div>
                       </td>
-                      <td className="text-center px-6 py-4 text-green-400 font-semibold">
-                        {stats.like}
+                      <td className="px-6 py-4 text-center">
+                        <div className="bg-green-900/20 text-green-400 font-semibold rounded-lg py-2 px-3 inline-block">
+                          {stats.like}
+                        </div>
                       </td>
-                      <td className="text-center px-6 py-4 text-red-400 font-semibold">
-                        {stats.dislike}
+                      <td className="px-6 py-4 text-center">
+                        <div className="bg-red-900/20 text-red-400 font-semibold rounded-lg py-2 px-3 inline-block">
+                          {stats.dislike}
+                        </div>
                       </td>
-                      <td className="text-center px-6 py-4">
+                      <td className="px-6 py-4 text-center">
+                        <div className="bg-yellow-900/20 text-yellow-400 font-semibold rounded-lg py-2 px-3 inline-block">
+                          {stats.discuss}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-center">
                         <span
-                          className={`font-semibold ${
+                          className={`font-semibold px-3 py-2 rounded-lg inline-block ${
                             stats.approval_rate > 70
-                              ? 'text-green-400'
+                              ? 'bg-green-900/20 text-green-400'
                               : stats.approval_rate > 50
-                              ? 'text-yellow-400'
-                              : 'text-violet-400'
+                              ? 'bg-yellow-900/20 text-yellow-400'
+                              : 'bg-violet-900/20 text-violet-400'
                           }`}
                         >
                           {stats.approval_rate}%

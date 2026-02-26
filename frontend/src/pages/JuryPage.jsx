@@ -5,13 +5,20 @@ import {
   Info, X, Cpu, Sparkles, Facebook 
 } from "lucide-react";
 import axios from "../config/axiosConfig.js";
+import { useLanguage } from "../context/LanguageContext";
 
 const JuryPage = () => {
+  // Hook pour les traductions
+  const { t } = useLanguage();
+  
+  // Constantes pour les filtres (pour éviter les problèmes de comparaison avec traductions)
+  const FILTER_ALL = 'all';
+  
   // État pour les données
   const [juryList, setJuryList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [filter, setFilter] = useState("Tous");
+  const [filter, setFilter] = useState(FILTER_ALL);
   const [selectedJury, setSelectedJury] = useState(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -34,7 +41,7 @@ const JuryPage = () => {
 
   // Fonction pour parser et afficher specialite correctement
   const parseSpecialite = (specialite) => {
-    if (!specialite) return "Expert Festival";
+    if (!specialite) return t('jury_page_expert');
     
     // Si c'est une string, essayer de la parser en JSON
     if (typeof specialite === 'string') {
@@ -49,11 +56,11 @@ const JuryPage = () => {
     
     // Si c'est un array, le joindre
     if (Array.isArray(specialite)) {
-      return specialite.length > 0 ? specialite.join(', ') : "Expert Festival";
+      return specialite.length > 0 ? specialite.join(', ') : t('jury_page_expert');
     }
     
     // Sinon retourner la valeur directe
-    return specialite || "Expert Festival";
+    return specialite || t('jury_page_expert');
   };
 
   // Récupérer les jurys de la base de données
@@ -65,7 +72,7 @@ const JuryPage = () => {
         setJuryList(response.data.juryMembers || []);
       } catch (err) {
         console.error('Erreur récupération jurys:', err);
-        setError('Impossible de charger les jurys');
+        setError(t('jury_page_error'));
       } finally {
         setLoading(false);
       }
@@ -81,7 +88,7 @@ const JuryPage = () => {
   // On filtre pour n'afficher que les jurys (role = 'jury' ou 'admin')
   const juryMembers = juryList.filter(u => u.role === 'jury' || u.role === 'admin');
 
-  const filteredJury = filter === "Tous" 
+  const filteredJury = filter === FILTER_ALL
     ? juryMembers 
     : juryMembers.filter(j => j.specialite === filter);
 
@@ -93,7 +100,7 @@ const JuryPage = () => {
     return (
       <div className="min-h-screen pb-20 bg-[var(--color-bg)] flex items-center justify-center">
         <div className="text-center">
-          <p className="text-white text-2xl font-bold">Chargement des jurys...</p>
+          <p className="text-white text-2xl font-bold">{t('jury_page_loading')}</p>
         </div>
       </div>
     );
@@ -117,7 +124,9 @@ const JuryPage = () => {
       <section className="container-mars pt-16 pb-8 text-center">
         <div className={`mars-reveal ${isVisible ? "is-visible" : ""}`}>
           <h1 className="font-[var(--font-family-title)] text-4xl md:text-6xl font-bold italic mb-4 uppercase tracking-tighter text-white">
-            Le <span className="text-[var(--color-primary)]">Grand</span> Jury
+            {t('jury_page_title').split('Grand')[0]}
+            <span className="text-[var(--color-primary)]">Grand</span>
+            {t('jury_page_title').split('Grand')[1]}
           </h1>
           <div className="h-1 w-24 bg-[var(--gradient-brand)] mx-auto mb-10 rounded-full" />
         </div>
@@ -128,7 +137,7 @@ const JuryPage = () => {
         <div className="container-mars mb-12 flex justify-center">
           <div className={`mars-reveal ${isVisible ? "is-visible" : ""}`}>
             <div className="mars-cta px-6 py-2 rounded-full flex items-center gap-3 text-[10px] font-black tracking-[0.3em] shadow-[0_0_25px_rgba(236,72,153,0.4)] animate-pulse border border-white/20 uppercase">
-              <Star size={16} fill="currentColor" /> Présidence du Festival
+              <Star size={16} fill="currentColor" /> {t('jury_page_presidency')}
             </div>
           </div>
         </div>
@@ -137,15 +146,20 @@ const JuryPage = () => {
       {/* --- FILTRES --- */}
       <section className="container-mars mb-16 flex justify-center">
         <div className="flex flex-wrap justify-center gap-3">
-          {["Tous", "Cinéma", "IA", "Design"].map((cat) => (
+          {[
+            { key: FILTER_ALL, label: t('jury_page_all_filters') },
+            { key: 'Cinéma', label: t('jury_page_filters_cinema') },
+            { key: 'IA', label: t('jury_page_filters_ai') },
+            { key: 'Design', label: t('jury_page_filters_design') }
+          ].map((option) => (
             <button
-              key={cat}
-              onClick={() => setFilter(cat)}
+              key={option.key}
+              onClick={() => setFilter(option.key)}
               className={`mars-btn px-8 py-2 text-[10px] font-black transition-all uppercase tracking-widest ${
-                filter === cat ? "border-[var(--color-primary)] bg-[var(--color-surface-2)] text-[var(--color-primary)] shadow-[0_0_20px_rgba(34,211,238,0.2)]" : "text-white/60"
+                filter === option.key ? "border-[var(--color-primary)] bg-[var(--color-surface-2)] text-[var(--color-primary)] shadow-[0_0_20px_rgba(34,211,238,0.2)]" : "text-white/60"
               }`}
             >
-              {cat}
+              {option.label}
             </button>
           ))}
         </div>
@@ -181,7 +195,7 @@ const JuryPage = () => {
                   <div className="flex justify-between items-start mb-4">
                     <div>
                       <h3 className="font-[var(--font-family-title)] text-2xl font-bold tracking-tight text-white uppercase italic">
-                        {user.full_name || "Membre Anonyme"}
+                        {user.full_name || t('jury_page_anonymous')}
                       </h3>
                       <p className="text-[var(--color-primary)] text-[10px] font-black uppercase tracking-[0.2em] mt-1">
                         {parseSpecialite(user.specialite)}
@@ -195,7 +209,7 @@ const JuryPage = () => {
                     onClick={() => setSelectedJury(user)}
                     className="mt-auto flex items-center justify-center gap-3 w-full py-4 rounded-full border border-[var(--color-border-strong)] bg-white/5 text-[10px] font-black text-white hover:bg-[var(--color-primary)] hover:text-black transition-all group/btn uppercase tracking-[0.2em]"
                   >
-                    Détails Jury <Info size={16} className="group-hover/btn:scale-125 transition-transform" />
+                    {t('jury_page_details_button')} <Info size={16} className="group-hover/btn:scale-125 transition-transform" />
                   </button>
                 </div>
               </div>
@@ -225,7 +239,7 @@ const JuryPage = () => {
               <div className="p-12 flex flex-col justify-center">
                 <div className="flex items-center gap-3 mb-4 text-[var(--color-secondary)]">
                   <Sparkles size={20} />
-                  <span className="text-[10px] font-black uppercase tracking-[0.4em]">Fiche Officielle</span>
+                  <span className="text-[10px] font-black uppercase tracking-[0.4em]">{t('jury_page_official_record')}</span>
                 </div>
                 
                 <h2 className="font-[var(--font-family-title)] text-5xl font-bold mb-2 tracking-tighter italic text-white leading-none">
@@ -238,11 +252,11 @@ const JuryPage = () => {
                 <div className="space-y-6">
                   <div className="space-y-2">
                     <h4 className="text-[10px] font-black text-white/40 flex items-center gap-2 uppercase tracking-[0.2em]">
-                      <Cpu size={16} /> Identifiant Jury
+                      <Cpu size={16} /> {t('jury_page_jury_id')}
                     </h4>
                     <p className="text-base text-white/80 font-light">
-                      Membre accrédité sous le numéro #{selectedJury.id} <br/>
-                      Inscrit le : {new Date(selectedJury.created_at).toLocaleDateString()}
+                      {t('jury_page_accredited').replace('{id}', selectedJury.id)} <br/>
+                      {t('jury_page_registered')} {new Date(selectedJury.created_at).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
@@ -251,7 +265,7 @@ const JuryPage = () => {
                   onClick={() => setSelectedJury(null)}
                   className="mars-cta mt-12 w-full py-5 text-[10px] font-black tracking-[0.3em] uppercase rounded-full"
                 >
-                  Détails Jury
+                  {t('jury_page_details_button')}
                 </button>
               </div>
             </div>

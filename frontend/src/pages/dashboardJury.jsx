@@ -10,8 +10,10 @@
 import { useState, useRef, useEffect } from "react";
 import { X } from "lucide-react";
 import axios from "axios";
+import { useLanguage } from "../context/LanguageContext";
 
 export default function DashboardJury() {
+  const { t } = useLanguage();
   // Gère l'ouverture de la modal.
   const [selectedPlaylist, setSelectedPlaylist] = useState(null);
   // Référence vers le conteneur scrollable des vidéos.
@@ -57,7 +59,7 @@ export default function DashboardJury() {
             videos: (playlist.videos || []).map(video => ({
               id: video.id,
               title: video.title,
-              director: video.director?.full_name || 'Réalisateur inconnu',
+              director: video.director?.full_name || t('dashboard_jury_unknown_director'),
               thumbnail: resolvePosterUrl(video.poster),
               youtubeId: video.youtubeId,
               status: 'pas'
@@ -103,24 +105,24 @@ export default function DashboardJury() {
         {/* BLOCS STATISTIQUES */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto mb-14">
 
-          <StatCard            title="Films assignés"
+          <StatCard            title={t('dashboard_jury_films_assigned')}
             value={totalFilmsAssigned}
             gradient="from-blue-500 to-cyan-600"
           />
 
-          <StatCard            title="J’aime"
+          <StatCard            title={t('dashboard_jury_like')}
             value={liked}
             gradient="from-green-500 to-emerald-600"
           />
 
           <StatCard
-            title="J’aime pas"
+            title={t('dashboard_jury_dislike')}
             value={disliked}
             gradient="from-red-500 to-rose-600"
           />
 
           <StatCard
-            title="À discuter"
+            title={t('dashboard_jury_discuss')}
             value={discussion}
             gradient="from-yellow-400 to-orange-500"
           />
@@ -130,10 +132,10 @@ export default function DashboardJury() {
         {/* HEADER */}
         <header className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold mb-3 bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
-            Mes Playlists
+            {t('dashboard_jury_my_playlists')}
           </h1>
           <p className="text-neutral-400">
-            Sélectionnez une playlist pour consulter les vidéos
+            {t('dashboard_jury_select_playlist')}
           </p>
         </header>
 
@@ -141,14 +143,14 @@ export default function DashboardJury() {
         {loading && (
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
-            <p className="text-neutral-400 mt-4">Chargement des playlists...</p>
+            <p className="text-neutral-400 mt-4">{t('dashboard_jury_loading')}</p>
           </div>
         )}
 
         {/* ERROR */}
         {error && (
           <div className="text-center py-12 text-red-500">
-            <p>{error}</p>
+            <p>{t('dashboard_jury_error_loading')}</p>
           </div>
         )}
 

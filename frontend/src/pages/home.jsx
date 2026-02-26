@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowRight, Trophy, Users, Cpu, Globe, Menu, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext.jsx';
+import { useNavigate } from 'react-router-dom';
 
 // Mapping clé → image par défaut (pour les catégories qui n'ont pas d'image custom)
 const DEFAULT_CATEGORY_IMAGES = {
@@ -28,7 +29,10 @@ const DEFAULT_CATEGORIES = [
 
 const Home = () => {
     const { t, lang } = useLanguage();
+    const navigate = useNavigate();
     const [showAboutModal, setShowAboutModal] = useState(false);
+    const [showVideoModal, setShowVideoModal] = useState(false);
+    const [selectedVideoTab, setSelectedVideoTab] = useState(1);
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [carouselIndex, setCarouselIndex] = useState(0);
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
@@ -61,8 +65,6 @@ const Home = () => {
     const heroSubtitle       = lang === 'fr'
         ? (heroConfig?.subtitle    || "L'intelligence artificielle au service de la création cinématographique. Découvrez une nouvelle ère de narration numérique.")
         : (heroConfig?.subtitle_en || "Artificial intelligence at the service of filmmaking. Discover a new era of digital storytelling.");
-    const ctaPrimary   = lang === 'fr' ? (heroConfig?.ctaPrimary   || 'Commencer')    : (heroConfig?.ctaPrimary_en   || 'Get Started');
-    const ctaSecondary = lang === 'fr' ? (heroConfig?.ctaSecondary || 'En savoir plus') : (heroConfig?.ctaSecondary_en || 'Learn More');
 
     // ── Catégories (depuis config ou valeurs par défaut) ──
     const configItems = homeConfig?.categories?.items;
@@ -197,11 +199,13 @@ const Home = () => {
                         {heroSubtitle}
                     </p>
                     <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto px-4 sm:px-0" style={{ position: 'relative', zIndex: 10 }}>
-                        <button className="bg-white text-slate-950 px-6 sm:px-8 py-3 rounded-full font-bold hover:bg-slate-200 transition flex items-center justify-center gap-2 text-sm sm:text-base">
-                            {ctaPrimary} <ArrowRight size={18} />
+                        <button 
+                            onClick={() => setShowVideoModal(true)}
+                            className="bg-white text-slate-950 px-6 sm:px-8 py-3 rounded-full font-bold hover:bg-slate-200 transition flex items-center justify-center gap-2 text-sm sm:text-base">
+                            {t('home_cta_get_started')} <ArrowRight size={18} />
                         </button>
                         <button className="border border-white/20 px-6 sm:px-8 py-3 rounded-full font-bold hover:bg-white/10 transition text-sm sm:text-base" onClick={() => setShowAboutModal(true)}>
-                            {ctaSecondary}
+                            {t('home_cta_learn_more')}
                         </button>
                     </div>
                 </section>
@@ -541,6 +545,176 @@ const Home = () => {
                                     <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                                 </button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* VIDEO MODAL */}
+            {showVideoModal && (
+                <div 
+                    className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 px-4"
+                    onClick={() => setShowVideoModal(false)}
+                >
+                    <div 
+                        className="bg-neutral-900 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Header */}
+                        <div className="sticky top-0 bg-gradient-to-r from-violet-600 to-violet-800 p-4 sm:p-6 flex items-center justify-between z-10">
+                            <h2 className="text-2xl sm:text-3xl font-bold text-white">{t('home_video_modal_title')}</h2>
+                            <button 
+                                onClick={() => setShowVideoModal(false)}
+                                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                            >
+                                <X size={24} className="text-white" />
+                            </button>
+                        </div>
+
+                        {/* AI Presentation Section */}
+                        <div className="p-4 sm:p-8 bg-gradient-to-b from-violet-900/20 to-neutral-900 border-b border-neutral-800">
+                            <div className="max-w-3xl mx-auto space-y-4 sm:space-y-6">
+                                {/* AI Intro */}
+                                <div className="text-center">
+                                    <div className="inline-block px-4 py-2 rounded-full bg-violet-600/30 border border-violet-600/50 mb-4">
+                                        <span className="text-xs sm:text-sm font-bold text-violet-300">🤖 {lang === 'fr' ? 'Présentation IA' : 'AI Presentation'}</span>
+                                    </div>
+                                    <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3">
+                                        {t('home_video_intro')}
+                                    </h3>
+                                    <p className="text-sm sm:text-base text-neutral-300 leading-relaxed mb-6">
+                                        {t('home_video_description')}
+                                    </p>
+                                </div>
+
+                                {/* Video Descriptions */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <button
+                                        onClick={() => setSelectedVideoTab(1)}
+                                        className={`p-4 rounded-xl border transition-all duration-300 text-left group ${
+                                            selectedVideoTab === 1
+                                                ? 'bg-violet-600/30 border-violet-600/50'
+                                                : 'bg-neutral-800/30 border-neutral-700/50 hover:bg-neutral-800/60 hover:border-violet-600/30'
+                                        }`}
+                                    >
+                                        <div className="flex items-start gap-3">
+                                            <div className="text-2xl">🎬</div>
+                                            <div>
+                                                <h4 className="font-bold text-white mb-1 group-hover:text-violet-400 transition-colors">
+                                                    {t('home_video_part1')}
+                                                </h4>
+                                                <p className="text-xs sm:text-sm text-neutral-400">
+                                                    {t('home_video_part1_desc')}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </button>
+
+                                    <button
+                                        onClick={() => setSelectedVideoTab(2)}
+                                        className={`p-4 rounded-xl border transition-all duration-300 text-left group ${
+                                            selectedVideoTab === 2
+                                                ? 'bg-violet-600/30 border-violet-600/50'
+                                                : 'bg-neutral-800/30 border-neutral-700/50 hover:bg-neutral-800/60 hover:border-violet-600/30'
+                                        }`}
+                                    >
+                                        <div className="flex items-start gap-3">
+                                            <div className="text-2xl">📋</div>
+                                            <div>
+                                                <h4 className="font-bold text-white mb-1 group-hover:text-violet-400 transition-colors">
+                                                    {t('home_video_part2')}
+                                                </h4>
+                                                <p className="text-xs sm:text-sm text-neutral-400">
+                                                    {t('home_video_part2_desc')}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </button>
+                                </div>
+
+                                {/* CTA Description */}
+                                <div className="bg-neutral-800/40 border border-neutral-700/50 rounded-xl p-4 text-center">
+                                    <p className="text-sm sm:text-base text-neutral-300">
+                                        {t('home_video_cta_desc')}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Tab Buttons */}
+                        <div className="flex gap-4 p-4 sm:p-6 border-b border-neutral-800 bg-neutral-950">
+                            <button
+                                onClick={() => setSelectedVideoTab(1)}
+                                className={`px-4 sm:px-6 py-2 rounded-lg font-bold transition-all ${
+                                    selectedVideoTab === 1
+                                        ? 'bg-violet-600 text-white'
+                                        : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
+                                }`}
+                            >
+                                {t('home_video_part1')}
+                            </button>
+                            <button
+                                onClick={() => setSelectedVideoTab(2)}
+                                className={`px-4 sm:px-6 py-2 rounded-lg font-bold transition-all ${
+                                    selectedVideoTab === 2
+                                        ? 'bg-violet-600 text-white'
+                                        : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
+                                }`}
+                            >
+                                {t('home_video_part2')}
+                            </button>
+                        </div>
+
+                        {/* Video Content */}
+                        <div className="p-4 sm:p-8">
+                            {selectedVideoTab === 1 ? (
+                                <video 
+                                    key="video-1"
+                                    width="100%" 
+                                    height="auto" 
+                                    controls
+                                    className="rounded-xl sm:rounded-2xl w-full"
+                                >
+                                    <source src="/presentation_site.mp4" type="video/mp4" />
+                                    {lang === 'fr' ? 'Votre navigateur ne supporte pas la vidéo.' : 'Your browser does not support the video tag.'}
+                                </video>
+                            ) : (
+                                <video 
+                                    key="video-2"
+                                    width="100%" 
+                                    height="auto" 
+                                    controls
+                                    className="rounded-xl sm:rounded-2xl w-full"
+                                >
+                                    <source src="/presentation_formulaire.mp4" type="video/mp4" />
+                                    {lang === 'fr' ? 'Votre navigateur ne supporte pas la vidéo.' : 'Your browser does not support the video tag.'}
+                                </video>
+                            )}
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 sm:p-8 border-t border-neutral-800 bg-neutral-950">
+                            <button 
+                                onClick={() => navigate('/submission')}
+                                className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold py-3 px-6 rounded-lg transition-all flex items-center justify-center gap-2 group"
+                            >
+                                {t('home_btn_submit')}
+                                <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                            </button>
+                            <button 
+                                onClick={() => navigate('/login?role=admin')}
+                                className="bg-gradient-to-r from-violet-600 to-violet-800 hover:from-violet-700 hover:to-violet-900 text-white font-bold py-3 px-6 rounded-lg transition-all flex items-center justify-center gap-2 group"
+                            >
+                                {t('home_btn_login_admin')}
+                                <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                            </button>
+                            <button 
+                                onClick={() => navigate('/login?role=jury')}
+                                className="bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white font-bold py-3 px-6 rounded-lg transition-all flex items-center justify-center gap-2 group"
+                            >
+                                {t('home_btn_login_jury')}
+                                <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                            </button>
                         </div>
                     </div>
                 </div>

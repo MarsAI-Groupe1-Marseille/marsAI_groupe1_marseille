@@ -3,8 +3,10 @@
 import React, { useEffect, useRef, useState } from "react"; //
 import { Link } from "react-router-dom"; //
 import { Rocket, Mail, Youtube, Instagram, X, ArrowRight, Sparkles } from "lucide-react"; //
+import { useLanguage } from "../context/LanguageContext.jsx"; //
 
 const Footer = () => {
+  const { t } = useLanguage();
   const footerRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
   const [email, setEmail] = useState("");
@@ -48,8 +50,7 @@ const Footer = () => {
               </Link>
 
               <p className="mt-3 text-sm text-[var(--color-text-muted)] leading-relaxed">
-                Festival Sci-Fi & IA : films, jury, sponsors, créations et exploration visuelle.
-                <span className="text-[var(--color-text)]"> Mobile-first</span>, rapide et moderne.
+                {t('footer_description')}
               </p>
 
               {/* Socials */}
@@ -102,41 +103,41 @@ const Footer = () => {
             {/* Navigation */}
             <div className="lg:col-span-3">
               <h3 className="font-[var(--font-family-title)] text-sm tracking-widest text-[var(--color-text-muted)]">
-                NAVIGATION
+                {t('footer_navigation')}
               </h3>
 
               <div className="mt-4 flex flex-col gap-2 text-sm">
-                <Link className="hover:text-[var(--color-secondary)] transition-colors" to="/">Accueil</Link>
-                <Link className="hover:text-[var(--color-secondary)] transition-colors" to="/galerie">Galerie</Link>
+                <Link className="hover:text-[var(--color-secondary)] transition-colors" to="/">{t('footer_home')}</Link>
+                <Link className="hover:text-[var(--color-secondary)] transition-colors" to="/galerie">{t('footer_gallery')}</Link>
                 <Link className="hover:text-[var(--color-secondary)] transition-colors" to="/faq">FAQ</Link>
                 <Link className="hover:text-[var(--color-secondary)] transition-colors" to="/contact">Contact</Link>
-                <Link className="hover:text-[var(--color-secondary)] transition-colors" to="/jury">Jury</Link>
-                <Link className="hover:text-[var(--color-secondary)] transition-colors" to="/sponsors">Sponsors</Link>
-                <Link className="hover:text-[var(--color-secondary)] transition-colors" to="/submission">Soumission</Link>
+                <Link className="hover:text-[var(--color-secondary)] transition-colors" to="/jury">{t('footer_jury')}</Link>
+                <Link className="hover:text-[var(--color-secondary)] transition-colors" to="/sponsors">{t('footer_sponsors')}</Link>
+                <Link className="hover:text-[var(--color-secondary)] transition-colors" to="/submission">{t('footer_submission')}</Link>
               </div>
             </div>
 
             {/* Infos */}
             <div className="lg:col-span-2">
               <h3 className="font-[var(--font-family-title)] text-sm tracking-widest text-[var(--color-text-muted)]">
-                INFOS
+                {t('footer_infos')}
               </h3>
 
               <div className="mt-4 flex flex-col gap-2 text-sm text-[var(--color-text-muted)]">
-                <span>📍 Paris / Mars (virtuel)</span>
-                <span>🎬 Projections & concours</span>
-                <span>🤖 IA créative</span>
+                <span>{t('footer_location')}</span>
+                <span>{t('footer_projections')}</span>
+                <span>{t('footer_ai')}</span>
               </div>
             </div>
 
             {/* Newsletter */}
             <div className="lg:col-span-3">
               <h3 className="font-[var(--font-family-title)] text-sm tracking-widest text-[var(--color-text-muted)]">
-                NEWSLETTER
+                {t('footer_newsletter')}
               </h3>
 
               <p className="mt-4 text-sm text-[var(--color-text-muted)]">
-                Reçois les actus, appels à films, et annonces du festival.
+                {t('footer_newsletter_desc')}
               </p>
 
               <form onSubmit={onSubmitNewsletter} className="mt-4 flex items-center gap-2">
@@ -145,7 +146,7 @@ const Footer = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   type="email"
                   required
-                  placeholder="ton@email.com"
+                  placeholder={t('footer_email_placeholder')}
                   className={[
                     "w-full rounded-xl border border-[var(--color-border)]",
                     "bg-[var(--color-surface)] backdrop-blur-md",
@@ -157,15 +158,15 @@ const Footer = () => {
                 <button
                   type="submit"
                   className="mars-cta mars-glow inline-flex items-center justify-center gap-2 px-4 py-3"
-                  aria-label="S'inscrire à la newsletter"
-                  title="S'inscrire"
+                  aria-label={t('footer_subscribe')}
+                  title={t('footer_subscribe')}
                 >
                   <ArrowRight size={18} />
                 </button>
               </form>
 
               <p className="mt-2 text-xs text-[var(--color-text-muted)]">
-                Zéro spam. Désinscription en 1 clic.
+                {t('footer_spam_notice')}
               </p>
             </div>
           </div>
@@ -173,12 +174,12 @@ const Footer = () => {
           {/* Bottom bar */}
           <div className="mt-10 border-t border-[var(--color-border)] pt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <p className="text-xs text-[var(--color-text-muted)]">
-              © {new Date().getFullYear()} MarsAI — Tous droits réservés.
+              © {new Date().getFullYear()} MarsAI — {t('footer_copyright')}
             </p>
 
             <div className="flex items-center gap-4 text-xs text-[var(--color-text-muted)]">
-              <a className="hover:text-[var(--color-secondary)] transition-colors" href="#">Mentions légales</a>
-              <a className="hover:text-[var(--color-secondary)] transition-colors" href="#">Confidentialité</a>
+              <a className="hover:text-[var(--color-secondary)] transition-colors" href="#">{t('footer_legal')}</a>
+              <a className="hover:text-[var(--color-secondary)] transition-colors" href="#">{t('footer_privacy')}</a>
             </div>
           </div>
         </div>
