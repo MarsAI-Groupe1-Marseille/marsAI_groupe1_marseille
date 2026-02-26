@@ -2342,7 +2342,7 @@ const t = (key) => {
         'jury_dist_remaining': 'Remaining',
         'jury_dist_progress': 'Progress',
         'jury_dist_active_jurors': 'Active Jurors',
-        'jury_dist_votes_category': 'Votes'
+        'jury_dist_votes_category': 'Votes',
         
         'jury_loading': 'Loading film...',
         'jury_not_found': 'Film not found',
