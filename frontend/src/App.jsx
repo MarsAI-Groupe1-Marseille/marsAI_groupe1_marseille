@@ -27,6 +27,7 @@ import JuryAssignment from './pages/jury_assignment.jsx';
 import { useAuth } from './context/AuthContext.jsx';
 import JuryPage from './pages/JuryPage.jsx';
 import SelectFinaliste from './pages/SelectFinaliste.jsx';
+import Sponsors from './pages/Sponsors.jsx';
 
 
 function App() {
@@ -74,13 +75,14 @@ function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/forgotpass" element={<Forgotpass />} />
           <Route path="/jury" element={<JuryPage />} />
+          <Route path="/sponsors" element={<Sponsors />} />
 
 
           <Route
             path="/selectfinaliste"
             element={(
               <ProtectedRoute allowedRoles={["admin"]}>
-                <SelectFinaliste />
+                <SelectFinaliste/>
               </ProtectedRoute>
             )}
           />

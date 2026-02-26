@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "../config/axiosConfig";
+import { useLanguage } from "../context/LanguageContext.jsx";
 import {
   ChevronLeft,
   ChevronRight,
@@ -211,6 +212,7 @@ const SynopsisTranslateBtn = ({ lang, onToggle, hasTranslation }) => {
 export default function NotationJury() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const [film, setFilm]               = useState(null);
   const [loading, setLoading]         = useState(true);
@@ -355,7 +357,7 @@ export default function NotationJury() {
       }
     } catch (error) {
       console.error('Erreur lors de la soumission du vote:', error);
-      alert('Erreur lors de la soumission du vote. Veuillez réessayer.');
+      alert(t('notation_error_submit'));
     } finally {
       setSubmitting(false);
     }
@@ -376,7 +378,7 @@ export default function NotationJury() {
         <div className="text-center relative z-10">
           <div className="w-14 h-14 border-[3px] border-[rgba(123,47,255,0.2)] border-t-[#7b2fff] rounded-full animate-spin mx-auto mb-5" />
           <p className="font-orbitron text-[11px] tracking-[4px] uppercase text-[#9b8ec4]">
-            Chargement du film...
+            {t('notation_loading')}
           </p>
         </div>
       </div>
@@ -392,7 +394,7 @@ export default function NotationJury() {
           <p className="text-[#ff8090] text-lg mb-6">{error || "Film introuvable"}</p>
           <button onClick={() => navigate(-1)}
             className="inline-flex items-center gap-2 px-5 py-2.5 bg-[rgba(123,47,255,0.15)] border border-[rgba(123,47,255,0.25)] rounded-full font-rajdhani text-sm font-semibold tracking-[1px] uppercase text-[#9b8ec4] cursor-pointer transition-all duration-300 hover:border-[#7b2fff] hover:text-[#f0eaff] hover:bg-[rgba(123,47,255,0.25)] hover:shadow-[0_0_20px_rgba(123,47,255,0.3)]">
-            Retour
+            {t('notation_back')}
           </button>
         </div>
       </div>
@@ -454,7 +456,7 @@ export default function NotationJury() {
           className="group inline-flex items-center gap-2 mb-8 px-5 py-2.5 bg-[rgba(123,47,255,0.15)] border border-[rgba(123,47,255,0.25)] rounded-full font-rajdhani text-sm font-semibold tracking-[1px] uppercase text-[#9b8ec4] cursor-pointer transition-all duration-300 hover:border-[#7b2fff] hover:text-[#f0eaff] hover:bg-[rgba(123,47,255,0.25)] hover:shadow-[0_0_20px_rgba(123,47,255,0.3)]"
         >
           <ChevronLeft size={16} className="transition-transform duration-300 group-hover:-translate-x-1" />
-          Retour à la sélection
+          {t('notation_back_selection')}
         </button>
 
         {/* ── Main 2-col grid ── */}
@@ -480,7 +482,7 @@ export default function NotationJury() {
                     <Play size={28} color="#fff" fill="#fff" />
                   </div>
                   <span className="font-rajdhani font-bold text-[13px] tracking-[2px] uppercase text-white">
-                    Regarder le film
+                    {t('notation_watch_film')}
                   </span>
                 </div>
               )}
@@ -498,7 +500,7 @@ export default function NotationJury() {
                 <div className="flex items-center gap-2 mb-3">
                   <Tag size={12} color="#9b8ec4" />
                   <span className="font-orbitron text-[10px] font-bold tracking-[3px] uppercase text-[#9b8ec4]">
-                    Thèmes
+                    {t('notation_themes')}
                   </span>
                 </div>
                 <div className="flex flex-wrap gap-1">
@@ -523,7 +525,7 @@ export default function NotationJury() {
               <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-gradient-to-r from-[rgba(123,47,255,0.3)] to-[rgba(224,64,251,0.2)] border border-[rgba(123,47,255,0.5)] mb-4">
                 <FilmIcon size={9} color="#c39fff" />
                 <span className="font-orbitron text-[9px] font-bold tracking-[2px] uppercase text-[#c39fff]">
-                  Festival Mars AI — Sélection officielle
+                  {t('notation_official_selection')}
                 </span>
               </div>
 
@@ -555,7 +557,7 @@ export default function NotationJury() {
                 <div className="flex items-center gap-2">
                   <FilmIcon size={12} color="#7b2fff" />
                   <span className="font-orbitron text-[11px] font-bold tracking-[3px] uppercase text-[#7b2fff]">
-                    Synopsis
+                    {t('notation_synopsis')}
                   </span>
                   {/* Indicateur de langue active */}
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[rgba(123,47,255,0.15)] border border-[rgba(123,47,255,0.25)]">
@@ -586,17 +588,17 @@ export default function NotationJury() {
             {/* Details */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {directorName && (
-                <InfoCard icon={User} iconColor="#7b2fff" label="Réalisateur">
+                <InfoCard icon={User} iconColor="#7b2fff" label={t('notation_director')}>
                   <p className="font-rajdhani text-[17px] font-semibold text-[#f0eaff]">{directorName}</p>
                 </InfoCard>
               )}
 
-              <InfoCard icon={Clock} iconColor="#00e5ff" label="Durée">
+              <InfoCard icon={Clock} iconColor="#00e5ff" label={t('notation_duration')}>
                 <p className="font-rajdhani text-[17px] font-semibold text-[#f0eaff]">{duration}</p>
               </InfoCard>
 
               {directorEmail && (
-                <InfoCard icon={Mail} iconColor="#e040fb" label="Contact">
+                <InfoCard icon={Mail} iconColor="#e040fb" label={t('notation_contact')}>
                   <a
                     href={`mailto:${directorEmail}`}
                     className="block font-rajdhani text-sm font-semibold text-[#80c8ff] hover:text-[#b0d8ff] truncate transition-colors duration-200 no-underline"
@@ -607,13 +609,13 @@ export default function NotationJury() {
               )}
 
               {location && (
-                <InfoCard icon={MapPin} iconColor="#ffd740" label="Localisation">
+                <InfoCard icon={MapPin} iconColor="#ffd740" label={t('notation_location')}>
                   <p className="font-rajdhani text-[17px] font-semibold text-[#f0eaff]">{location}</p>
                 </InfoCard>
               )}
 
               {film.production_year && (
-                <InfoCard icon={Calendar} iconColor="#00e5ff" label="Année de production" className="sm:col-span-2">
+                <InfoCard icon={Calendar} iconColor="#00e5ff" label={t('notation_production_year')} className="sm:col-span-2">
                   <p className="font-rajdhani text-[17px] font-semibold text-[#f0eaff]">{film.production_year}</p>
                 </InfoCard>
               )}
@@ -634,16 +636,17 @@ export default function NotationJury() {
               textShadow: "0 0 30px rgba(123,47,255,0.6)",
             }}
           >
-            VOTRE ÉVALUATION
+            {t('notation_your_evaluation')}
           </h2>
           <p className="font-rajdhani text-[15px] font-normal text-center tracking-[0.5px] text-[#9b8ec4] mb-9">
-            Notez ce film et partagez votre avis professionnel
+            {t('notation_evaluation_subtitle')}
           </p>
 
           {/* Vote buttons */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-7">
-            {VOTE_OPTIONS.map(({ key, label, Icon, selectedCls, hoverCls }) => {
+            {VOTE_OPTIONS.map(({ key, Icon, selectedCls, hoverCls }) => {
               const isSelected = selectedVote === key;
+              const labelKey = key === "like" ? "notation_vote_like" : key === "discuss" ? "notation_vote_discuss" : "notation_vote_dislike";
               return (
                 <button
                   key={key}
@@ -671,7 +674,7 @@ export default function NotationJury() {
                     <Icon size={24} strokeWidth={1.8} />
                   </span>
 
-                  {label}
+                  {t(labelKey)}
 
                   {/* Check badge */}
                   {isSelected && (
@@ -691,10 +694,10 @@ export default function NotationJury() {
           {selectedVote && (
             <div className="mb-6" style={{ animation: "njSlideDown 0.3s ease both" }}>
               <label className="block font-orbitron text-[10px] font-bold tracking-[3px] uppercase text-[#9b8ec4] mb-2.5">
-                Commentaire{" "}
+                {t('notation_comment')}{" "}
                 {!submitted && (
                   <span className="font-rajdhani text-[13px] font-normal normal-case tracking-normal text-[rgba(155,142,196,0.45)]">
-                    (optionnel)
+                    {t('jury_optional')}
                   </span>
                 )}
               </label>
@@ -702,7 +705,7 @@ export default function NotationJury() {
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 disabled={submitted}
-                placeholder="Partagez vos impressions, critiques constructives ou remarques sur ce film..."
+                placeholder={t('notation_comment_placeholder')}
                 rows={6}
                 className="w-full px-5 py-4 bg-[rgba(10,8,20,0.7)] border border-[rgba(123,47,255,0.25)] rounded-xl font-rajdhani text-base font-normal leading-relaxed text-[#f0eaff] placeholder:text-[rgba(155,142,196,0.5)] resize-y outline-none transition-all duration-300 focus:border-[#7b2fff] focus:shadow-[0_0_0_3px_rgba(123,47,255,0.2),0_0_20px_rgba(123,47,255,0.1)] disabled:opacity-60 disabled:cursor-not-allowed box-border"
               />
@@ -726,11 +729,11 @@ export default function NotationJury() {
               {submitting ? (
                 <>
                   <Loader2 size={16} className="animate-spin" />
-                  Soumission en cours...
+                  {t('jury_submitting')}
                 </>
               ) : (
                 <>
-                  Soumettre mon évaluation
+                  {t('notation_submit')}
                   <ChevronRight size={18} strokeWidth={2} />
                 </>
               )}
@@ -746,10 +749,10 @@ export default function NotationJury() {
                 </div>
                 <div>
                   <p className="font-orbitron text-[12px] font-bold tracking-[2px] uppercase text-[#6dffa0] mb-1">
-                    Vote enregistré avec succès
+                    {t('notation_vote_success')}
                   </p>
                   <p className="font-rajdhani text-[13px] text-[rgba(109,255,160,0.6)] tracking-[0.5px]">
-                    Votre évaluation a été sauvegardée et ne peut pas être modifiée
+                    {t('notation_saved_message')}
                   </p>
                 </div>
               </div>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import PageTransition from '../components/PageTransition.jsx';
 
 const Connexion = () => {
   const navigate = useNavigate();
@@ -42,6 +43,7 @@ const Connexion = () => {
   
 
   return (
+    <PageTransition pageKey="login">
     <div className="min-h-screen bg-black text-white">
       <div className="flex flex-col min-h-screen">
 
@@ -155,6 +157,7 @@ const Connexion = () => {
         </div>
       </div>
     </div>
+    </PageTransition>
   );
 };
 

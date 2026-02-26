@@ -1,6 +1,22 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from '../config/axiosConfig.js'
+<<<<<<< HEAD
+=======
+import { useLanguage } from '../context/LanguageContext.jsx'
+import { Settings, CheckCircle, AlertCircle } from 'lucide-react'
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer
+} from 'recharts'
+
+>>>>>>> origin
 // ─── Icônes SVG ──────────────────────────────────────────────────────────────
 const IconHome = () => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -225,7 +241,7 @@ const SectionHeader = ({ label, enabled, onChange }) => (
   </div>
 )
 const TabBtn = ({ active, onClick, children }) => (
-  <button onClick={onClick} className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap"
+  <button onClick={onClick} className="px-2 md:px-3 py-1.5 rounded-lg text-xs md:text-xs font-semibold transition-all cursor-pointer whitespace-nowrap"
     style={{
       background: active ? 'rgba(139,92,246,0.2)' : 'transparent',
       color: active ? '#c084fc' : 'rgba(255,255,255,0.35)',
@@ -270,12 +286,12 @@ const ImageUpload = ({ value, onChange, label = 'Image' }) => {
             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
               <label className="px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer flex items-center gap-1.5"
                 style={{ background: 'rgba(139,92,246,0.7)', color: 'white' }}>
-                <IconUpload /> Changer
+                <IconUpload /> {t('button_change')}
                 <input type="file" accept="image/*" className="hidden" onChange={handleFile} />
               </label>
               <button onClick={() => onChange('')} className="px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer"
                 style={{ background: 'rgba(239,68,68,0.7)', color: 'white' }}>
-                Supprimer
+                {t('button_delete')}
               </button>
             </div>
           </div>
@@ -765,6 +781,7 @@ const HomeConfigModal = ({ onClose }) => {
             <IconX />
           </button>
         </div>
+<<<<<<< HEAD
         {/* Tabs */}
         <div className="flex gap-1.5 px-6 py-3 shrink-0 overflow-x-auto" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', scrollbarWidth: 'none' }}>
           {TABS.map(t => (
@@ -776,6 +793,14 @@ const HomeConfigModal = ({ onClose }) => {
                     style={{ background: config.colors?.primary || '#7c3aed', boxShadow: `0 0 4px ${config.colors?.primary || '#7c3aed'}` }} />
                 )}
               </span>
+=======
+
+        {/* Tabs — identiques */}
+        <div className="flex gap-1 md:gap-1.5 px-3 md:px-6 py-3 shrink-0 overflow-x-auto" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', scrollbarWidth: 'none' }}>
+          {TABS.map(t => (
+            <TabBtn key={t.key} active={activeTab === t.key} onClick={() => setActiveTab(t.key)}>
+              <span className="flex items-center gap-1 md:gap-1.5">{t.icon}<span className="hidden sm:inline">{t.label}</span></span>
+>>>>>>> origin
             </TabBtn>
           ))}
         </div>
@@ -1029,6 +1054,7 @@ const HomeConfigModal = ({ onClose }) => {
 }
 // ─── Modal Nouvelle Playlist ──────────────────────────────────────────────────
 const NewPlaylistModal = ({ onClose, onCreate }) => {
+  const { t } = useLanguage()
   const [name, setName] = useState('')
   const handleSubmit = async (e) => {
     e?.preventDefault()
@@ -1047,7 +1073,7 @@ const NewPlaylistModal = ({ onClose, onCreate }) => {
           style={{ background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.3)', color: '#a78bfa' }}>
           <IconList />
         </div>
-        <h2 className="text-base font-bold text-white mb-1">Nouvelle playlist</h2>
+        <h2 className="text-base font-bold text-white mb-1">{t('modal_new_playlist_title')}</h2>
         <p className="text-xs mb-4" style={{ color: 'rgba(255,255,255,0.4)' }}>Donnez un nom à votre sélection</p>
         <input autoFocus type="text" value={name} onChange={e => setName(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && handleSubmit()}
@@ -1073,7 +1099,12 @@ const NewPlaylistModal = ({ onClose, onCreate }) => {
   )
 }
 // ─── Cards ────────────────────────────────────────────────────────────────────
+<<<<<<< HEAD
 const HomeConfigCard = ({ onClick, activeSections }) => (
+=======
+
+const HomeConfigCard = ({ onClick, activeSections, t }) => (
+>>>>>>> origin
   <div onClick={onClick} className="rounded-2xl p-6 cursor-pointer group transition-all duration-300 relative overflow-hidden flex flex-col"
     style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', border: '1px solid rgba(255,255,255,0.08)' }}
     onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(139,92,246,0.45)'}
@@ -1089,8 +1120,8 @@ const HomeConfigCard = ({ onClick, activeSections }) => (
         <IconChevronRight />
       </span>
     </div>
-    <h3 className="font-bold text-white mb-1">Configuration Home</h3>
-    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>Gérez les sections visibles sur la page d'accueil publique</p>
+    <h3 className="font-bold text-white mb-1">{t('config_home_title')}</h3>
+    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>{t('config_home_desc')}</p>
     <div className="mt-auto pt-4">
       <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold"
         style={{ background: 'rgba(34,197,94,0.12)', color: '#4ade80', border: '1px solid rgba(34,197,94,0.2)' }}>
@@ -1099,7 +1130,12 @@ const HomeConfigCard = ({ onClick, activeSections }) => (
     </div>
   </div>
 )
+<<<<<<< HEAD
 const PlaylistsCard = ({ playlists, onNew, onDelete, onDeleteMany }) => {
+=======
+
+const PlaylistsCard = ({ playlists, onNew, onDelete, onDeleteMany, t }) => {
+>>>>>>> origin
   const [selected, setSelected] = useState([])
   const [selectMode, setSelectMode] = useState(false)
   const toggleSelect = (id) => setSelected(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
@@ -1118,17 +1154,17 @@ const PlaylistsCard = ({ playlists, onNew, onDelete, onDeleteMany }) => {
               style={{ background: 'rgba(239,68,68,0.1)', color: 'rgba(248,113,113,0.7)', border: '1px solid rgba(239,68,68,0.2)' }}
               onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.2)'; e.currentTarget.style.color = '#f87171' }}
               onMouseLeave={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.1)'; e.currentTarget.style.color = 'rgba(248,113,113,0.7)' }}>
-              Sélectionner
+              {t('config_playlists_select')}
             </button>
           )}
           <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold"
             style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.4)' }}>
-            {playlists.length} playlists
+            {playlists.length} {t('config_playlists_count')}
           </span>
         </div>
       </div>
-      <h3 className="font-bold text-white mb-1 shrink-0">Playlists</h3>
-      <p className="text-xs mb-4 shrink-0" style={{ color: 'rgba(255,255,255,0.4)' }}>Sélections de films du festival</p>
+      <h3 className="font-bold text-white mb-1 shrink-0">{t('config_playlists_title_heading')}</h3>
+      <p className="text-xs mb-4 shrink-0" style={{ color: 'rgba(255,255,255,0.4)' }}>{t('config_playlists_desc')}</p>
       <div className="flex-1 overflow-y-auto space-y-2 pr-1 min-h-0"
         style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(139,92,246,0.3) transparent' }}>
         {playlists.map(pl => (
@@ -1157,11 +1193,11 @@ const PlaylistsCard = ({ playlists, onNew, onDelete, onDeleteMany }) => {
         <div className="mt-3 flex gap-2 shrink-0">
           <button onClick={() => { setSelected([]); setSelectMode(false) }} className="flex-1 py-2 rounded-xl text-xs font-medium cursor-pointer"
             style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.08)' }}>
-            Annuler
+            {t('button_cancel')}
           </button>
           <button onClick={handleDeleteMany} disabled={selected.length === 0} className="flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5"
             style={{ background: selected.length > 0 ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.04)', color: selected.length > 0 ? '#f87171' : 'rgba(255,255,255,0.2)', border: `1px solid ${selected.length > 0 ? 'rgba(239,68,68,0.3)' : 'rgba(255,255,255,0.06)'}`, cursor: selected.length === 0 ? 'not-allowed' : 'pointer' }}>
-            <IconTrash size={12} /> Supprimer {selected.length > 0 ? `(${selected.length})` : ''}
+            <IconTrash size={12} /> {t('button_delete')} {selected.length > 0 ? `(${selected.length})` : ''}
           </button>
         </div>
       ) : (
@@ -1169,13 +1205,18 @@ const PlaylistsCard = ({ playlists, onNew, onDelete, onDeleteMany }) => {
           style={{ border: '2px dashed rgba(139,92,246,0.25)', color: 'rgba(139,92,246,0.6)', background: 'transparent' }}
           onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(139,92,246,0.6)'; e.currentTarget.style.color = '#c084fc'; e.currentTarget.style.background = 'rgba(139,92,246,0.08)' }}
           onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(139,92,246,0.25)'; e.currentTarget.style.color = 'rgba(139,92,246,0.6)'; e.currentTarget.style.background = 'transparent' }}>
-          <IconPlus /> Nouvelle playlist
+          <IconPlus /> {t('button_new_playlist')}
         </button>
       )}
     </div>
   )
 }
+<<<<<<< HEAD
 const AssignCard = ({ filmsCount, juryCount, onClick }) => (
+=======
+
+const AssignCard = ({ filmsCount, juryCount, onClick, t }) => (
+>>>>>>> origin
   <div
     onClick={onClick}
     className="rounded-2xl p-6 cursor-pointer group transition-all duration-300 relative overflow-hidden flex flex-col"
@@ -1193,16 +1234,16 @@ const AssignCard = ({ filmsCount, juryCount, onClick }) => (
         <IconChevronRight />
       </span>
     </div>
-    <h3 className="font-bold text-white mb-1">Assigner Films & Jury</h3>
-    <p className="text-xs mb-4" style={{ color: 'rgba(255,255,255,0.4)' }}>Associez des films et membres du jury à vos playlists</p>
+    <h3 className="font-bold text-white mb-1">{t('config_assign_title')}</h3>
+    <p className="text-xs mb-4" style={{ color: 'rgba(255,255,255,0.4)' }}>{t('config_assign_desc')}</p>
     <div className="flex gap-2 flex-wrap mt-auto">
       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold"
         style={{ background: 'rgba(99,102,241,0.15)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.2)' }}>
-        <IconClapperboard /> {filmsCount} film{filmsCount !== 1 ? 's' : ''}
+        <IconClapperboard /> {filmsCount} {filmsCount !== 1 ? t('config_film_plural') : t('config_film_singular')}
       </span>
       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold"
         style={{ background: 'rgba(168,85,247,0.15)', color: '#c084fc', border: '1px solid rgba(168,85,247,0.2)' }}>
-        <IconUsers /> {juryCount} membre{juryCount !== 1 ? 's' : ''} jury
+        <IconUsers /> {juryCount} {juryCount !== 1 ? t('config_jury_plural') : t('config_jury_singular')}
       </span>
     </div>
   </div>
@@ -1210,12 +1251,51 @@ const AssignCard = ({ filmsCount, juryCount, onClick }) => (
 // ─── Page Configuration ───────────────────────────────────────────────────────
 const Configuration = () => {
   const navigate = useNavigate()
+  const { t } = useLanguage()
   const [playlists, setPlaylists] = useState([])
   const [filmsCount, setFilmsCount] = useState(0)
   const [juryCount, setJuryCount] = useState(0)
   const [showModal, setShowModal] = useState(false)
   const [showHomeModal, setShowHomeModal] = useState(false)
   const [activeSections, setActiveSections] = useState(4)
+<<<<<<< HEAD
+=======
+  const [adminUser, setAdminUser] = useState({
+    full_name: "Admin Test",
+    email: "email@exemple.com",
+    job_title: "Directeur"
+  })
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    const verifyAdmin = async () => {
+      try {
+        const token = localStorage.getItem('token')
+        const userStr = localStorage.getItem('user')
+        
+        if (!userStr) {
+          setLoading(false)
+          return
+        }
+
+        const user = JSON.parse(userStr)
+        if (user.role !== 'admin') {
+          setLoading(false)
+          return
+        }
+
+        setAdminUser(user)
+        setLoading(false)
+      } catch (error) {
+        console.error('Erreur vérification admin:', error)
+        setLoading(false)
+      }
+    }
+
+    verifyAdmin()
+  }, [])
+
+>>>>>>> origin
   useEffect(() => {
     const fetchPlaylists = async () => {
       try {
@@ -1265,23 +1345,67 @@ const Configuration = () => {
     catch (e) { console.error(e) }
   }
   return (
-    <div className="p-6 min-h-screen" style={{ background: '#0f0f1a' }}>
-      <div className="max-w-5xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-white tracking-tight">Configuration</h1>
-          <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>Gérez les paramètres du festival</p>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 items-stretch" style={{ gridAutoRows: '320px' }}>
-          <HomeConfigCard onClick={() => setShowHomeModal(true)} activeSections={activeSections} />
+    <div className="min-h-screen bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-950 text-white">
+      {/* MAIN */}
+      <main className="w-full px-4 sm:px-6 md:px-8 py-8 md:py-12 lg:py-16">
+        <div className="max-w-7xl mx-auto">
+
+          {/* Page Header */}
+          <div className="mb-12 pb-8 md:pb-12">
+            {/* Title and description + Admin Profile */}
+            <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-8">
+              {/* Left side - Title and description */}
+              <div>
+                <span className="text-xs text-violet-400 uppercase tracking-widest font-bold block mb-3">{t('admin_space')}</span>
+                <h1 className="flex justify-start items-center gap-3 text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 leading-tight capitalize">
+                  <Settings size={32} />
+                  {t('config_page_title')}
+                </h1>
+                <p className="text-sm md:text-base text-neutral-400 leading-relaxed max-w-2xl">
+                  {t('config_page_desc')}
+                </p>
+              </div>
+
+              {/* Right side - Admin Profile (no card) */}
+              <div className="flex flex-col items-center text-center">
+                {/* Avatar */}
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center border-2 border-violet-400 shadow-lg mb-4">
+                  <span className="text-white font-bold text-2xl">
+                    {adminUser?.full_name
+                      ? adminUser.full_name
+                          .split(' ')
+                          .map(n => n[0])
+                          .join('')
+                          .toUpperCase()
+                      : 'A'}
+                  </span>
+                </div>
+                
+                {/* Name and Email */}
+                <p className="text-sm font-semibold text-white break-words mb-1">{adminUser?.full_name}</p>
+                <p className="text-xs text-neutral-400 break-all">{adminUser?.email}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 items-stretch" style={{ gridAutoRows: '320px' }}>
+          <HomeConfigCard onClick={() => setShowHomeModal(true)} activeSections={activeSections} t={t} />
           <PlaylistsCard
             playlists={playlists}
             onNew={() => setShowModal(true)}
             onDelete={handleDelete}
             onDeleteMany={handleDeleteMany}
+            t={t}
           />
-          <AssignCard filmsCount={filmsCount} juryCount={juryCount} onClick={() => navigate('/jury-assignment')} />
+          <AssignCard filmsCount={filmsCount} juryCount={juryCount} onClick={() => navigate('/jury-assignment')} t={t} />
+          </div>
         </div>
+<<<<<<< HEAD
       </div>
+=======
+      </main>
+
+>>>>>>> origin
       {showModal && <NewPlaylistModal onClose={() => setShowModal(false)} onCreate={p => setPlaylists(prev => [...prev, p])} />}
       {showHomeModal && (
         <HomeConfigModal

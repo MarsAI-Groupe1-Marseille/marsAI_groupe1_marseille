@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../config/axiosConfig'; 
+import { useLanguage } from '../context/LanguageContext';
 import { 
   Share2, Heart, MessageCircle, Play, Info, Globe, Calendar, 
   Film, Users, Zap, Code2, ChevronLeft, Volume2, Maximize2,
@@ -9,6 +10,9 @@ import {
 import './film_detail.css';
 
 export default function FilmDetail() {
+  // Hook pour les traductions
+  const { t, lang } = useLanguage();
+  
   // ========== ÉTATS ==========
   const [isLiked, setIsLiked] = useState(false);
   const [showFullSynopsis, setShowFullSynopsis] = useState(false);
@@ -105,7 +109,7 @@ export default function FilmDetail() {
         setError(null);
       } catch (err) {
         console.error('Erreur lors du chargement du film:', err);
-        setError('Impossible de charger les détails du film');
+        setError(t('film_detail_error'));
       } finally {
         setLoading(false);
       }
@@ -125,7 +129,7 @@ export default function FilmDetail() {
     <div className="film-detail-container loading-container">
       <div className="loading-spinner">
         <div className="spinner"></div>
-        <p className="loading-text">Chargement du film...</p>
+        <p className="loading-text">{t('film_detail_loading')}</p>
       </div>
     </div>
   );
@@ -137,7 +141,7 @@ export default function FilmDetail() {
         onClick={() => navigate('/galerie')}
         className="error-button"
       >
-        <ChevronLeft className="w-4 h-4" /> Retour à la galerie
+        <ChevronLeft className="w-4 h-4" /> {t('film_detail_back')}
       </button>
     </div>
   );
@@ -178,34 +182,30 @@ export default function FilmDetail() {
   // Formater le statut d'approbation
   const formatApprovalStatus = (status) => {
     const statuses = {
-      'submitted': 'En attente',
-      'approved': 'Approuvé',
-      'rejected': 'Rejeté'
+      'submitted': t('film_detail_status_pending'),
+      'approved': t('film_detail_status_approved'),
+      'rejected': t('film_detail_status_rejected')
     };
     return statuses[status] || status;
   };
 
   return (
     <div className="film-detail-container">
-      {/* Header Navigation */}
-      <header className="film-detail-header">
-        <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <main className="film-detail-main">
+        {/* Bouton retour simple en haut */}
+        <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '20px 16px 0 16px' }}>
           <button
             onClick={() => navigate('/galerie')}
             className="back-button"
-            style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', color: '#b0b0d0', fontWeight: '600', marginBottom: '20px' }}
           >
-            <ChevronLeft className="w-5 h-5" /> Retour à la galerie
+            <ChevronLeft className="w-5 h-5" /> {t('film_detail_back')}
           </button>
-          <div style={{ color: 'white', fontWeight: '600', fontSize: '0.875rem' }}>Mars AI Festival</div>
-          
         </div>
-      </header>
-
-      <main className="film-detail-main">
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '32px' }}>
+        
+        <div className="film-detail-grid">
           {/* ========== COLONNE PRINCIPALE ========== */}
-          <div style={{ gridColumn: '1 / 3', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div className="film-detail-main-content">
             
             {/* IMAGE INTERACTIVE */}
             <div className="film-poster-container">
@@ -247,7 +247,7 @@ export default function FilmDetail() {
                     <p className="subtitle">{film.title_english}</p>
                   )}
                   <p className="director">
-                    Réalisé par <span className="director-name">{directorName}</span>
+                    {t('film_detail_directed_by')} <span className="director-name">{directorName}</span>
                   </p>
                 </div>
 
@@ -256,13 +256,13 @@ export default function FilmDetail() {
                   <button 
                     onClick={() => setIsLiked(!isLiked)}
                     className={`action-button ${isLiked ? 'liked' : ''}`}
-                    title="Aimer ce film"
+                    title={t('film_detail_like')}
                   >
                     <Heart className="w-6 h-6" style={{ fill: isLiked ? 'white' : 'none' }} />
                   </button>
                   <button 
                     className="action-button"
-                    title="Partager ce film"
+                    title={t('film_detail_share')}
                   >
                     <Share2 className="w-6 h-6" />
                   </button>
@@ -273,25 +273,25 @@ export default function FilmDetail() {
               <div className="quick-info">
                 <div className="quick-info-item">
                   <p className="quick-info-label">
-                    <Clock className="w-4 h-4" /> Durée
+                    <Clock className="w-4 h-4" /> {t('film_detail_duration')}
                   </p>
                   <p className="quick-info-value">{duration}</p>
                 </div>
                 <div className="quick-info-item">
                   <p className="quick-info-label">
-                    <Globe className="w-4 h-4" /> Langue
+                    <Globe className="w-4 h-4" /> {t('film_detail_language')}
                   </p>
                   <p className="quick-info-value">{film.language_main}</p>
                 </div>
                 <div className="quick-info-item">
                   <p className="quick-info-label">
-                    <Zap className="w-4 h-4" /> IA
+                    <Zap className="w-4 h-4" /> {t('film_detail_ai')}
                   </p>
                   <p className="quick-info-value">{film.ai_classification}</p>
                 </div>
                 <div className="quick-info-item">
                   <p className="quick-info-label">
-                    <BarChart3 className="w-4 h-4" /> Statut
+                    <BarChart3 className="w-4 h-4" /> {t('film_detail_status')}
                   </p>
                   <p className="quick-info-value" style={{ color: film.approval_status === 'approved' ? '#4ade80' : film.approval_status === 'rejected' ? '#f87171' : '#fbbf24' }}>
                     {formatApprovalStatus(film.approval_status)}
@@ -304,7 +304,7 @@ export default function FilmDetail() {
             {tags.length > 0 && (
               <div className="tags-section">
                 <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Film className="w-5 h-5" /> Thèmes
+                  <Film className="w-5 h-5" /> {t('film_detail_themes')}
                 </h3>
                 <div className="tags-container">
                   {tags.map((tag) => (
@@ -319,7 +319,7 @@ export default function FilmDetail() {
             {/* SYNOPSIS */}
             <div className="synopsis-section">
               <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Info className="w-6 h-6" style={{ color: '#ffb3ff' }} /> Synopsis
+                <Info className="w-6 h-6" style={{ color: '#ffb3ff' }} /> {t('film_detail_synopsis')}
               </h2>
               <p className="synopsis-text">
                 {showFullSynopsis ? film.synopsis_english || film.synopsis_original : film.synopsis_original}
@@ -329,7 +329,7 @@ export default function FilmDetail() {
                   onClick={() => setShowFullSynopsis(!showFullSynopsis)}
                   className="synopsis-toggle"
                 >
-                  {showFullSynopsis ? "← Voir moins" : "Voir la version anglaise →"}
+                  {showFullSynopsis ? t('film_detail_see_less') : t('film_detail_see_english')}
                 </button>
               )}
             </div>
@@ -338,12 +338,12 @@ export default function FilmDetail() {
             {film.ai_methodology && (
               <div className="ai-methodology-section">
                 <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Code2 className="w-6 h-6" style={{ color: '#ffb3ff' }} /> Méthodologie IA
+                  <Code2 className="w-6 h-6" style={{ color: '#ffb3ff' }} /> {t('film_detail_methodology')}
                 </h2>
                 <p className="ai-text">{film.ai_methodology}</p>
                 {film.ai_tools && (
                   <div className="tools-container">
-                    <p className="tools-label">Outils utilisés:</p>
+                    <p className="tools-label">{t('film_detail_tools_used')}</p>
                     <div className="tools-list">
                       {film.ai_tools.split(',').map((tool) => (
                         <span key={tool} className="tool-badge">
@@ -359,14 +359,14 @@ export default function FilmDetail() {
             {/* ÉQUIPE */}
             <div className="team-section">
               <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Users className="w-6 h-6" style={{ color: '#ffb3ff' }} /> Équipe de production
+                <Users className="w-6 h-6" style={{ color: '#ffb3ff' }} /> {t('film_detail_team')}
               </h2>
               
               <div className="team-members">
                 {/* Réalisateur */}
                 {director && (
                   <div className="team-member">
-                    <p className="team-member-role">Réalisateur</p>
+                    <p className="team-member-role">{t('film_detail_director')}</p>
                     <p className="team-member-name">{directorName}</p>
                     <p className="team-member-info">
                       <Mail className="w-4 h-4" /> {director.email}
@@ -403,7 +403,7 @@ export default function FilmDetail() {
             {film.gallery_urls && parseGalleryUrls(film.gallery_urls).length > 0 && (
               <div className="gallery-section">
                 <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Film className="w-6 h-6" style={{ color: '#ffb3ff' }} /> Galerie
+                  <Film className="w-6 h-6" style={{ color: '#ffb3ff' }} /> {t('film_detail_gallery')}
                 </h2>
                 <div className="gallery-grid">
                   {parseGalleryUrls(film.gallery_urls).map((url, idx) => (
@@ -421,7 +421,7 @@ export default function FilmDetail() {
             {relatedFilms.length > 0 && (
               <div className="related-films-section">
                 <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Film className="w-5 h-5" style={{ color: '#ffb3ff' }} /> Films similaires
+                  <Film className="w-5 h-5" style={{ color: '#ffb3ff' }} /> {t('film_detail_related')}
                 </h3>
                 <div className="related-films-list">
                   {relatedFilms.map((relatedFilm) => (
@@ -459,7 +459,7 @@ export default function FilmDetail() {
             <iframe
               className="video-modal-iframe"
               src={`https://www.youtube.com/embed/${film.youtube_id}?autoplay=1`}
-              title="Vidéo du film"
+              title={t('film_detail_video_title')}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
             ></iframe>
