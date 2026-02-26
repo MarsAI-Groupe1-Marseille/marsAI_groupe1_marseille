@@ -7,6 +7,7 @@ import { useLanguage } from '../context/LanguageContext';
 
 
 function BadgeAttribution({ role, t }) {
+   
     const styles = {
         admin: "bg-red-500/20 text-red-400 border border-red-500/30",
         jury: "bg-blue-500/20 text-blue-400 border border-blue-500/30",
@@ -27,6 +28,7 @@ function BadgeAttribution({ role, t }) {
 }
 
 function FormEdition({ user, editingData, setEditingData, onSave, onCancel, isLoading, t }) {
+    
     return (
         <form onSubmit={onSave} className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
             <div className="flex flex-col w-full">
@@ -77,6 +79,7 @@ function FormEdition({ user, editingData, setEditingData, onSave, onCancel, isLo
 
 
 function UserRow({ user, isEditing, toggleEdit, editingData, setEditingData, onSaveUser, onDeleteUser, isLoading, t }) {
+    
     return (
         <>
             <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4 p-4 border-b border-neutral-800 hover:bg-neutral-900 transition">                
@@ -121,6 +124,7 @@ function UserRow({ user, isEditing, toggleEdit, editingData, setEditingData, onS
                         onSave={() => onSaveUser(user.id)}
                         onCancel={() => toggleEdit(user.id)}
                         isLoading={isLoading}
+                        t={t}
                     />
                 </div>
             )}
