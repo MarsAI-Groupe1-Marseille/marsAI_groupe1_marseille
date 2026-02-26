@@ -74,7 +74,7 @@ exports.forgotPassword = async (req, res) => {
 
         // Générer un token unique
         const resetToken = crypto.randomBytes(32).toString('hex');
-        const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
+        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
         // Mettre à jour l'utilisateur avec le token (utiliser l'instance directement)
         user.invite_token = resetToken;

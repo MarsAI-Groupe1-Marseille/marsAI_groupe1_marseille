@@ -15,7 +15,7 @@ const PasswordReset = () => {
     setLoading(true);
     try {
       await axios.post('/users/forgotpass', { email });
-      setSuccess("Si cet email existe, un lien de réinitialisation a été envoyé sur votre adresse email. Vous avez 30 minutes pour réinitialiser votre mot de passe.");
+      setSuccess("Si cet email existe, un lien de réinitialisation a été envoyé sur votre adresse email. Vous avez 24 heures pour réinitialiser votre mot de passe.");
     } catch (err) {
       setError(err.response?.data?.error || 'Erreur lors de l\'envoi.');
     } finally {

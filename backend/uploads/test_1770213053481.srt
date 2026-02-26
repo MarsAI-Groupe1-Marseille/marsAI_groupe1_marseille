@@ -1,0 +1,11 @@
+1
+00:00:01,000 --> 00:00:04,000
+Ceci est un test de sous-titre.
+
+2
+00:00:05,000 --> 00:00:08,000
+Si vous lisez ça, l'upload fonctionne !
+
+3
+00:00:09,000 --> 00:00:12,000
+Fin du test technique.

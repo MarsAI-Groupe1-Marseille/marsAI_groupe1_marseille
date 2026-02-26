@@ -16,8 +16,21 @@ const AdminHeader = () => {
 
   const roleLabel = user?.role === "moderator" ? t('admin_moderator') : "ADMIN";
 
-  // Unified transparent gradient for all admin pages
-  const headerBg = "bg-gradient-to-r from-violet-900/70 via-neutral-950 to-neutral-950";
+  const headerBg = (() => {
+    if (location.pathname.startsWith("/gestion-films")) {
+      return "bg-neutral-950";
+    }
+    if (location.pathname.startsWith("/distribution_jury")) {
+      return "bg-gradient-to-r from-violet-900/70 via-neutral-950 to-neutral-950";
+    }
+    if (location.pathname.startsWith("/dashboard")) {
+      return "bg-gradient-to-r from-violet-900/80 via-fuchsia-900/40 to-neutral-950";
+    }
+    if (location.pathname.startsWith("/Configuration")) {
+      return "bg-gradient-to-r from-violet-900/90 via-indigo-950 to-neutral-950";
+    }
+    return "bg-neutral-950";
+  })();
 
   return (
     <header className={`mars-header sticky top-0 z-50 w-full border-b border-neutral-800 ${headerBg}`}>
@@ -79,6 +92,13 @@ const AdminHeader = () => {
             <span className="hidden lg:inline">{lang === 'fr' ? 'EN' : 'FR'}</span>
           </button>
           
+          <Link
+            to="/Configuration"
+            className="mars-btn mars-glow inline-flex items-center justify-center"
+            aria-label="Distribution jury"
+          >
+            Config
+          </Link>          
           <button
             type="button"
             onClick={handleLogout}

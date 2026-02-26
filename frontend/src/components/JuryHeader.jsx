@@ -8,6 +8,7 @@ const JuryHeader = () => {
   const { logout } = useAuth();
   const { t, lang, toggleLanguage } = useLanguage();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = async () => {
     await logout();
