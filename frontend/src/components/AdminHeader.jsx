@@ -23,6 +23,9 @@ const AdminHeader = () => {
     if (location.pathname.startsWith("/distribution_jury")) {
       return "bg-gradient-to-r from-violet-900/70 via-neutral-950 to-neutral-950";
     }
+    if (location.pathname.startsWith("/jury-assignment")) {
+      return "bg-gradient-to-r from-violet-900/70 via-neutral-950 to-neutral-950";
+    }
     if (location.pathname.startsWith("/dashboard")) {
       return "bg-gradient-to-r from-violet-900/80 via-fuchsia-900/40 to-neutral-950";
     }
@@ -80,8 +83,7 @@ const AdminHeader = () => {
           >
             <span className="text-xs lg:text-sm">{t('admin_config')}</span>
           </Link>
-          
-          <button
+           <button
             type="button"
             onClick={toggleLanguage}
             className="mars-btn mars-glow inline-flex items-center gap-1 text-xs lg:text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
@@ -90,15 +92,7 @@ const AdminHeader = () => {
           >
             <Globe size={16} className="md:size-[18px]" />
             <span className="hidden lg:inline">{lang === 'fr' ? 'EN' : 'FR'}</span>
-          </button>
-          
-          <Link
-            to="/Configuration"
-            className="mars-btn mars-glow inline-flex items-center justify-center"
-            aria-label="Distribution jury"
-          >
-            Config
-          </Link>          
+          </button>         
           <button
             type="button"
             onClick={handleLogout}
