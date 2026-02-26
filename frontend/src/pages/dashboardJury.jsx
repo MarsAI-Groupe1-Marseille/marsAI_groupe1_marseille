@@ -11,6 +11,7 @@ import { useState, useRef, useEffect } from "react";
 import { X } from "lucide-react";
 import axios from "axios";
 import { useLanguage } from "../context/LanguageContext";
+import { Link } from "react-router-dom";
 
 export default function DashboardJury() {
   const { t } = useLanguage();
@@ -204,10 +205,10 @@ export default function DashboardJury() {
                   {selectedPlaylist.videos.map((video) => {
                     const isEvaluated = evaluatedVideoIds.has(video.id);
                     return (
-                    <a
+                    <Link
                       key={video.id}
                       // Redirection vers la page notation jury
-                      href={`/notationjury/${video.id}`}
+                      to={`/notationjury/${video.id}`}
                       className="relative flex-shrink-0 w-56 md:w-64 bg-neutral-800 
                       rounded-2xl overflow-hidden transition 
                       hover:scale-105 hover:shadow-2xl group"
@@ -248,7 +249,7 @@ export default function DashboardJury() {
                           {video.director}
                         </p>
                       </div>
-                    </a>
+                    </Link>
                     );
                   })}
                 </div>
