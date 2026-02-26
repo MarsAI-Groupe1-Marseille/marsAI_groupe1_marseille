@@ -36,6 +36,7 @@ const DEFAULT_COLORS = {
     bgCardSecondary:     '#16213e',
     textPrimary:         '#ffffff',
     titleColor:          '#ffffff',
+    subtitleColor:       '#cccccc',
     textMuted:           '#666688',
     heroGradientFrom:    '#7c3aed',
     heroGradientTo:      '#a855f7',
@@ -237,7 +238,7 @@ const Home = () => {
 
                     <p
                         className="max-w-2xl text-sm sm:text-base md:text-lg font-medium mb-6 sm:mb-10 leading-relaxed px-2 drop-shadow-md"
-                        style={{ position: 'relative', zIndex: 10, color: colors.textPrimary, opacity: 0.9 }}
+                        style={{ position: 'relative', zIndex: 10, color: colors.subtitleColor || colors.textPrimary }}
                     >
                         {heroSubtitle}
                     </p>
