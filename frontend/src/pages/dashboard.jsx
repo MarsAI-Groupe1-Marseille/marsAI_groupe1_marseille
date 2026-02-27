@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import {Link } from "react-router-dom";
 import {BarChart3, Layers, TrendingUp, LayoutDashboard, Users, Film} from "lucide-react";
 import { useLanguage } from '../context/LanguageContext.jsx';
+import axios from '../config/axiosConfig';
 import {
     AreaChart,
     Area,
@@ -13,18 +14,21 @@ import {
 } from "recharts";
 
 // Données pour le graphique d'évolution des soumissions
-const stats = [
-    { mois: "Jan", soumissions: 45, approuvés: 30 },
-    { mois: "Fév", soumissions: 78, approuvés: 52 },
-    { mois: "Mar", soumissions: 105, approuvés: 68 },
-    { mois: "Avr", soumissions: 65, approuvés: 42 },
-    { mois: "Mai", soumissions: 89, approuvés: 58 },
-    { mois: "Juin", soumissions: 120, approuvés: 85 },
+// Données par défaut pour le graphique d'évolution des soumissions
+const defaultChartData = [
+    { mois: "Sem 1", soumissions: 12, approuvés: 8 },
+    { mois: "Sem 2", soumissions: 18, approuvés: 13 },
+    { mois: "Sem 3", soumissions: 25, approuvés: 17 },
+    { mois: "Sem 4", soumissions: 22, approuvés: 15 },
+    { mois: "Sem 5", soumissions: 31, approuvés: 21 },
+    { mois: "Sem 6", soumissions: 28, approuvés: 19 },
+    { mois: "Sem 7", soumissions: 35, approuvés: 24 },
+    { mois: "Sem 8", soumissions: 38, approuvés: 26 },
 ];
 // Permet à créer un graphique de répartition "style barre horizontale"
 // name = nom de la catégorie
 // percent = largeur de la barre en %
-const categories = [
+const defaultCategories = [
     { name: "Documentaire", percent: 35 },
     { name: "Court-métrage", percent: 25 },
     { name: "Animation", percent: 20 },
@@ -71,6 +75,81 @@ const Dashboard = () => {
         job_title: "Directeur"
     });
     const [loading, setLoading] = useState(false);
+    const [dashboardStats, setDashboardStats] = useState({
+        totalSubmissions: 0,
+        approved: 0,
+        rejected: 0,
+        pending: 0
+    });
+    const [statsLoading, setStatsLoading] = useState(true);
+    const [categories, setCategories] = useState(defaultCategories);
+    const [categoriesLoading, setCategoriesLoading] = useState(true);
+    const [chartData, setChartData] = useState(defaultChartData);
+    const [chartDataLoading, setChartDataLoading] = useState(true);
+
+    // Récupérer les statistiques du dashboard
+    useEffect(() => {
+        const fetchDashboardStats = async () => {
+            try {
+                setStatsLoading(true);
+                const response = await axios.get('/admin/dashboard/stats');
+                setDashboardStats({
+                    totalSubmissions: response.data.totalSubmissions,
+                    approved: response.data.approved,
+                    rejected: response.data.rejected,
+                    pending: response.data.pending
+                });
+                setStatsLoading(false);
+            } catch (error) {
+                console.error('Erreur lors de la récupération des statistiques:', error);
+                setStatsLoading(false);
+                // Les données par défaut restent affichées en cas d'erreur
+            }
+        };
+
+        fetchDashboardStats();
+    }, []);
+
+    // Récupérer la répartition des catégories
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                setCategoriesLoading(true);
+                const response = await axios.get('/admin/dashboard/categories');
+                // Formater les catégories reçues de l'API
+                const formattedCategories = response.data.categories.map(cat => ({
+                    name: cat.name,
+                    percent: cat.percent
+                }));
+                setCategories(formattedCategories);
+                setCategoriesLoading(false);
+            } catch (error) {
+                console.error('Erreur lors de la récupération des catégories:', error);
+                setCategoriesLoading(false);
+                // Les catégories par défaut restent affichées en cas d'erreur
+            }
+        };
+
+        fetchCategories();
+    }, []);
+
+    // Récupérer les données du graphique (soumissions et approuvés par semaine)
+    useEffect(() => {
+        const fetchChartData = async () => {
+            try {
+                setChartDataLoading(true);
+                const response = await axios.get('/admin/dashboard/chart-data');
+                setChartData(response.data.chartData);
+                setChartDataLoading(false);
+            } catch (error) {
+                console.error('Erreur lors de la récupération des données du graphique:', error);
+                setChartDataLoading(false);
+                // Les données par défaut restent affichées en cas d'erreur
+            }
+        };
+
+        fetchChartData();
+    }, []);
 
     useEffect(() => {
         const verifyAdmin = async () => {
@@ -155,10 +234,10 @@ const Dashboard = () => {
                     {/* Content */}
                     {/* Affiche 4 cartes KPI avec le composant Card */}
                     <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-                        <Card label={t('dashboard_submissions')} value="435" />
-                        <Card label={t('dashboard_statistics_approved')} value="5" />
-                        <Card label={t('dashboard_statistics_rejected')} value="15" />
-                        <Card label={t('dashboard_statistics_pending')} value="80" />
+                        <Card label={t('dashboard_submissions')} value={statsLoading ? '-' : dashboardStats.totalSubmissions} />
+                        <Card label={t('dashboard_statistics_approved')} value={statsLoading ? '-' : dashboardStats.approved} />
+                        <Card label={t('dashboard_statistics_rejected')} value={statsLoading ? '-' : dashboardStats.rejected} />
+                        <Card label={t('dashboard_statistics_pending')} value={statsLoading ? '-' : dashboardStats.pending} />
                     </section>
 
                     <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
@@ -170,7 +249,7 @@ const Dashboard = () => {
                             </h2>
                             <p className="text-sm text-neutral-400 mb-6">{t('dashboard_evolution_subtitle')}</p>
                             <ResponsiveContainer width="100%" height={250}>
-                                <AreaChart data={stats} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                                <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                                     <defs>
                                         <linearGradient id="colorSoumissions" x1="0" y1="0" x2="0" y2="1">
                                             <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8}/>

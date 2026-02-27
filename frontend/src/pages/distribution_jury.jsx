@@ -205,29 +205,52 @@ export default function AdminDashboard() {
                   {t('jury_dist_global_progress')}
                 </h3>
                 <div className="flex-1 flex flex-col items-center justify-center">
-                  <ResponsiveContainer width="100%" height={250}>
+                  <ResponsiveContainer width="100%" height={300}>
                     <PieChart>
                       <Pie
                         data={[
-                          { name: t('jury_dist_completed'), value: juryStats.total_progress },
-                          { name: t('jury_dist_remaining'), value: 100 - juryStats.total_progress }
+                          { name: t('jury_dist_completed'), value: juryStats.total_progress, fill: '#a78bfa' },
+                          { name: t('jury_dist_remaining'), value: 100 - juryStats.total_progress, fill: '#6366f1' }
                         ]}
                         cx="50%"
-                        cy="40%"
+                        cy="50%"
                         innerRadius={60}
                         outerRadius={90}
                         paddingAngle={2}
                         dataKey="value"
-                        label
+                        label={({ name, value }) => `${name}\n${value}%`}
+                        labelLine={true}
                       >
                         <Cell fill="#a78bfa" />
                         <Cell fill="#6366f1" />
                       </Pie>
                       <Tooltip 
-                        contentStyle={{ backgroundColor: '#7391bd', border: '1px solid #a88a8a' }}
-                        formatter={(value) => `${value}%`}
+                        content={({ active, payload }) => {
+                          if (active && payload && payload.length) {
+                            const data = payload[0];
+                            const color = data.payload.fill || '#a78bfa';
+                            return (
+                              <div 
+                                style={{ 
+                                  backgroundColor: color, 
+                                  border: `2px solid ${color}`,
+                                  borderRadius: '6px',
+                                  padding: '8px 12px'
+                                }}
+                                className="text-white font-semibold"
+                              >
+                                {data.name}: {data.value}%
+                              </div>
+                            );
+                          }
+                          return null;
+                        }}
                       />
-                      <Legend verticalAlign="bottom" height={30} />
+                      <Legend 
+                        verticalAlign="bottom" 
+                        height={30}
+                        formatter={(value) => value}
+                      />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
