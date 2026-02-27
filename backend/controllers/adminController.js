@@ -31,6 +31,74 @@ exports.getDashboardStats = async (req, res) => {
     }
 };
 
+// Fonction pour récupérer la répartition des catégories
+exports.getCategoriesDistribution = async (req, res) => {
+    try {
+        // Récupérer tous les submissions avec leurs theme_tags
+        const submissions = await Submission.findAll({
+            attributes: ['theme_tags'],
+            where: { theme_tags: { [Op.ne]: null } } // Exclure les null
+        });
+
+        // Compter les occurrences de chaque catégorie
+        const categoriesCount = {};
+        let totalCount = 0;
+
+        submissions.forEach(submission => {
+            if (submission.theme_tags) {
+                // Séparer les catégories (peuvent être séparées par virgule/espace)
+                const tags = submission.theme_tags
+                    .split(/[,]/)  // Séparer par virgule
+                    .map(tag => tag.trim())
+                    .filter(tag => tag.length > 0);
+
+                tags.forEach(tag => {
+                    categoriesCount[tag] = (categoriesCount[tag] || 0) + 1;
+                    totalCount++;
+                });
+            }
+        });
+
+        // Calculer les pourcentages et formater les données
+        let allCategories = Object.entries(categoriesCount)
+            .map(([name, count]) => ({
+                name,
+                count,
+                percent: totalCount > 0 ? Math.round((count / totalCount) * 100) : 0
+            }))
+            .sort((a, b) => b.count - a.count); // Trier par nombre décroissant
+
+        // Garder seulement les Top 5 et grouper le reste dans "Autres"
+        const topCount = 5;
+        let categories = [];
+        let othersCount = 0;
+        let othersPercent = 0;
+
+        allCategories.forEach((cat, index) => {
+            if (index < topCount) {
+                categories.push(cat);
+            } else {
+                othersCount += cat.count;
+                othersPercent += cat.percent;
+            }
+        });
+
+        // Ajouter la catégorie "Autres" si elle existe
+        if (othersCount > 0) {
+            categories.push({
+                name: "Autres",
+                count: othersCount,
+                percent: othersPercent > 0 ? othersPercent : Math.round((othersCount / totalCount) * 100)
+            });
+        }
+
+        res.status(200).json({ categories });
+    } catch (error) {
+        console.error("Erreur lors de la récupération des catégories :", error);
+        res.status(500).json({ message: "Erreur serveur.", error: error.message });
+    }
+};
+
 // 3. On implémente la logique de modération dans une seule fonction
 exports.moderateSubmission = async (req, res) => {
     const transaction = await sequelize.transaction();

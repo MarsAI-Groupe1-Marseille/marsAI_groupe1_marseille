@@ -12,6 +12,14 @@ router.get('/dashboard/stats',
     adminController.getDashboardStats // 3. Récupération des stats
 );
 
+// URL : GET http://localhost:3000/api/admin/dashboard/categories
+// route pour récupérer la répartition des catégories (theme_tags)
+router.get('/dashboard/categories',
+    verifyToken,          // 1. Vérification connexion
+    checkRole('admin'),   // 2. Vérification rôle Admin
+    adminController.getCategoriesDistribution // 3. Récupération des catégories
+);
+
 // URL : POST http://localhost:3000/api/admin/moderation/:submissionId
 // route pour modérer une soumission (approbation ou refus avec motif)
 // Body : { status: 'approved' } ou { status: 'rejected', issue_type: '...', description: '...' }
