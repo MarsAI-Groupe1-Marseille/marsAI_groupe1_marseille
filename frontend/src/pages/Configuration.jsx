@@ -154,6 +154,7 @@ const DEFAULT_HOME_CONFIG = {
   partners: {
     enabled: true,
     title: 'Nos Partenaires',
+    title_en: 'Our Partners', // ← AJOUT
     subtitle: 'Ils font confiance à la plateforme',
     subtitle_en: 'They trust our platform',
     items: [
@@ -667,8 +668,15 @@ const HomeConfigModal = ({ onClose }) => {
               <SectionHeader label="Section Partenaires" enabled={config.partners.enabled}
                 onChange={v => set('partners', { ...config.partners, enabled: v })} />
               <div className={config.partners.enabled ? '' : 'opacity-30 pointer-events-none'}>
-                <Field label="Titre de la section" value={config.partners.title}
-                  onChange={v => set('partners', { ...config.partners, title: v })} placeholder="Nos Partenaires" />
+
+                {/* ── Titre de la section FR + EN ── */}
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label="Titre de la section" value={config.partners.title}
+                    onChange={v => set('partners', { ...config.partners, title: v })} placeholder="Nos Partenaires" />
+                  <FieldEN label="Titre de la section" value={config.partners.title_en ?? ''}
+                    onChange={v => set('partners', { ...config.partners, title_en: v })} placeholder="Our Partners" />
+                </div>
+
                 <Field label="Sous-titre" value={config.partners.subtitle}
                   onChange={v => set('partners', { ...config.partners, subtitle: v })} placeholder="Ils font confiance à la plateforme" />
                 <FieldEN label="Sous-titre" value={config.partners.subtitle_en ?? ''}
