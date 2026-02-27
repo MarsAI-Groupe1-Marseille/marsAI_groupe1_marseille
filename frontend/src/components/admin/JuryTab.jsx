@@ -65,6 +65,15 @@ export default function JuryTab() {
     return specialite ? [specialite] : [];
   };
 
+  const specialtyBadgeColors = [
+    'bg-violet-900/30 text-violet-200 border-violet-700/40',
+    'bg-blue-900/30 text-blue-200 border-blue-700/40',
+    'bg-emerald-900/30 text-emerald-200 border-emerald-700/40',
+    'bg-amber-900/30 text-amber-200 border-amber-700/40',
+    'bg-rose-900/30 text-rose-200 border-rose-700/40',
+    'bg-cyan-900/30 text-cyan-200 border-cyan-700/40'
+  ];
+
   useEffect(() => {
     fetchJury();
   }, []);
@@ -290,21 +299,7 @@ export default function JuryTab() {
             const votesCast = stats.votes_cast || 0;
             const progressPercentage = totalFilms > 0 ? Math.round((votesCast / totalFilms) * 100) : 0;
             
-            const getRoleIcon = (role) => {
-              switch(role) {
-                case 'lead': return <Trophy size={16} className="mr-1" />;
-                case 'moderator': return <Scale size={16} className="mr-1" />;
-                default: return <UserCheck size={16} className="mr-1" />;
-              }
-            };
-
-            const getRoleLabel = (role) => {
-              switch(role) {
-                case 'lead': return t('jury_tab_leader');
-                case 'moderator': return t('jury_tab_moderator');
-                default: return t('jury_tab_jury');
-              }
-            };
+            const specialties = parseSpecialite(member.specialite);
 
             return (
           <div key={member.id} className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 md:p-6 hover:bg-neutral-800 transition">
@@ -328,26 +323,20 @@ export default function JuryTab() {
                   {member.email}
                 </p>
                 <div className="flex gap-2 flex-wrap">
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-semibold text-white flex items-center flex-shrink-0 ${
-                     getRoleLabel(member.role)
-                        ? 'bg-blue-600'
-                        : 'bg-violet-600'
-                    }`}
-                  >
-                    {getRoleIcon(member.role)}
-                    {member.role === 'lead' && 'Leader'}
-                    {member.role === 'moderator' && 'Modérateur'}
-                    {member.role === 'jury' && 'Jury'}
-                  </span>
-                  {parseSpecialite(member.specialite).slice(0, 1).map((item, index) => (
-                    <span
-                      key={`${member.id}-spec-${index}`}
-                      className="px-3 py-1 rounded-full text-xs font-semibold text-violet-300 bg-violet-900/30 truncate"
-                    >
-                      {item}
+                  {specialties.length > 0 ? (
+                    specialties.map((item, index) => (
+                      <span
+                        key={`${member.id}-spec-${index}`}
+                        className={`px-3 py-1 rounded-full text-xs font-semibold border truncate ${specialtyBadgeColors[index % specialtyBadgeColors.length]}`}
+                      >
+                        {item}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="px-3 py-1 rounded-full text-xs font-semibold text-blue-200 bg-blue-900/30 border border-blue-700/40">
+                      Jury
                     </span>
-                  ))}
+                  )}
                 </div>
               </div>
             </div>
@@ -448,10 +437,21 @@ export default function JuryTab() {
                   )}
                   <div className="flex-1 min-w-0">
                     <div className="font-semibold text-neutral-200 truncate">{member.full_name}</div>
-                    <div className="text-xs text-neutral-500 truncate">
-                      {parseSpecialite(member.specialite).length > 0
-                        ? parseSpecialite(member.specialite).join(', ')
-                        : t('jury_tab_no_specialty')}
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {parseSpecialite(member.specialite).length > 0 ? (
+                        parseSpecialite(member.specialite).map((item, index) => (
+                          <span
+                            key={`${member.id}-mobile-spec-${index}`}
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border truncate ${specialtyBadgeColors[index % specialtyBadgeColors.length]}`}
+                          >
+                            {item}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold text-blue-200 bg-blue-900/30 border border-blue-700/40">
+                          Jury
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
