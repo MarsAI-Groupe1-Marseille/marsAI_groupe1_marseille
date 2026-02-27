@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import {Link } from "react-router-dom";
 import {BarChart3, Layers, TrendingUp, LayoutDashboard, Users, Film} from "lucide-react";
 import { useLanguage } from '../context/LanguageContext.jsx';
+import axios from '../config/axiosConfig';
 import {
     AreaChart,
     Area,
@@ -71,6 +72,36 @@ const Dashboard = () => {
         job_title: "Directeur"
     });
     const [loading, setLoading] = useState(false);
+    const [dashboardStats, setDashboardStats] = useState({
+        totalSubmissions: 0,
+        approved: 0,
+        rejected: 0,
+        pending: 0
+    });
+    const [statsLoading, setStatsLoading] = useState(true);
+
+    // Récupérer les statistiques du dashboard
+    useEffect(() => {
+        const fetchDashboardStats = async () => {
+            try {
+                setStatsLoading(true);
+                const response = await axios.get('/admin/dashboard/stats');
+                setDashboardStats({
+                    totalSubmissions: response.data.totalSubmissions,
+                    approved: response.data.approved,
+                    rejected: response.data.rejected,
+                    pending: response.data.pending
+                });
+                setStatsLoading(false);
+            } catch (error) {
+                console.error('Erreur lors de la récupération des statistiques:', error);
+                setStatsLoading(false);
+                // Les données par défaut restent affichées en cas d'erreur
+            }
+        };
+
+        fetchDashboardStats();
+    }, []);
 
     useEffect(() => {
         const verifyAdmin = async () => {
@@ -155,10 +186,10 @@ const Dashboard = () => {
                     {/* Content */}
                     {/* Affiche 4 cartes KPI avec le composant Card */}
                     <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-                        <Card label={t('dashboard_submissions')} value="435" />
-                        <Card label={t('dashboard_statistics_approved')} value="5" />
-                        <Card label={t('dashboard_statistics_rejected')} value="15" />
-                        <Card label={t('dashboard_statistics_pending')} value="80" />
+                        <Card label={t('dashboard_submissions')} value={statsLoading ? '-' : dashboardStats.totalSubmissions} />
+                        <Card label={t('dashboard_statistics_approved')} value={statsLoading ? '-' : dashboardStats.approved} />
+                        <Card label={t('dashboard_statistics_rejected')} value={statsLoading ? '-' : dashboardStats.rejected} />
+                        <Card label={t('dashboard_statistics_pending')} value={statsLoading ? '-' : dashboardStats.pending} />
                     </section>
 
                     <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
