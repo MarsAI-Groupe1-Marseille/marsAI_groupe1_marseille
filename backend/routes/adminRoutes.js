@@ -4,7 +4,13 @@ const adminController = require('../controllers/adminController');
 const finalistController = require('../controllers/finalistController');
 const { verifyToken, checkRole } = require('../middlewares/authMiddleware');
 
-
+// URL : GET http://localhost:3000/api/admin/dashboard/stats
+// route pour récupérer les statistiques du dashboard (films soumis, approuvés, rejetés, en attente)
+router.get('/dashboard/stats',
+    verifyToken,          // 1. Vérification connexion
+    checkRole('admin'),   // 2. Vérification rôle Admin
+    adminController.getDashboardStats // 3. Récupération des stats
+);
 
 // URL : POST http://localhost:3000/api/admin/moderation/:submissionId
 // route pour modérer une soumission (approbation ou refus avec motif)

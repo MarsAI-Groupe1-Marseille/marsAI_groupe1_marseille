@@ -1,7 +1,35 @@
 // 1. On importe les modèles nécessaires
 const { sequelize, Submission, ModerationTicket, Director, JuryList, JuryListSubmission, JuryMember, User } = require('../models');
+const { Op } = require('sequelize'); 
 // 2. On importe le service d'emailing pour envoyer les notifications aux réalisateurs
 const emailService = require('../services/emailService');
+
+// Fonction pour récupérer les statistiques du dashboard
+exports.getDashboardStats = async (req, res) => {
+    try {
+        // Compter les soumissions par statut d'approbation
+        const totalSubmissions = await Submission.count();
+        const approvedCount = await Submission.count({ 
+            where: { approval_status: 'approved' } 
+        });
+        const rejectedCount = await Submission.count({ 
+            where: { approval_status: 'rejected' } 
+        });
+        const pendingCount = await Submission.count({ 
+            where: { approval_status: { [Op.in]: ['submitted', 'incomplete'] } } 
+        });
+
+        res.status(200).json({
+            totalSubmissions,
+            approved: approvedCount,
+            rejected: rejectedCount,
+            pending: pendingCount
+        });
+    } catch (error) {
+        console.error("Erreur lors de la récupération des statistiques :", error);
+        res.status(500).json({ message: "Erreur serveur.", error: error.message });
+    }
+};
 
 // 3. On implémente la logique de modération dans une seule fonction
 exports.moderateSubmission = async (req, res) => {
