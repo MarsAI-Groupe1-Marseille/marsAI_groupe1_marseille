@@ -30,8 +30,8 @@ const Legal = () => {
                     <section className="p-8 rounded-2xl bg-slate-900/50 border border-white/5">
                         <h2 className="text-2xl font-bold text-white mb-4">2. Hébergement</h2>
                         <p className="text-slate-400 leading-relaxed">
-                            Ce site est hébergé par [Nom de l'hébergeur], situé à [Adresse de l'hébergeur].<br />
-                            Téléphone : [Numéro de téléphone de l'hébergeur].
+                            Ce site est hébergé par , situé à .<br />
+                            Téléphone : 06 00 00 00 00.
                         </p>
                     </section>
 
