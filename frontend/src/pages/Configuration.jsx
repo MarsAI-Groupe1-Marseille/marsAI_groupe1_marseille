@@ -135,10 +135,14 @@ const DEFAULT_HOME_CONFIG = {
   categories: {
     enabled: true,
     items: [
-      { title: 'SCI-FI',  title_en: 'SCI-FI',  desc: 'Exploration des futurs possibles.',  desc_en: 'Exploring possible futures.' },
-      { title: 'HORREUR', title_en: 'HORROR',  desc: "Frissons garantis par l'IA.",        desc_en: 'AI-powered thrills guaranteed.' },
-      { title: 'ACTION',  title_en: 'ACTION',  desc: 'Adrénaline et cinématiques.',        desc_en: 'Adrenaline and cinematics.' },
-      { title: 'DRAME',   title_en: 'DRAMA',   desc: 'Émotions profondes et récits.',      desc_en: 'Deep emotions and narratives.' },
+      { key: 'sci_fi',      title: 'SCI-FI',       title_en: 'SCI-FI',       desc: 'Exploration des futurs possibles.',              desc_en: 'Exploration of possible futures.',           image: '/Gemini_Generated_Image_ScFIction.png' },
+      { key: 'horror',      title: 'HORREUR',      title_en: 'HORROR',       desc: "Frissons garantis par l'IA.",                    desc_en: 'Guaranteed thrills by AI.',                  image: '/Gemini_Generated_Image_Horreur.png' },
+      { key: 'action',      title: 'ACTION',       title_en: 'ACTION',       desc: 'Adrénaline et cinématiques.',                    desc_en: 'Adrenaline and cinematics.',                 image: '/Gemini_Generated_Image_Action.png' },
+      { key: 'drama',       title: 'DRAME',        title_en: 'DRAMA',        desc: 'Émotions profondes et récits.',                  desc_en: 'Deep emotions and stories.',                 image: '/Gemini_Generated_Image_Drame.png' },
+      { key: 'thriller',    title: 'THRILLER',     title_en: 'THRILLER',     desc: 'Enquête approfonfis et suspense.',               desc_en: 'In-depth investigation and suspense.',       image: '/Gemini_Generated_Image_Thriller.png' },
+      { key: 'documentary', title: 'DOCUMENTAIRE', title_en: 'DOCUMENTARY',  desc: 'Reportage et investigation de haut vol.',        desc_en: 'High-level reporting and investigation.',    image: '/Gemini_Generated_Image_Documentaire.png' },
+      { key: 'animation',   title: 'ANIMATION',    title_en: 'ANIMATION',    desc: 'Technologie et fantaisie.',                      desc_en: 'Technology and fantasy.',                    image: '/Gemini_Generated_Image_Animation.png' },
+      { key: 'history',     title: 'HISTOIRE',     title_en: 'HISTORY',      desc: "Revisite les meilleurs moments de l'histoire.",  desc_en: 'Revisit the best moments that marked history.', image: '/Gemini_Generated_Image_Histoire.png' },
     ],
   },
   awards: {
@@ -387,10 +391,30 @@ const HomeConfigModal = ({ onClose }) => {
   const handleSave = async () => {
     setSaving(true)
     try {
-      await axios.post('/admin/home-config', { config })
-    } catch {}
-    localStorage.setItem('home_config', JSON.stringify(config))
+      // 1. Envoyer la config à l'API (qui va uploader les base64 vers S3)
+      const { data } = await axios.post('/admin/home-config', { config })
+      
+      if (data?.success && data?.config) {
+        // 2. Mettre à jour le state avec la config contenant les URLs S3
+        setConfig(data.config)
+        
+        // 3. Sauvegarder la version avec URLs S3 dans localStorage
+        localStorage.setItem('home_config', JSON.stringify(data.config))
+        
+        console.log('✅ Configuration sauvegardée (images uploadées sur S3)')
+      } else {
+        // Fallback : sauvegarder dans localStorage uniquement
+        localStorage.setItem('home_config', JSON.stringify(config))
+      }
+    } catch (error) {
+      console.error('Erreur sauvegarde config:', error)
+      // Fallback : sauvegarder dans localStorage uniquement
+      localStorage.setItem('home_config', JSON.stringify(config))
+    }
+    
+    // Notifier les autres composants du changement
     window.dispatchEvent(new Event('home_config_saved'))
+    
     setSaving(false)
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)

@@ -152,13 +152,13 @@ const Home = () => {
     return (
         <div className="min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-violet-950 selection:text-white">
 
-            <main className="pt-20">
+            <main>
 
                 {/* ── HERO ── */}
                 {(homeConfig?.hero?.enabled !== false) && (
                 <section
                     id="accueil"
-                    className="relative w-full min-h-screen flex flex-col items-center justify-center text-center px-4 overflow-hidden bg-black"
+                    className="relative w-full min-h-screen flex flex-col items-center justify-center text-center px-4 py-20 overflow-hidden bg-black"
                     style={{ position: 'relative', zIndex: 1 }}
                 >
                     <video autoPlay muted loop playsInline style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 1 }}>
@@ -168,17 +168,17 @@ const Home = () => {
                     <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 3 }} />
                     <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '500px', height: '500px', background: 'radial-gradient(circle, rgba(234,88,12,0.2) 0%, transparent 70%)', borderRadius: '50%', filter: 'blur(100px)', zIndex: 3, pointerEvents: 'none' }} />
 
-                    <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black text-white tracking-tight mb-4 sm:mb-6" style={{ position: 'relative', zIndex: 10 }}>
+                    <h1 className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-black text-white tracking-tight mb-3 sm:mb-6" style={{ position: 'relative', zIndex: 10 }}>
                         {heroTitle} <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-violet-600">{heroTitleHighlight}</span>
                     </h1>
-                    <p className="max-w-2xl text-sm sm:text-base md:text-lg font-medium text-white/90 mb-6 sm:mb-10 leading-relaxed px-2 drop-shadow-md" style={{ position: 'relative', zIndex: 10 }}>
+                    <p className="max-w-2xl text-xs sm:text-base md:text-lg font-medium text-white/90 mb-4 sm:mb-10 leading-relaxed px-2 drop-shadow-md" style={{ position: 'relative', zIndex: 10 }}>
                         {heroSubtitle}
                     </p>
-                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto px-4 sm:px-0" style={{ position: 'relative', zIndex: 10 }}>
-                        <button onClick={() => setShowVideoModal(true)} className="bg-white text-slate-950 px-6 sm:px-8 py-3 rounded-full font-bold hover:bg-slate-200 transition flex items-center justify-center gap-2 text-sm sm:text-base">
-                            {ctaPrimary} <ArrowRight size={18} />
+                    <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-4 w-full sm:w-auto px-4 sm:px-0" style={{ position: 'relative', zIndex: 10 }}>
+                        <button onClick={() => setShowVideoModal(true)} className="bg-white text-slate-950 px-5 sm:px-8 py-2.5 sm:py-3 rounded-full font-bold hover:bg-slate-200 transition flex items-center justify-center gap-2 text-xs sm:text-base">
+                            {ctaPrimary} <ArrowRight size={16} className="sm:w-[18px] sm:h-[18px]" />
                         </button>
-                        <button className="border border-white/20 px-6 sm:px-8 py-3 rounded-full font-bold hover:bg-white/10 transition text-sm sm:text-base" onClick={() => setShowAboutModal(true)}>
+                        <button className="border border-white/20 px-5 sm:px-8 py-2.5 sm:py-3 rounded-full font-bold hover:bg-white/10 transition text-xs sm:text-base" onClick={() => setShowAboutModal(true)}>
                             {ctaSecondary}
                         </button>
                     </div>

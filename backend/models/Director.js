@@ -9,7 +9,14 @@ const Director = sequelize.define('Director', {
   birth_date: { type: DataTypes.DATEONLY, allowNull: false },
 
   // Contact
-  email: { type: DataTypes.STRING, allowNull: false, unique: true },
+  email: { 
+    type: DataTypes.STRING, 
+    allowNull: false, 
+    unique: {
+      name: 'unique_director_email',
+      msg: 'Email déjà utilisé'
+    }
+  },
   phone: { type: DataTypes.STRING },
   mobile: { type: DataTypes.STRING, allowNull: false },
 

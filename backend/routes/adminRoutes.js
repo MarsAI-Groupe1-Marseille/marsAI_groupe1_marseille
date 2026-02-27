@@ -97,5 +97,24 @@ router.delete('/assigne-jury',
     checkRole('admin'),
     adminController.removeJuryFromPlaylist);
 
+// ===================================================================
+// ROUTES CONFIGURATION HOME PAGE
+// ===================================================================
+
+// URL : GET http://localhost:3000/api/admin/home-config
+// route pour récupérer la configuration de la page home
+router.get('/home-config',
+    verifyToken,
+    checkRole('admin'),
+    adminController.getHomeConfig);
+
+// URL : POST http://localhost:3000/api/admin/home-config
+// route pour sauvegarder/mettre à jour la configuration de la page home
+// Body : { config: { hero: {...}, categories: {...}, awards: {...}, partners: {...} } }
+router.post('/home-config',
+    verifyToken,
+    checkRole('admin'),
+    adminController.updateHomeConfig);
+
 module.exports = router;
 
