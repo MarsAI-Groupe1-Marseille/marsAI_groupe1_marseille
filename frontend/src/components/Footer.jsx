@@ -178,7 +178,7 @@ const Footer = () => {
             </p>
 
             <div className="flex items-center gap-4 text-xs text-[var(--color-text-muted)]">
-              <a className="hover:text-[var(--color-secondary)] transition-colors" href="#">{t('footer_legal')}</a>
+              <Link className="hover:text-[var(--color-secondary)] transition-colors" to="/legal">{t('footer_legal')}</Link>
               <a className="hover:text-[var(--color-secondary)] transition-colors" href="#">{t('footer_privacy')}</a>
             </div>
           </div>

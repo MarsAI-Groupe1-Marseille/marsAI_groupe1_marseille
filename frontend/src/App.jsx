@@ -5,6 +5,7 @@ import Login from './pages/login.jsx';
 import Faq from './pages/faq.jsx';
 import Contact from './pages/contact.jsx';
 import FilmDetail from './pages/film_detail.jsx';
+import Legal from './pages/legal.jsx';
 import Dashboard from './pages/dashboard.jsx';
 import DashboardUser from './pages/dashboardUser.jsx';
 import DashboardJury from './pages/dashboardJury.jsx';
@@ -69,6 +70,7 @@ function App() {
           <Route path="/faq" element={<Faq />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/galerie/:id" element={<FilmDetail />} />
+          <Route path="/legal" element={<Legal />} />
           <Route path="/login" element={<Login />} />
           <Route path='/submission' element={<SubmissionForm />} />
           <Route path="/active-compte" element={<ActiveCompte />} />
@@ -82,7 +84,7 @@ function App() {
             path="/selectfinaliste"
             element={(
               <ProtectedRoute allowedRoles={["admin"]}>
-                <SelectFinaliste/>
+                <SelectFinaliste />
               </ProtectedRoute>
             )}
           />
