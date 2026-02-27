@@ -14,7 +14,8 @@ import {
 } from "recharts";
 
 // Données pour le graphique d'évolution des soumissions
-const chartData = [
+// Données par défaut pour le graphique d'évolution des soumissions
+const defaultChartData = [
     { mois: "Sem 1", soumissions: 12, approuvés: 8 },
     { mois: "Sem 2", soumissions: 18, approuvés: 13 },
     { mois: "Sem 3", soumissions: 25, approuvés: 17 },
@@ -83,6 +84,8 @@ const Dashboard = () => {
     const [statsLoading, setStatsLoading] = useState(true);
     const [categories, setCategories] = useState(defaultCategories);
     const [categoriesLoading, setCategoriesLoading] = useState(true);
+    const [chartData, setChartData] = useState(defaultChartData);
+    const [chartDataLoading, setChartDataLoading] = useState(true);
 
     // Récupérer les statistiques du dashboard
     useEffect(() => {
@@ -128,6 +131,24 @@ const Dashboard = () => {
         };
 
         fetchCategories();
+    }, []);
+
+    // Récupérer les données du graphique (soumissions et approuvés par semaine)
+    useEffect(() => {
+        const fetchChartData = async () => {
+            try {
+                setChartDataLoading(true);
+                const response = await axios.get('/admin/dashboard/chart-data');
+                setChartData(response.data.chartData);
+                setChartDataLoading(false);
+            } catch (error) {
+                console.error('Erreur lors de la récupération des données du graphique:', error);
+                setChartDataLoading(false);
+                // Les données par défaut restent affichées en cas d'erreur
+            }
+        };
+
+        fetchChartData();
     }, []);
 
     useEffect(() => {

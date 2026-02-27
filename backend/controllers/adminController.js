@@ -99,6 +99,56 @@ exports.getCategoriesDistribution = async (req, res) => {
     }
 };
 
+// Fonction pour récupérer les données du graphique (soumissions et approuvés par semaine)
+exports.getSubmissionsChartData = async (req, res) => {
+    try {
+        // Récupérer les 8 dernières semaines de données
+        const weeksData = [];
+        
+        // Générer les données pour les 8 dernières semaines (de la plus ancienne à la plus récente)
+        for (let i = 7; i >= 0; i--) {
+            const weekStart = new Date();
+            weekStart.setDate(weekStart.getDate() - (i * 7));
+            weekStart.setHours(0, 0, 0, 0);
+            
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekEnd.getDate() + 6);
+            weekEnd.setHours(23, 59, 59, 999);
+            
+            // Compter les soumissions de la semaine
+            const soumissionsCount = await Submission.count({
+                where: {
+                    created_at: {
+                        [Op.between]: [weekStart, weekEnd]
+                    }
+                }
+            });
+            
+            // Compter les approuvés de la semaine
+            const approvesCount = await Submission.count({
+                where: {
+                    approval_status: 'approved',
+                    created_at: {
+                        [Op.between]: [weekStart, weekEnd]
+                    }
+                }
+            });
+            
+            const weekNumber = 8 - i; // Sem 1 à Sem 8
+            weeksData.push({
+                mois: `Sem ${weekNumber}`,
+                soumissions: soumissionsCount,
+                approuvés: approvesCount
+            });
+        }
+        
+        res.status(200).json({ chartData: weeksData });
+    } catch (error) {
+        console.error("Erreur lors de la récupération des données du graphique :", error);
+        res.status(500).json({ message: "Erreur serveur.", error: error.message });
+    }
+};
+
 // 3. On implémente la logique de modération dans une seule fonction
 exports.moderateSubmission = async (req, res) => {
     const transaction = await sequelize.transaction();

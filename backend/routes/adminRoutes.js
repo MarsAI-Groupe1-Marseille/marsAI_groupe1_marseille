@@ -20,6 +20,14 @@ router.get('/dashboard/categories',
     adminController.getCategoriesDistribution // 3. Récupération des catégories
 );
 
+// URL : GET http://localhost:3000/api/admin/dashboard/chart-data
+// route pour récupérer les données du graphique (soumissions et approuvés par semaine)
+router.get('/dashboard/chart-data',
+    verifyToken,          // 1. Vérification connexion
+    checkRole('admin'),   // 2. Vérification rôle Admin
+    adminController.getSubmissionsChartData // 3. Récupération des données du graphique
+);
+
 // URL : POST http://localhost:3000/api/admin/moderation/:submissionId
 // route pour modérer une soumission (approbation ou refus avec motif)
 // Body : { status: 'approved' } ou { status: 'rejected', issue_type: '...', description: '...' }
