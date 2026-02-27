@@ -1,8 +1,10 @@
 // 1. On importe les modèles nécessaires
-const { sequelize, Submission, ModerationTicket, Director, JuryList, JuryListSubmission, JuryMember, User } = require('../models');
+const { sequelize, Submission, ModerationTicket, Director, JuryList, JuryListSubmission, JuryMember, User, SiteConfig } = require('../models');
 const { Op } = require('sequelize'); 
 // 2. On importe le service d'emailing pour envoyer les notifications aux réalisateurs
 const emailService = require('../services/emailService');
+// 3. On importe le helper pour uploader les images base64 vers S3
+const { processConfigImages } = require('../utils/uploadHelper');
 
 // Fonction pour récupérer les statistiques du dashboard
 exports.getDashboardStats = async (req, res) => {
@@ -470,5 +472,92 @@ exports.deleteManyJuryLists = async (req, res) => {
         await transaction.rollback();
         console.error("Erreur lors de la suppression des playlists :", error);
         res.status(500).json({ message: "Erreur serveur.", error: error.message });
+    }
+};
+
+// ===================================================================
+// CONFIGURATION HOME PAGE
+// ===================================================================
+
+// Récupérer la configuration de la page Home
+exports.getHomeConfig = async (req, res) => {
+    try {
+        // Chercher la config en BDD
+        let siteConfig = await SiteConfig.findOne({ 
+            where: { config_key: 'home_page' } 
+        });
+
+        if (siteConfig) {
+            // Config trouvée en BDD
+            return res.status(200).json({ 
+                success: true, 
+                config: siteConfig.config_data 
+            });
+        } else {
+            // Pas de config en BDD, retourner une config par défaut vide
+            // Le frontend utilisera son localStorage ou sa config par défaut
+            return res.status(200).json({ 
+                success: true, 
+                config: null 
+            });
+        }
+    } catch (error) {
+        console.error("Erreur lors de la récupération de la config home:", error);
+        res.status(500).json({ 
+            message: "Erreur lors de la récupération de la configuration.", 
+            error: error.message 
+        });
+    }
+};
+
+// Sauvegarder/Mettre à jour la configuration de la page Home
+exports.updateHomeConfig = async (req, res) => {
+    try {
+        const { config } = req.body;
+
+        if (!config) {
+            return res.status(400).json({ 
+                message: "La configuration est requise." 
+            });
+        }
+
+        console.log('🔄 Traitement de la config home...');
+
+        // 1. Traiter les images base64 et les uploader vers S3
+        const processedConfig = await processConfigImages(config);
+
+        console.log('Images traitées et uploadées sur S3');
+
+        // 2. Chercher si une config existe déjà
+        let siteConfig = await SiteConfig.findOne({ 
+            where: { config_key: 'home_page' } 
+        });
+
+        if (siteConfig) {
+            // Mise à jour
+            siteConfig.config_data = processedConfig;
+            await siteConfig.save();
+            console.log('Configuration mise à jour en BDD');
+        } else {
+            // Création
+            siteConfig = await SiteConfig.create({
+                config_key: 'home_page',
+                config_data: processedConfig
+            });
+            console.log('Configuration créée en BDD');
+        }
+
+        res.status(200).json({ 
+            success: true, 
+            message: 'Configuration sauvegardée avec succès.', 
+            config: processedConfig 
+        });
+
+    } catch (error) {
+        console.error("Erreur lors de la sauvegarde de la config home:", error);
+        res.status(500).json({ 
+            message: "Erreur lors de la sauvegarde de la configuration.", 
+            error: error.message 
+        });
     }
 };

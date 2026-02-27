@@ -2,7 +2,14 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db');
 
 const User = sequelize.define('User', {
-  email: { type: DataTypes.STRING, allowNull: false, unique: true },
+  email: { 
+    type: DataTypes.STRING, 
+    allowNull: false, 
+    unique: {
+      name: 'unique_user_email',
+      msg: 'Email déjà utilisé'
+    }
+  },
   password_hash: { type: DataTypes.STRING }, 
   full_name: { type: DataTypes.STRING },
   avatar_url: { type: DataTypes.STRING },

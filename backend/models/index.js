@@ -10,6 +10,7 @@ const JuryEvaluation = require('./JuryEvaluation');
 const ModerationTicket = require('./ModerationTicket');
 const JuryMember = require('./JuryMember');
 const JuryListSubmission = require('./JuryListSubmission');
+const SiteConfig = require('./SiteConfig');
 
 // ====================================================
 // DEFINITION DES RELATIONS
@@ -108,5 +109,6 @@ module.exports = {
     JuryEvaluation,
     ModerationTicket,
     JuryMember,
-    JuryListSubmission
+    JuryListSubmission,
+    SiteConfig
 };
