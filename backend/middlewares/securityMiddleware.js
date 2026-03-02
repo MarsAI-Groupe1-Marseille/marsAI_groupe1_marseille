@@ -46,24 +46,37 @@ const uploadLimiter = rateLimit({
 
 // ===== HELMET CONFIGURATION =====
 const helmetConfig = helmet({
-    contentSecurityPolicy: {
+    // Désactiver CSP en développement (trop restrictif pour debug)
+    contentSecurityPolicy: process.env.NODE_ENV === 'production' ? {
         directives: {
             defaultSrc: ["'self'"],
             scriptSrc: ["'self'"],
             styleSrc: ["'self'", "'unsafe-inline'"],
-            imageSrc: ["'self'", "data:", "https://"],
-            connectSrc: ["'self'", "https://www.googleapis.com", "https://accounts.google.com"],
+            imageSrc: [
+                "'self'",
+                "http://localhost:3000",
+                "data:",
+                "https:",
+                "blob:"
+            ],
+            connectSrc: ["'self'", "http://localhost:3000", "https://www.googleapis.com", "https://accounts.google.com"],
             fontSrc: ["'self'", "data:"],
             frameSrc: ["'none'"],
             objectSrc: ["'none'"],
             upgradeInsecureRequests: []
         }
-    },
-    hsts: {
-        maxAge: 31536000, // 1 an
+    } : false,  // Désactivé en dev
+    
+    // Désactiver HSTS en développement
+    hsts: process.env.NODE_ENV === 'production' ? {
+        maxAge: 31536000,
         includeSubDomains: true,
         preload: true
-    },
+    } : false,
+    
+    // IMPORTANT: Autoriser le chargement cross-origin des ressources
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    
     frameguard: {
         action: 'deny'
     },

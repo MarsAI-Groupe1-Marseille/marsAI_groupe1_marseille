@@ -51,12 +51,12 @@ const submissionValidators = [
     body('synopsis_original')
         .trim()
         .notEmpty().withMessage('Synopsis original requis')
-        .isLength({ min: 50, max: 2000 }).withMessage('Synopsis : 50-2000 caractères')
+        .isLength({ min: 2, max: 2000 }).withMessage('Synopsis : 2-2000 caractères')
         .escape(),
     body('synopsis_english')
         .trim()
         .notEmpty().withMessage('Synopsis anglais requis')
-        .isLength({ min: 50, max: 2000 }).withMessage('Synopsis : 50-2000 caractères')
+        .isLength({ min: 2, max: 2000 }).withMessage('Synopsis : 2-2000 caractères')
         .escape(),
 
     // Durée
@@ -64,10 +64,12 @@ const submissionValidators = [
         .optional()
         .isInt({ min: 60, max: 3600 }).withMessage('Durée : entre 1 et 60 minutes'),
 
-    // Langue
+    // Langue - Accepte codes ISO ou noms complets (Francais, English, etc.)
     body('language_main')
         .notEmpty().withMessage('Langue requise')
-        .isIn(['fr', 'en', 'es', 'de']).withMessage('Langue non acceptée'),
+        .trim()
+        .isLength({ min: 2, max: 50 }).withMessage('Langue : 2-50 caractères')
+        .escape(),
 
     // Tags/Thèmes - VALIDÉ PAR VIRGULES
     body('theme_tags')
@@ -94,7 +96,8 @@ const submissionValidators = [
     body('ai_methodology')
         .optional()
         .trim()
-        .isLength({ min: 10, max: 2000 }).withMessage('Méthodologie : 10-2000 caractères')
+        .if(value => value && value.length > 0)
+        .isLength({ min: 5, max: 2000 }).withMessage('Méthodologie : 5-2000 caractères')
         .escape(),
 
     // DIRECTOR
@@ -132,11 +135,12 @@ const submissionValidators = [
     body('director_phone')
         .optional()
         .trim()
-        .matches(/^[0-9+\s\-()]+$/).withMessage('Numéro de téléphone invalide'),
+        .if(value => value && value.length > 0)
+        .matches(/^[0-9+\s\-()]+$/).withMessage('Téléphone: caractères valides uniquement (0-9, +, -, (), espaces)'),
     body('director_mobile')
         .trim()
         .notEmpty().withMessage('Mobile requis')
-        .matches(/^[0-9+\s\-()]+$/).withMessage('Numéro invalide'),
+        .matches(/^[0-9+\s\-()]+$/).withMessage('Mobile: caractères valides uniquement (0-9, +, -, (), espaces)'),
     body('director_address')
         .optional()
         .trim()

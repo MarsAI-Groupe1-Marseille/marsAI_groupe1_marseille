@@ -45,6 +45,7 @@ const SubmissionForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [statusMessage, setStatusMessage] = useState(null);
+  const [validationErrors, setValidationErrors] = useState([]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -82,6 +83,7 @@ const SubmissionForm = () => {
     e.preventDefault();
     setIsLoading(true);
     setStatusMessage(null);
+    setValidationErrors([]);
     setUploadProgress(0);
 
     const data = new FormData();
@@ -103,8 +105,24 @@ const SubmissionForm = () => {
         }
       });
       setStatusMessage({ type: 'success', text: t('submission_success').replace('{youtube_id}', response.data.youtube_id) });
+      setValidationErrors([]);
     } catch (error) {
-      setStatusMessage({ type: 'error', text: error.response?.data?.message || t('submission_error') });
+      console.error('Erreur soumission:', error.response?.data);
+      
+      // Si c'est une erreur de validation (status 400)
+      if (error.response?.status === 400 && error.response?.data?.errors) {
+        setValidationErrors(error.response.data.errors);
+        setStatusMessage({ 
+          type: 'error', 
+          text: t('submission_validation_error') || 'Erreurs de validation. Veuillez corriger les champs ci-dessous.' 
+        });
+      } else {
+        // Autre type d'erreur
+        setStatusMessage({ 
+          type: 'error', 
+          text: error.response?.data?.message || t('submission_error') || 'Une erreur est survenue lors de la soumission.'
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -239,6 +257,29 @@ const SubmissionForm = () => {
                 {statusMessage.text}
               </div>
             )}
+
+            {/* AFFICHAGE DES ERREURS DE VALIDATION */}
+            {validationErrors.length > 0 && (
+              <div className="mb-6 p-5 rounded-xl border-2 bg-red-500/10 border-red-500/50">
+                <h3 className="text-red-300 font-bold mb-3 flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                  Erreurs de validation
+                </h3>
+                <ul className="space-y-2">
+                  {validationErrors.map((error, index) => (
+                    <li key={index} className="text-red-200 text-sm flex items-start gap-2">
+                      <span className="text-red-400 font-bold">•</span>
+                      <span>
+                        <span className="font-semibold text-red-300">{error.field}:</span> {error.message}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             <button type="submit" disabled={isLoading} className={`w-full relative overflow-hidden py-5 rounded-xl text-white font-bold text-lg transition-transform hover:scale-[1.01] ${isLoading ? 'bg-slate-700' : 'bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 shadow-2xl shadow-purple-500/40'}`}>
               {isLoading && <div className="absolute inset-0 bg-white/20 transition-all" style={{ width: `${uploadProgress}%` }}></div>}
               <span className="relative z-10 flex items-center justify-center gap-3">

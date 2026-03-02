@@ -80,8 +80,14 @@ app.use('/api/jury', juryRoutes);
 // ...
 
 
-// Servir les fichiers statiques du dossier uploads avec chemin absolu
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Servir les fichiers statiques du dossier uploads avec CORS headers explicites
+app.use('/uploads', (req, res, next) => {
+    // Ajouter les headers CORS pour les fichiers statiques
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    next();
+}, express.static(path.join(__dirname, 'uploads')));
 
 
 // ==========================================
