@@ -4,6 +4,7 @@ const userController = require('../controllers/userController');
 const { verifyToken, checkRole } = require('../middlewares/authMiddleware');
 const upload = require('../middlewares/uploadMiddleware');
 const { validateRequest } = require('../middlewares/validationMiddleware');
+const { csrfProtection } = require('../middlewares/csrfMiddleware');
 const { forgotPasswordLimiter, uploadLimiter } = require('../middlewares/securityMiddleware');
 const { 
     createUserValidators, 
@@ -22,6 +23,7 @@ router.get('/:id', userController.getUserById);
 router.put('/:id',
     verifyToken,          // 1. Vérification connexion
     checkRole('admin'),   // 2. Vérification rôle Admin
+    csrfProtection,       // 3. Protection CSRF
     userController.updateUser
 );
 
@@ -29,6 +31,7 @@ router.put('/:id',
 router.delete('/:id',
     verifyToken,          // 1. Vérification connexion
     checkRole('admin'),   // 2. Vérification rôle Admin
+    csrfProtection,       // 3. Protection CSRF
     userController.deleteUser
 );
 
@@ -36,6 +39,7 @@ router.delete('/:id',
 router.post('/invite', 
     verifyToken,
     checkRole('admin'),
+    csrfProtection,
     createUserValidators,
     validateRequest,
     userController.createUser
@@ -44,6 +48,7 @@ router.post('/invite',
 // Cette ligne permet à l'utilisateur de demander une réinitialisation de mot de passe
 router.post('/forgotpass', 
     forgotPasswordLimiter,
+    csrfProtection,
     forgotPasswordValidators,
     validateRequest,
     userController.forgotPassword
@@ -53,6 +58,7 @@ router.post('/forgotpass',
 router.post('/active-compte', 
     uploadLimiter,
     upload.single('avatar'), 
+    csrfProtection,
     activateAccountValidators,
     validateRequest,
     userController.activateAccount
@@ -60,6 +66,7 @@ router.post('/active-compte',
 
 // Cette ligne permet à l'utilisateur de réinitialiser son mot de passe avec un token
 router.post('/reset-password', 
+    csrfProtection,
     resetPasswordValidators,
     validateRequest,
     userController.resetPassword

@@ -4,11 +4,13 @@ const passport = require('../config/passport');
 const authController = require('../controllers/authController');
 const { verifyToken } = require('../middlewares/authMiddleware');
 const { strictLoginLimiter } = require('../middlewares/securityMiddleware');
+const { csrfProtection } = require('../middlewares/csrfMiddleware');
 const { validateRequest } = require('../middlewares/validationMiddleware');
 const { loginValidators } = require('../validators/authValidators');
 
 router.post('/login', 
     strictLoginLimiter,
+    csrfProtection,
     loginValidators,
     validateRequest,
     authController.login

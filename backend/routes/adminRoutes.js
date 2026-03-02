@@ -4,6 +4,7 @@ const adminController = require('../controllers/adminController');
 const finalistController = require('../controllers/finalistController');
 const { verifyToken, checkRole } = require('../middlewares/authMiddleware');
 const { validateRequest } = require('../middlewares/validationMiddleware');
+const { csrfProtection } = require('../middlewares/csrfMiddleware');
 const {
     moderateSubmissionValidators,
     createJuryListValidators,
@@ -44,14 +45,16 @@ router.get('/dashboard/chart-data',
 router.post('/moderation/:submissionId', 
     verifyToken,          // 1. Vérification connexion
     checkRole('admin'),   // 2. Vérification rôle Admin
+    csrfProtection,       // 3. Protection CSRF
     moderateSubmissionValidators,
     validateRequest,
-    adminController.moderateSubmission // 3. La nouvelle logique unique
+    adminController.moderateSubmission // 4. La nouvelle logique unique
 ); 
 // route pour creeé une playlist de jury 
 router.post('/jury-list',
     verifyToken,
     checkRole('admin'),
+    csrfProtection,
     createJuryListValidators,
     validateRequest,
     adminController.createJuryList
@@ -66,6 +69,7 @@ router.get('/jury-lists',
 router.delete('/jury-list/:id',
     verifyToken,
     checkRole('admin'),
+    csrfProtection,
     deleteJuryListValidator,
     validateRequest,
     adminController.deleteJuryList
@@ -74,6 +78,7 @@ router.delete('/jury-list/:id',
 router.delete('/jury-lists',
     verifyToken,
     checkRole('admin'),
+    csrfProtection,
     removeFromPlaylistValidators,
     validateRequest,
     adminController.deleteManyJuryLists
@@ -82,6 +87,7 @@ router.delete('/jury-lists',
 router.post('/assigne-film',
     verifyToken,
     checkRole('admin'),
+    csrfProtection,
     addMovieToPlaylistValidators,
     validateRequest,
     adminController.addMovieToPlayList);
@@ -90,6 +96,7 @@ router.post('/assigne-film',
 router.delete('/assigne-film',
     verifyToken,
     checkRole('admin'),
+    csrfProtection,
     removeFromPlaylistValidators,
     validateRequest,
     adminController.removeMovieFromPlaylist);
@@ -98,6 +105,7 @@ router.delete('/assigne-film',
 router.post('/assigne-jury',
     verifyToken,
     checkRole('admin'),
+    csrfProtection,
     assignJuryValidators,
     validateRequest,
     adminController.assignedJuryToPlaylist);
@@ -113,12 +121,14 @@ router.get('/finalists',
 router.put('/finalists/:submissionId',
     verifyToken,
     checkRole('admin'),
+    csrfProtection,
     finalistController.updateFinalistSelection);
 
 // route qui retire un jury d'une playlist
 router.delete('/assigne-jury',
     verifyToken,
     checkRole('admin'),
+    csrfProtection,
     removeFromPlaylistValidators,
     validateRequest,
     adminController.removeJuryFromPlaylist);
@@ -140,6 +150,7 @@ router.get('/home-config',
 router.post('/home-config',
     verifyToken,
     checkRole('admin'),
+    csrfProtection,
     homeConfigValidators,
     validateRequest,
     adminController.updateHomeConfig);

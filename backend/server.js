@@ -14,6 +14,7 @@ const sequelize = require('./config/db');
 
 // Import des middlewares de sécurité
 const { helmetConfig, generalLimiter } = require('./middlewares/securityMiddleware');
+const { sessionConfig, csrfProtection } = require('./middlewares/csrfMiddleware');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -57,12 +58,19 @@ app.use(generalLimiter);         // Rate limiting général (100 req/15min)
 
 app.use(express.json());
 app.use(cookieParser()); // Pour parser les cookies
+app.use(sessionConfig);  // Session pour CSRF
+app.use(csrfProtection); // Protection CSRF
 app.use(passport.initialize());
 
 
 // ==========================================
 // ROUTES
 // ==========================================
+
+// Route pour récupérer le token CSRF
+app.get('/api/csrf-token', (req, res) => {
+    res.json({ csrfToken: req.csrfToken() });
+});
 
 // Utilisation des routes préfixées
 app.use('/api/auth', authRoutes);         

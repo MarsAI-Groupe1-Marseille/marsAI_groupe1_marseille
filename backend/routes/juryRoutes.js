@@ -3,6 +3,7 @@ const router = express.Router();
 const juryController = require('../controllers/juryController');
 const { verifyToken } = require('../middlewares/authMiddleware');
 const { validateRequest } = require('../middlewares/validationMiddleware');
+const { csrfProtection } = require('../middlewares/csrfMiddleware');
 const { submitVoteValidators } = require('../validators/juryValidators');
 
 // Route pour récupérer tous les jurys
@@ -14,6 +15,7 @@ router.get('/with-stats', juryController.getAllJuryWithStats);
 // Route pour soumettre ou modifier un vote
 router.post('/vote', 
     verifyToken, 
+    csrfProtection,
     submitVoteValidators,
     validateRequest,
     juryController.submitVote);
