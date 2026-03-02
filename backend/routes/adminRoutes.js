@@ -3,6 +3,16 @@ const router = express.Router();
 const adminController = require('../controllers/adminController');
 const finalistController = require('../controllers/finalistController');
 const { verifyToken, checkRole } = require('../middlewares/authMiddleware');
+const { validateRequest } = require('../middlewares/validationMiddleware');
+const {
+    moderateSubmissionValidators,
+    createJuryListValidators,
+    addMovieToPlaylistValidators,
+    assignJuryValidators,
+    removeFromPlaylistValidators,
+    deleteJuryListValidator,
+    homeConfigValidators
+} = require('../validators/adminValidators');
 
 // URL : GET http://localhost:3000/api/admin/dashboard/stats
 // route pour récupérer les statistiques du dashboard (films soumis, approuvés, rejetés, en attente)
@@ -34,12 +44,16 @@ router.get('/dashboard/chart-data',
 router.post('/moderation/:submissionId', 
     verifyToken,          // 1. Vérification connexion
     checkRole('admin'),   // 2. Vérification rôle Admin
+    moderateSubmissionValidators,
+    validateRequest,
     adminController.moderateSubmission // 3. La nouvelle logique unique
 ); 
 // route pour creeé une playlist de jury 
 router.post('/jury-list',
     verifyToken,
     checkRole('admin'),
+    createJuryListValidators,
+    validateRequest,
     adminController.createJuryList
 );
 // route pour afficher les playlists avec films et jurys assignés
@@ -52,30 +66,40 @@ router.get('/jury-lists',
 router.delete('/jury-list/:id',
     verifyToken,
     checkRole('admin'),
+    deleteJuryListValidator,
+    validateRequest,
     adminController.deleteJuryList
 );
 // route pour supprimer plusieurs playlists
 router.delete('/jury-lists',
     verifyToken,
     checkRole('admin'),
+    removeFromPlaylistValidators,
+    validateRequest,
     adminController.deleteManyJuryLists
 );
 // route qui assigne un film a une play list
 router.post('/assigne-film',
     verifyToken,
     checkRole('admin'),
+    addMovieToPlaylistValidators,
+    validateRequest,
     adminController.addMovieToPlayList);
 
 // route qui retire un film d'une play list
 router.delete('/assigne-film',
     verifyToken,
     checkRole('admin'),
+    removeFromPlaylistValidators,
+    validateRequest,
     adminController.removeMovieFromPlaylist);
 
 // route qui assigne les jurys aux films
 router.post('/assigne-jury',
     verifyToken,
     checkRole('admin'),
+    assignJuryValidators,
+    validateRequest,
     adminController.assignedJuryToPlaylist);
 
 // route pour recuperer les films candidats finalistes (votes jury)
@@ -95,6 +119,8 @@ router.put('/finalists/:submissionId',
 router.delete('/assigne-jury',
     verifyToken,
     checkRole('admin'),
+    removeFromPlaylistValidators,
+    validateRequest,
     adminController.removeJuryFromPlaylist);
 
 // ===================================================================
@@ -114,6 +140,8 @@ router.get('/home-config',
 router.post('/home-config',
     verifyToken,
     checkRole('admin'),
+    homeConfigValidators,
+    validateRequest,
     adminController.updateHomeConfig);
 
 module.exports = router;

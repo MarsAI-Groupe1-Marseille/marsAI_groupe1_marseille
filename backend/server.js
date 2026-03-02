@@ -12,6 +12,9 @@ const createDefaultAdmin = require('./utils/createAdmin');
 // Import de la connexion Sequelize
 const sequelize = require('./config/db');
 
+// Import des middlewares de sécurité
+const { helmetConfig, generalLimiter } = require('./middlewares/securityMiddleware');
+
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -47,6 +50,11 @@ app.use(cors({
     },
     credentials: true
 }));
+
+// === MIDDLEWARES DE SÉCURITÉ ===
+app.use(helmetConfig);           // Headers de sécurité HTTP
+app.use(generalLimiter);         // Rate limiting général (100 req/15min)
+
 app.use(express.json());
 app.use(cookieParser()); // Pour parser les cookies
 app.use(passport.initialize());
