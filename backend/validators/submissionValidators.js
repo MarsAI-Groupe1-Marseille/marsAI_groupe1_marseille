@@ -1,5 +1,38 @@
 const { body, param } = require('express-validator');
 
+// ===== FONCTION DE VALIDATION PERSONNALISÉE =====
+// Valide que c'est une liste d'éléments séparés par virgules
+const validateCommaSeparatedList = (value, fieldName) => {
+    if (!value || value.trim() === '') {
+        return true; // Optional field
+    }
+    
+    // Vérifier que c'est une chaîne
+    if (typeof value !== 'string') {
+        throw new Error(`${fieldName} doit être du texte`);
+    }
+
+    // Découper par virgule
+    const items = value.split(',').map(item => item.trim());
+
+    // Vérifier qu'aucun élément n'est vide
+    if (items.some(item => item === '')) {
+        throw new Error(`${fieldName}: pas d'éléments vides (ne pas écrire ", ,")`);
+    }
+
+    // Vérifier longueur de chaque élément (3-100 caractères)
+    if (items.some(item => item.length < 2 || item.length > 100)) {
+        throw new Error(`${fieldName}: chaque élément doit avoir 2-100 caractères`);
+    }
+
+    // Vérifier nombre d'éléments (max 20)
+    if (items.length > 20) {
+        throw new Error(`${fieldName}: maximum 20 éléments séparés par virgule`);
+    }
+
+    return true;
+};
+
 // ===== SUBMISSION CREATION VALIDATORS =====
 const submissionValidators = [
     // Titres
@@ -36,26 +69,32 @@ const submissionValidators = [
         .notEmpty().withMessage('Langue requise')
         .isIn(['fr', 'en', 'es', 'de']).withMessage('Langue non acceptée'),
 
-    // Tags/Thèmes
+    // Tags/Thèmes - VALIDÉ PAR VIRGULES
     body('theme_tags')
         .optional()
         .trim()
         .isLength({ max: 500 }).withMessage('Tags : max 500 caractères')
+        .custom((value) => validateCommaSeparatedList(value, 'Themes/Tags'))
         .escape(),
 
     // IA
     body('ai_classification')
         .notEmpty().withMessage('Classification IA requise')
         .isIn(['100% IA', 'Hybrid']).withMessage('Classification invalide'),
+    
+    // AI TOOLS - VALIDÉ PAR VIRGULES
     body('ai_tools')
         .optional()
         .trim()
-        .isLength({ max: 1000 }).withMessage('Max 1000 caractères')
+        .isLength({ max: 1000 }).withMessage('Outils IA : max 1000 caractères')
+        .custom((value) => validateCommaSeparatedList(value, 'Outils IA'))
         .escape(),
+    
+    // AI METHODOLOGY - PEUT ÊTRE DU TEXTE LIBRE MAIS VALIDÉ
     body('ai_methodology')
         .optional()
         .trim()
-        .isLength({ max: 2000 }).withMessage('Max 2000 caractères')
+        .isLength({ min: 10, max: 2000 }).withMessage('Méthodologie : 10-2000 caractères')
         .escape(),
 
     // DIRECTOR
