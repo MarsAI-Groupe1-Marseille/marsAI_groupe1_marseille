@@ -69,12 +69,6 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);        
 app.use('/api/submissions', submissionRoutes); 
 app.use('/api/admin', adminRoutes); // Routes admin (validation des films, modération, etc.)
-
-// ... Tes autres routes
-app.use('/api/submissions', submissionRoutes); 
-app.use('/api/admin', adminRoutes);
-
-// AJOUTE CETTE LIGNE ICI 👇
 app.use('/api/jury', juryRoutes); 
 
 // ...
@@ -97,7 +91,7 @@ app.use('/uploads', (req, res, next) => {
 // (Utile pour vérifier que tout est calé)
 sequelize.sync({alter:true}).then(async () => {
     console.log("Base de données synchronisée.");
-    // 👇 APPEL DE La FONCTION POUR CREER UN ADMIN
+    //APPEL DE La FONCTION POUR CREER UN ADMIN
   await createDefaultAdmin();
     app.listen(port, () => {
         console.log(`Serveur démarré sur : http://localhost:${port}`);
