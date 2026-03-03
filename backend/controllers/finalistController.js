@@ -26,7 +26,6 @@ exports.getFinalistCandidates = async (req, res) => {
         const voteFilter = resolveVoteFilter(req.query.vote);
         const includeSelected = req.query.includeSelected === 'true';
         const selectedOnly = req.query.selectedOnly === 'true';
-        const approvalStatus = req.query.approval_status || null;
 
         const whereClauses = [];
         const replacements = {
@@ -34,17 +33,16 @@ exports.getFinalistCandidates = async (req, res) => {
             offset
         };
 
+        // Filtrer TOUJOURS par approval_status = 'approved'
+        whereClauses.push('s.approval_status = :approvalStatus');
+        replacements.approvalStatus = 'approved';
+
         if (!includeSelected && !selectedOnly) {
             whereClauses.push('s.is_selected = 0');
         }
 
         if (selectedOnly) {
             whereClauses.push('s.is_selected = 1');
-        }
-
-        if (approvalStatus) {
-            whereClauses.push('s.approval_status = :approvalStatus');
-            replacements.approvalStatus = approvalStatus;
         }
 
         const whereSql = whereClauses.length ? `WHERE ${whereClauses.join(' AND ')}` : '';
@@ -184,7 +182,7 @@ exports.getFinalistCandidates = async (req, res) => {
                 vote: req.query.vote || 'liked_or_discuss',
                 includeSelected,
                 selectedOnly,
-                approval_status: approvalStatus
+                approval_status: 'approved'
             }
         });
     } catch (error) {
