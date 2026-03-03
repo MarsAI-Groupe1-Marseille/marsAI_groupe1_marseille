@@ -9,7 +9,7 @@ const { validateRequest } = require('../middlewares/validationMiddleware');
 const { loginValidators } = require('../validators/authValidators');
 
 router.post('/login', 
-    strictLoginLimiter,
+    strictLoginLimiter,     // Limiter par IP (5 erreurs/15min)
     csrfProtection,
     loginValidators,
     validateRequest,

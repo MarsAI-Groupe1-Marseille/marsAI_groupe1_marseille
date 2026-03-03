@@ -13,20 +13,20 @@ const rateLimitHandler = (req, res) => {
     });
 };
 
-// Limiteur GÉNÉRAL : 100 requêtes par 15 minutes pour toutes les routes
+// Limiteur GÉNÉRAL : 500 requêtes par 15 minutes par IP (très permissif, anti-abus basique)
 const generalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100,                   // 100 requêtes max par IP
+    max: 500,                   // 500 requêtes max par IP (permissif pour éviter bloquer 2 jurés sur même réseau)
     handler: rateLimitHandler,  // Utiliser notre handler personnalisé
     standardHeaders: true,      // Return rate limit info in the `RateLimit-*` headers
     legacyHeaders: false,       // Disable the `X-RateLimit-*` headers
     skip: (req) => {
-        // Les administrateurs ne sont pas limités
+        // Les administrateurs et routes publiques légitimes ne sont pas limités
         return req.user && req.user.role === 'admin';
     }
 });
 
-// Limiteur STRICT LOGIN : 5 tentatives par 15 minutes
+// Limiteur STRICT LOGIN : 5 tentatives par 15 minutes PAR IP
 const strictLoginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 5,
@@ -70,6 +70,28 @@ const uploadLimiter = rateLimit({
     },
     standardHeaders: true,
     legacyHeaders: false
+});
+
+// Limiteur AUTHENTIFIÉ : 200 requêtes par 15 minutes PAR IP
+// Pour les routes protégées (/api/jury/*, /api/admin/*, /api/users/*, /api/submissions/*)
+// Limit plus élevée que le general limiter car ces routes concernent les utilisateurs authentifiés
+// Chaque utilisateur a sa propre session/authentification même s'ils partagent une IP
+const authenticatedLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 200,
+    handler: (req, res) => {
+        return res.status(429).json({
+            success: false,
+            message: 'Trop de requêtes. Vous avez atteint la limite. Réessayez dans 15 minutes.',
+            error: 'RATE_LIMIT_AUTH_EXCEEDED'
+        });
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    skip: (req) => {
+        // Les administrateurs ne sont pas limités
+        return req.user && req.user.role === 'admin';
+    }
 });
 
 // ===== HELMET CONFIGURATION =====
@@ -120,5 +142,6 @@ module.exports = {
     strictLoginLimiter,
     forgotPasswordLimiter,
     uploadLimiter,
+    authenticatedLimiter,
     helmetConfig
 };
