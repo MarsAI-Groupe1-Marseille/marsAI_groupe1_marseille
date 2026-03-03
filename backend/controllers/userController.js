@@ -51,8 +51,16 @@ exports.createUser = async (req, res) => {
         });
 
     } catch (error) {
-        // Capture les erreurs comme un email déjà existant (contrainte unique en BDD).
-        res.status(500).json({ error: error.message });
+        // Gérer l'erreur de contrainte unique (email déjà utilisé)
+        if (error.name === 'SequelizeUniqueConstraintError') {
+            return res.status(409).json({ 
+                error: "Cet email est déjà utilisé par un autre utilisateur." 
+            });
+        }
+        
+        // Autres erreurs
+        console.error('Erreur création utilisateur:', error);
+        res.status(500).json({ error: "Erreur lors de la création de l'utilisateur." });
     }
 };
 

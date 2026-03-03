@@ -140,6 +140,12 @@ export default function DashboardUser() {
     const [isLoading, setIsLoading] = useState(false);
     const [showAddForm, setShowAddForm] = useState(false);
     const [newUser, setNewUser] = useState({ fullName: "", email: "", role: "jury" });
+    const [notice, setNotice] = useState(null);
+
+    const showNotice = (type, message) => {
+        setNotice({ type, message });
+        window.setTimeout(() => setNotice(null), 4000);
+    };
 
     const toggleEdit = (id) => {
         setEditingUserId(prev => (prev === id ? null : id));
@@ -162,12 +168,12 @@ export default function DashboardUser() {
             ));
 
             console.log("Utilisateur mis à jour avec succès :", response.data);
-            alert(t('dashboard_user_updated'));
+            showNotice('success', t('dashboard_user_updated'));
             setEditingUserId(null);
             setEditingData(null);
         } catch (error) {
             console.error("Erreur lors de la mise à jour de l'utilisateur :", error);
-            alert(`${t('dashboard_user_error')} : ${error.response?.data?.error || t('dashboard_user_error_update')}`);
+            showNotice('error', `${t('dashboard_user_error')} : ${error.response?.data?.error || t('dashboard_user_error_update')}`);
         } finally {
             setIsLoading(false);
         }
@@ -186,10 +192,10 @@ export default function DashboardUser() {
             setUsersList(prev => prev.filter(user => user.id !== userId));
 
             console.log("Utilisateur supprimé avec succès");
-            alert(t('dashboard_user_success'));
+            showNotice('success', t('dashboard_user_success'));
         } catch (error) {
             console.error("Erreur lors de la suppression de l'utilisateur :", error);
-            alert(`${t('dashboard_user_error')} : ${error.response?.data?.error || t('dashboard_user_error_delete')}`);
+            showNotice('error', `${t('dashboard_user_error')} : ${error.response?.data?.error || t('dashboard_user_error_delete')}`);
         } finally {
             setIsLoading(false);
         }
@@ -209,7 +215,7 @@ export default function DashboardUser() {
             
             // Afficher un message de succès
             console.log("Utilisateur créé avec succès :", response.data);
-            alert(`${t('dashboard_user_invited')} ${newUser.email} !`);
+            showNotice('success', `${t('dashboard_user_invited')} ${newUser.email} !`);
             
             // Recharger la liste des utilisateurs
             const usersResponse = await axios.get('/users');
@@ -220,7 +226,7 @@ export default function DashboardUser() {
             setShowAddForm(false);
         } catch (error) {
             console.error("Erreur lors de la création de l'utilisateur :", error);
-            alert(`${t('dashboard_user_error')} : ${error.response?.data?.error || t('dashboard_user_error_create')}`);
+            showNotice('error', `${t('dashboard_user_error')} : ${error.response?.data?.error || t('dashboard_user_error_create')}`);
         } finally {
             setIsLoading(false);
         }
@@ -241,6 +247,14 @@ export default function DashboardUser() {
         <div className="min-h-screen bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-950 text-white">
             <main className="w-full px-4 sm:px-6 md:px-8 py-8 md:py-12 lg:py-16">
                 <div className="max-w-7xl mx-auto space-y-8">
+
+            {notice && (
+                <div className={`rounded-xl border px-4 py-3 text-sm font-medium ${notice.type === 'success'
+                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                    : 'bg-red-500/10 border-red-500/30 text-red-300'}`}>
+                    {notice.message}
+                </div>
+            )}
 
             <header className="flex justify-between items-center p-6 rounded-2xl bg-gradient-to-r from-violet-600 via-fuchsia-600 to-pink-600">
                 <div className="flex items-center gap-3">

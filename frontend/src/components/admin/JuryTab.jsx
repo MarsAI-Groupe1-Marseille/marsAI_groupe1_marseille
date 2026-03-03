@@ -25,6 +25,7 @@ export default function JuryTab() {
     role: 'jury'
   });
   const [formError, setFormError] = useState(null);
+  const [formSuccess, setFormSuccess] = useState(null);
   const [formLoading, setFormLoading] = useState(false);
 
   // Fonction pour générer les initiales et les couleurs
@@ -97,6 +98,7 @@ export default function JuryTab() {
   const handleAddMember = async (e) => {
     e.preventDefault();
     setFormError(null);
+    setFormSuccess(null);
     setFormLoading(true);
 
     try {
@@ -107,9 +109,9 @@ export default function JuryTab() {
       });
 
       if (response.data.message) {
+        setFormSuccess(response.data.message);
         // Réinitialiser le formulaire et rafraîchir la liste
         setFormData({ email: '', full_name: '', role: 'jury' });
-        setShowForm(false);
         await fetchJury();
       }
     } catch (err) {
@@ -260,6 +262,11 @@ export default function JuryTab() {
                 {formError}
               </div>
             )}
+            {formSuccess && (
+              <div className="text-sm text-emerald-300 bg-emerald-900/20 border border-emerald-700/30 rounded-lg p-3">
+                {formSuccess}
+              </div>
+            )}
             <div className="flex gap-3">
               <button
                 type="submit"
@@ -273,6 +280,7 @@ export default function JuryTab() {
                 onClick={() => {
                   setShowForm(false);
                   setFormError(null);
+                  setFormSuccess(null);
                 }}
                 disabled={formLoading}
                 className="flex-1 px-4 py-2 md:py-3 bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700 font-semibold rounded-lg transition disabled:opacity-50 text-sm md:text-base"
