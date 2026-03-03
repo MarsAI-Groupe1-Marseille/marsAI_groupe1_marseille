@@ -8,13 +8,13 @@ const moderateSubmissionValidators = [
         .notEmpty().withMessage('Statut requis')
         .isIn(['approved', 'rejected']).withMessage('Statut invalide'),
     body('issue_type')
-        .if(() => body('status').equals('rejected'))
+        .if(body('status').equals('rejected'))
         .trim()
         .notEmpty().withMessage('Type d\'erreur requis pour un refus')
         .isLength({ min: 3, max: 100 }).withMessage('Type : 3-100 caractères')
         .escape(),
     body('description')
-        .if(() => body('status').equals('rejected'))
+        .if(body('status').equals('rejected'))
         .trim()
         .notEmpty().withMessage('Description requise pour un refus')
         .isLength({ min: 10, max: 2000 }).withMessage('Description : 10-2000 caractères')

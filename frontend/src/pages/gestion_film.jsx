@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import axios from '../config/axiosConfig';
+import axios, { fetchCSRFToken } from '../config/axiosConfig';
 import { Search, ChevronRight, ChevronLeft, Check, X, Clock, Globe, Users, LayoutDashboard, Film as FilmIcon, BarChart3, Calendar, Settings, AlertCircle } from "lucide-react";
 import { useLanguage } from '../context/LanguageContext.jsx';
 import {
@@ -444,6 +444,11 @@ export default function GestionFilms() {
       setLoading(false);
     }
   };
+
+  // Récupérer le token CSRF au chargement de la page
+  useEffect(() => {
+    fetchCSRFToken().catch(err => console.error('Erreur init CSRF:', err));
+  }, []);
 
   // useEffect pour charger les films au montage et lors des changements de filtres
   useEffect(() => {
