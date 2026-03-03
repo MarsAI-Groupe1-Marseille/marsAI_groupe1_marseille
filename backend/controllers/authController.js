@@ -64,9 +64,11 @@ exports.googleCallback = async (req, res) => {
             maxAge: 24 * 60 * 60 * 1000 
         });
 
-        const redirectUrl = req.user.role === 'admin' 
+        const redirectUrl = req.user.role === 'admin' || req.user.role === 'moderator'
             ? 'http://localhost:5173/dashboard' 
-            : 'http://localhost:5173/';
+            : req.user.role === 'jury'
+            ? 'http://localhost:5173/dashboardJury'
+            : 'http://localhost:5173/login?error=invalid_role';
 
         res.redirect(redirectUrl);
 
