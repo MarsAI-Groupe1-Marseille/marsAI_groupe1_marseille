@@ -41,50 +41,63 @@ const storage = multerS3({
     }
 });
 
-// 3. FILTRE DES FICHIERS (On garde ta logique actuelle )
+const getFileTypeFromName = (filename = '') => {
+    const extension = path.extname(filename || '').toLowerCase();
+    return extension.startsWith('.') ? extension.slice(1) : extension;
+};
+
+const buildFileError = (field, message) => {
+    const error = new Error(message);
+    error.field = field;
+    error.code = 'INVALID_FILE_TYPE';
+    return error;
+};
+
+// 3. FILTRE DES FICHIERS (validation par filetype/extension)
 const fileFilter = (req, file, cb) => {
-    // Liste précise des types MIME autorisés par le client
+    // Le filetype est basé sur l'extension du nom de fichier.
     const allowedVideoTypes = [
-        'video/mp4', 
-        'video/quicktime',     // Pour le .MOV
-        'video/x-msvideo',     // Pour le .AVI
-        'video/x-matroska'     // Optionnel: .MKV (souvent utilisé en IA)
+        'mp4',
+        'mov',
+        'avi',
+        'mkv'
     ];
     
     const allowedImageTypes = [
-        'image/jpeg', 
-        'image/jpg', 
-        'image/png', 
-        'image/webp'
+        'jpg',
+        'jpeg',
+        'png',
+        'webp'
     ];
+
+    const fileType = getFileTypeFromName(file.originalname);
 
     // A. Validation Vidéos
     if (file.fieldname === 'video_file') {
-        if (allowedVideoTypes.includes(file.mimetype)) {
+        if (allowedVideoTypes.includes(fileType)) {
             cb(null, true);
         } else {
-            cb(new Error('Format vidéo invalide (MP4, MOV, AVI acceptés).'), false);
+            cb(buildFileError('video_file', 'Format video invalide (MP4, MOV, AVI, MKV acceptes).'), false);
         }
     } 
     // B. Validation Images (Poster, Galerie, Avatar)
     else if (file.fieldname === 'poster_file' || file.fieldname === 'gallery_files' || file.fieldname === 'avatar') {
-        if (allowedImageTypes.includes(file.mimetype)) {
+        if (allowedImageTypes.includes(fileType)) {
             cb(null, true);
         } else {
-            cb(new Error('Format image invalide (JPG, PNG, WEBP acceptés).'), false);
+            cb(buildFileError(file.fieldname, 'Format image invalide (JPG, JPEG, PNG, WEBP acceptes).'), false);
         }
     }
     // C. Validation Sous-titres
     else if (file.fieldname === 'subtitle_file') {
-        // Pour les sous-titres, l'extension est plus fiable que le mimetype
-        if (file.originalname.match(/\.(srt|vtt|txt)$/)) {
+        if (['srt', 'vtt', 'txt'].includes(fileType)) {
             cb(null, true);
         } else {
-            cb(new Error('Format sous-titre invalide (SRT, VTT, TXT acceptés).'), false);
+            cb(buildFileError('subtitle_file', 'Format sous-titre invalide (SRT, VTT, TXT acceptes).'), false);
         }
     } 
     else {
-        cb(new Error('Champ de fichier non autorisé.'), false);
+        cb(buildFileError(file.fieldname, 'Champ de fichier non autorise.'), false);
     }
 };
 

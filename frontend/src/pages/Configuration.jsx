@@ -345,6 +345,7 @@ const HomeConfigModal = ({ onClose }) => {
   const [activeTab, setActiveTab] = useState('hero')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [saveError, setSaveError] = useState('')
 
   useEffect(() => {
     const load = async () => {
@@ -390,34 +391,42 @@ const HomeConfigModal = ({ onClose }) => {
 
   const handleSave = async () => {
     setSaving(true)
+    setSaveError('')
     try {
       // 1. Envoyer la config à l'API (qui va uploader les base64 vers S3)
       const { data } = await axios.post('/admin/home-config', { config })
       
       if (data?.success && data?.config) {
-        // 2. Mettre à jour le state avec la config contenant les URLs S3
-        setConfig(data.config)
+        // 2. Vérifier la persistance réelle en BDD via une relecture API
+        const persistedResponse = await axios.get('/admin/home-config')
+        const persistedConfig = persistedResponse?.data?.config
+
+        if (!persistedResponse?.data?.success || !persistedConfig) {
+          setSaveError('Sauvegarde incomplète: impossible de confirmer la persistance en base.')
+          setSaving(false)
+          return
+        }
+
+        // 3. Mettre à jour le state avec la version persistée
+        setConfig(persistedConfig)
+
+        // 4. Sauvegarder la version persistée dans localStorage
+        localStorage.setItem('home_config', JSON.stringify(persistedConfig))
+        window.dispatchEvent(new Event('home_config_saved'))
+        setSaved(true)
+        setTimeout(() => setSaved(false), 2000)
         
-        // 3. Sauvegarder la version avec URLs S3 dans localStorage
-        localStorage.setItem('home_config', JSON.stringify(data.config))
-        
-        console.log('✅ Configuration sauvegardée (images uploadées sur S3)')
+        console.log('✅ Configuration sauvegardée et confirmée en BDD')
       } else {
-        // Fallback : sauvegarder dans localStorage uniquement
-        localStorage.setItem('home_config', JSON.stringify(config))
+        setSaveError('Sauvegarde API invalide: la configuration n\'a pas été enregistrée en base.')
       }
     } catch (error) {
       console.error('Erreur sauvegarde config:', error)
-      // Fallback : sauvegarder dans localStorage uniquement
-      localStorage.setItem('home_config', JSON.stringify(config))
+      const apiMessage = error.response?.data?.message || error.response?.data?.error
+      setSaveError(apiMessage || 'Échec de sauvegarde en base de données. Vérifiez la connexion puis réessayez.')
     }
-    
-    // Notifier les autres composants du changement
-    window.dispatchEvent(new Event('home_config_saved'))
-    
+
     setSaving(false)
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
   }
 
   const set = (section, value) => setConfig(prev => ({ ...prev, [section]: value }))
@@ -772,6 +781,9 @@ const HomeConfigModal = ({ onClose }) => {
 
         {/* Footer */}
         <div className="flex items-center justify-between px-6 py-4 shrink-0" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+          <div className="pr-3 text-xs" style={{ color: saveError ? '#fca5a5' : 'rgba(255,255,255,0.45)' }}>
+            {saveError || 'La sauvegarde met à jour la base de données et le localStorage.'}
+          </div>
           <button onClick={onClose} className="px-4 py-2 rounded-xl text-sm font-medium cursor-pointer transition-colors"
             style={{ color: 'rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.05)' }}
             onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.09)'}

@@ -42,9 +42,20 @@ const SubmissionForm = () => {
     { first_name: '', last_name: '', role: '', email: '' }
   ]);
 
+  const [socialLinks, setSocialLinks] = useState({
+    website: '',
+    instagram: '',
+    linkedin: '',
+    youtube: '',
+    vimeo: '',
+    tiktok: '',
+    x: ''
+  });
+
   const [isLoading, setIsLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [statusMessage, setStatusMessage] = useState(null);
+  const [validationErrors, setValidationErrors] = useState([]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -70,6 +81,14 @@ const SubmissionForm = () => {
     setCollaborators(updatedCollaborators);
   };
 
+  const handleSocialLinkChange = (e) => {
+    const { name, value } = e.target;
+    setSocialLinks(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
   const addCollaborator = () => {
     setCollaborators([...collaborators, { first_name: '', last_name: '', role: '', email: '' }]);
   };
@@ -78,11 +97,50 @@ const SubmissionForm = () => {
     setCollaborators(collaborators.filter((_, i) => i !== index));
   };
 
+  const socialFieldLabelMap = {
+    website: 'Site web',
+    instagram: 'Instagram',
+    linkedin: 'LinkedIn',
+    youtube: 'YouTube',
+    vimeo: 'Vimeo',
+    tiktok: 'TikTok',
+    x: 'X / Twitter'
+  };
+
+  const isValidHttpsUrl = (value) => {
+    try {
+      const parsed = new URL(value);
+      return parsed.protocol === 'https:';
+    } catch (error) {
+      return false;
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setStatusMessage(null);
+    setValidationErrors([]);
     setUploadProgress(0);
+
+    const socialLinkErrors = Object.entries(socialLinks)
+      .filter(([, value]) => (value || '').trim() !== '')
+      .filter(([, value]) => !isValidHttpsUrl(value.trim()))
+      .map(([field]) => ({
+        field: `director_social_links.${field}`,
+        message: (t('submission_social_invalid_url') || 'URL invalide pour {label}. Utilisez un lien complet commençant par https://')
+          .replace('{label}', socialFieldLabelMap[field] || field)
+      }));
+
+    if (socialLinkErrors.length > 0) {
+      setValidationErrors(socialLinkErrors);
+      setStatusMessage({
+        type: 'error',
+        text: t('submission_validation_error') || 'Erreurs de validation. Veuillez corriger les champs ci-dessous.'
+      });
+      setIsLoading(false);
+      return;
+    }
 
     const data = new FormData();
     Object.keys(formData).forEach(key => data.append(key, formData[key]));
@@ -90,9 +148,12 @@ const SubmissionForm = () => {
     if (files.poster_file) data.append('poster_file', files.poster_file);
     if (files.subtitle_file) data.append('subtitle_file', files.subtitle_file);
     files.gallery_files.forEach(file => data.append('gallery_files', file));
+    const socialLinksPayload = Object.fromEntries(
+      Object.entries(socialLinks).filter(([, value]) => (value || '').trim() !== '')
+    );
     
     data.append('collaborators_json', JSON.stringify(collaborators));
-    data.append('director_social_links', JSON.stringify({ instagram: '', linkedin: '' }));
+    data.append('director_social_links', JSON.stringify(socialLinksPayload));
 
     try {
       const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/submissions`, data, {
@@ -103,8 +164,37 @@ const SubmissionForm = () => {
         }
       });
       setStatusMessage({ type: 'success', text: t('submission_success').replace('{youtube_id}', response.data.youtube_id) });
+      setValidationErrors([]);
     } catch (error) {
-      setStatusMessage({ type: 'error', text: error.response?.data?.message || t('submission_error') });
+      console.error('Erreur soumission:', error.response?.data);
+      const responseData = error.response?.data || {};
+      
+      // Si c'est une erreur de validation (status 400)
+      if (error.response?.status === 400 && responseData?.errors) {
+        setValidationErrors(responseData.errors);
+        setStatusMessage({ 
+          type: 'error', 
+          text: t('submission_validation_error') || 'Erreurs de validation. Veuillez corriger les champs ci-dessous.' 
+        });
+      } else if (error.response?.status === 400 && responseData?.field && responseData?.message) {
+        setValidationErrors([{ field: responseData.field, message: responseData.message }]);
+        setStatusMessage({
+          type: 'error',
+          text: t('submission_validation_error') || 'Erreurs de validation. Veuillez corriger les champs ci-dessous.'
+        });
+      } else if (error.response?.status === 400 && responseData?.error) {
+        setValidationErrors([{ field: 'file', message: responseData.error }]);
+        setStatusMessage({
+          type: 'error',
+          text: t('submission_validation_error') || 'Erreurs de validation. Veuillez corriger les champs ci-dessous.'
+        });
+      } else {
+        // Autre type d'erreur
+        setStatusMessage({ 
+          type: 'error', 
+          text: responseData?.message || t('submission_error') || 'Une erreur est survenue lors de la soumission.'
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -151,6 +241,19 @@ const SubmissionForm = () => {
               <div className="md:col-span-2 flex items-center">
                 <input type="checkbox" name="director_newsletter" onChange={handleChange} className="h-5 w-5 text-purple-500 bg-slate-900/50 border-purple-500/30" />
                 <label className="ml-3 text-sm text-purple-100">{t('submission_newsletter')}</label>
+              </div>
+
+              <div className="md:col-span-2">
+                <h3 className="text-lg font-semibold text-purple-200 mb-3">{t('submission_social_links_section')}</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <input type="url" name="website" placeholder={t('submission_social_website')} value={socialLinks.website} onChange={handleSocialLinkChange} className="bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
+                  <input type="url" name="instagram" placeholder={t('submission_social_instagram')} value={socialLinks.instagram} onChange={handleSocialLinkChange} className="bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
+                  <input type="url" name="linkedin" placeholder={t('submission_social_linkedin')} value={socialLinks.linkedin} onChange={handleSocialLinkChange} className="bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
+                  <input type="url" name="youtube" placeholder={t('submission_social_youtube')} value={socialLinks.youtube} onChange={handleSocialLinkChange} className="bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
+                  <input type="url" name="vimeo" placeholder={t('submission_social_vimeo')} value={socialLinks.vimeo} onChange={handleSocialLinkChange} className="bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
+                  <input type="url" name="tiktok" placeholder={t('submission_social_tiktok')} value={socialLinks.tiktok} onChange={handleSocialLinkChange} className="bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
+                  <input type="url" name="x" placeholder={t('submission_social_x')} value={socialLinks.x} onChange={handleSocialLinkChange} className="md:col-span-2 bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
+                </div>
               </div>
             </div>
           </section>
@@ -239,6 +342,29 @@ const SubmissionForm = () => {
                 {statusMessage.text}
               </div>
             )}
+
+            {/* AFFICHAGE DES ERREURS DE VALIDATION */}
+            {validationErrors.length > 0 && (
+              <div className="mb-6 p-5 rounded-xl border-2 bg-red-500/10 border-red-500/50">
+                <h3 className="text-red-300 font-bold mb-3 flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                  Erreurs de validation
+                </h3>
+                <ul className="space-y-2">
+                  {validationErrors.map((error, index) => (
+                    <li key={index} className="text-red-200 text-sm flex items-start gap-2">
+                      <span className="text-red-400 font-bold">•</span>
+                      <span>
+                        <span className="font-semibold text-red-300">{error.field}:</span> {error.message}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             <button type="submit" disabled={isLoading} className={`w-full relative overflow-hidden py-5 rounded-xl text-white font-bold text-lg transition-transform hover:scale-[1.01] ${isLoading ? 'bg-slate-700' : 'bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 shadow-2xl shadow-purple-500/40'}`}>
               {isLoading && <div className="absolute inset-0 bg-white/20 transition-all" style={{ width: `${uploadProgress}%` }}></div>}
               <span className="relative z-10 flex items-center justify-center gap-3">

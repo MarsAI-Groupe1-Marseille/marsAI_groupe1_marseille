@@ -2,9 +2,19 @@ const express = require('express');
 const router = express.Router();
 const passport = require('../config/passport');
 const authController = require('../controllers/authController');
-const authMiddleware = require('../middlewares/authMiddleware');
+const { verifyToken } = require('../middlewares/authMiddleware');
+const { strictLoginLimiter } = require('../middlewares/securityMiddleware');
+const { csrfProtection } = require('../middlewares/csrfMiddleware');
+const { validateRequest } = require('../middlewares/validationMiddleware');
+const { loginValidators } = require('../validators/authValidators');
 
-router.post('/login', authController.login);
+router.post('/login', 
+    strictLoginLimiter,
+    csrfProtection,
+    loginValidators,
+    validateRequest,
+    authController.login
+);
 
 router.get('/google', 
     passport.authenticate('google', { scope: ['profile', 'email'] })
@@ -18,6 +28,6 @@ router.get('/google/callback',
     authController.googleCallback
 );
 
-router.get('/me', authMiddleware.verifyToken, authController.getMe);
+router.get('/me', verifyToken, authController.getMe);
 
 module.exports = router;
