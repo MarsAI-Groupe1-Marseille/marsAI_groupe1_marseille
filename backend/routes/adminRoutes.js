@@ -19,7 +19,7 @@ const {
 // route pour récupérer les statistiques du dashboard (films soumis, approuvés, rejetés, en attente)
 router.get('/dashboard/stats',
     verifyToken,          // 1. Vérification connexion
-    checkRole('admin'),   // 2. Vérification rôle Admin
+    checkRole('admin', 'moderator'),   // 2. Vérification rôle Admin
     adminController.getDashboardStats // 3. Récupération des stats
 );
 
