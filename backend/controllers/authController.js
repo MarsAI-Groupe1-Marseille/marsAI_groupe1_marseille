@@ -84,3 +84,20 @@ exports.getMe = async (req, res) => {
         role: req.user.role
     });
 };
+
+exports.logout = async (req, res) => {
+    try {
+        // Effacer le cookie JWT
+        res.clearCookie('token', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict'
+        });
+
+        res.json({
+            message: "Déconnexion réussie."
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
