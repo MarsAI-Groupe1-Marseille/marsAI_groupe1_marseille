@@ -1,4 +1,5 @@
 import { Routes, Route, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 import Home from './pages/home.jsx';
 import Galerie from './pages/galerie.jsx';
 import Login from './pages/login.jsx';
@@ -26,14 +27,23 @@ import Configuration from './pages/Configuration.jsx';
 import NotFound from './pages/NotFound.jsx';
 import JuryAssignment from './pages/jury_assignment.jsx';
 import { useAuth } from './context/AuthContext.jsx';
+import { useError } from './context/ErrorContext.jsx';
+import ErrorDisplay from './components/ErrorDisplay.jsx';
 import JuryPage from './pages/JuryPage.jsx';
 import SelectFinaliste from './pages/SelectFinaliste.jsx';
 import Sponsors from './pages/Sponsors.jsx';
+import { setGlobalErrorHandler } from './config/axiosConfig.js';
 
 
 function App() {
   const location = useLocation();
   const { user } = useAuth();
+  const { addAxiosError } = useError();
+
+  // Enregistrer le gestionnaire d'erreurs global pour axios
+  useEffect(() => {
+    setGlobalErrorHandler(addAxiosError);
+  }, [addAxiosError]);
 
   const privateRoutes = [
     "/dashboard",
@@ -61,6 +71,7 @@ function App() {
 
   return (
     <div className="App flex flex-col min-h-screen">
+      <ErrorDisplay />
       {renderHeader()}
 
       <main className="grow">

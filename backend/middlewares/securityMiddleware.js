@@ -3,11 +3,21 @@ const helmet = require('helmet');
 
 // ===== RATE LIMITERS =====
 
+// Handler personnalisé pour formater les erreurs du rate limiter en JSON
+const rateLimitHandler = (req, res) => {
+    return res.status(429).json({
+        success: false,
+        message: 'Trop de requêtes, réessayez dans 15 minutes.',
+        error: 'RATE_LIMIT_EXCEEDED',
+        retryAfter: Math.ceil(req.rateLimit.resetTime / 1000) // Temps en secondes
+    });
+};
+
 // Limiteur GÉNÉRAL : 100 requêtes par 15 minutes pour toutes les routes
 const generalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 100,                   // 100 requêtes max par IP
-    message: 'Trop de requêtes, réessayez dans 15 minutes.',
+    handler: rateLimitHandler,  // Utiliser notre handler personnalisé
     standardHeaders: true,      // Return rate limit info in the `RateLimit-*` headers
     legacyHeaders: false,       // Disable the `X-RateLimit-*` headers
     skip: (req) => {
@@ -20,7 +30,13 @@ const generalLimiter = rateLimit({
 const strictLoginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 5,
-    message: 'Trop de tentatives de connexion. Réessayez dans 15 minutes.',
+    handler: (req, res) => {
+        return res.status(429).json({
+            success: false,
+            message: 'Trop de tentatives de connexion. Réessayez dans 15 minutes.',
+            error: 'RATE_LIMIT_LOGIN'
+        });
+    },
     skipSuccessfulRequests: true, // Ne compte que les erreurs
     standardHeaders: true,
     legacyHeaders: false
@@ -30,7 +46,13 @@ const strictLoginLimiter = rateLimit({
 const forgotPasswordLimiter = rateLimit({
     windowMs: 60 * 60 * 1000, // 1 heure
     max: 3,
-    message: 'Trop de demandes. Réessayez dans 1 heure.',
+    handler: (req, res) => {
+        return res.status(429).json({
+            success: false,
+            message: 'Trop de demandes. Réessayez dans 1 heure.',
+            error: 'RATE_LIMIT_FORGOT_PASSWORD'
+        });
+    },
     standardHeaders: true,
     legacyHeaders: false
 });
@@ -39,7 +61,13 @@ const forgotPasswordLimiter = rateLimit({
 const uploadLimiter = rateLimit({
     windowMs: 60 * 60 * 1000,
     max: 10,
-    message: 'Trop d\'uploads. Réessayez dans 1 heure.',
+    handler: (req, res) => {
+        return res.status(429).json({
+            success: false,
+            message: 'Trop d\'uploads. Réessayez dans 1 heure.',
+            error: 'RATE_LIMIT_UPLOAD'
+        });
+    },
     standardHeaders: true,
     legacyHeaders: false
 });

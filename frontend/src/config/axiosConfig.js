@@ -8,6 +8,26 @@ const apiBaseUrl = import.meta.env.VITE_API_URL
 axios.defaults.baseURL = apiBaseUrl;
 axios.defaults.withCredentials = true; // Envoyer les cookies avec chaque requête
 
+// ===== ERROR HANDLER REGISTRATION =====
+let globalErrorHandler = null;
+
+/**
+ * Enregistre un gestionnaire d'erreurs global
+ * Appelé par ErrorProvider pour afficher les erreurs
+ */
+export const setGlobalErrorHandler = (handler) => {
+	globalErrorHandler = handler;
+};
+
+/**
+ * Appelle le gestionnaire d'erreurs global
+ */
+const notifyError = (error) => {
+	if (globalErrorHandler) {
+		globalErrorHandler(error);
+	}
+};
+
 // ===== CSRF TOKEN MANAGEMENT =====
 let csrfToken = null;
 
@@ -54,7 +74,7 @@ axios.interceptors.request.use(async (config) => {
 	return Promise.reject(error);
 });
 
-// Interceptor de réponse : auto-récupération sur erreur CSRF 403
+// Interceptor de réponse : auto-récupération sur erreur CSRF 403 et gestion globale des erreurs
 axios.interceptors.response.use(
 	(response) => response,
 	async (error) => {
@@ -76,8 +96,15 @@ axios.interceptors.response.use(
 				return axios(originalRequest);
 			} catch (retryError) {
 				console.error('Échec récupération token:', retryError);
+				notifyError(retryError);
 				return Promise.reject(retryError);
 			}
+		}
+		
+		// Notify sur toutes les erreurs (sauf les silent errors)
+		// Les composants peuvent passer skipErrorHandling: true dans la config
+		if (!error.config?.skipErrorHandling) {
+			notifyError(error);
 		}
 		
 		return Promise.reject(error);
