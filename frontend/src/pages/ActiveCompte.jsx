@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import axios from '../config/axiosConfig';
+import { useError } from '../context/ErrorContext.jsx';
 
 const ActiveCompte = () => {
   const [password, setPassword] = useState('');
@@ -8,18 +9,20 @@ const ActiveCompte = () => {
   const [avatarFile, setAvatarFile] = useState(null);
   const [specialiteText, setSpecialiteText] = useState('');
   const [searchParams] = useSearchParams();
+  const { addError } = useError();
   const tokenFromSearch = searchParams.get('token');
   const token = tokenFromSearch 
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!token) {
-      alert('Token manquant dans l\'URL.');
+      addError('Token manquant dans l\'URL.', 'error');
       return;
     }
     if (password !== confirmPassword) {
-      alert('Les mots de passe ne correspondent pas.');
+      addError('Les mots de passe ne correspondent pas.', 'error');
       return;
     }
     const specialiteList = specialiteText
@@ -39,11 +42,25 @@ const ActiveCompte = () => {
       formData.append('specialite', JSON.stringify(specialiteList));
     }
 
-    await axios.post('/users/active-compte', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    });
-    alert('Compte activé avec succès.');
-    navigate('/login');
+    setLoading(true);
+    try {
+      await axios.post('/users/active-compte', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      addError('Compte activé avec succès.', 'success');
+      setTimeout(() => navigate('/login'), 1500);
+    } catch (err) {
+      // Afficher les erreurs de validation du backend
+      if (err.response?.data?.errors && Array.isArray(err.response.data.errors)) {
+        const validationErrors = err.response.data.errors.map(e => e.message).join(' • ');
+        addError(validationErrors, 'error');
+      } else {
+        const errorMsg = err.response?.data?.error || 'Erreur lors de l\'activation.';
+        addError(errorMsg, 'error');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoogleAuth = () => {
@@ -83,6 +100,7 @@ const ActiveCompte = () => {
               className="w-full px-6 py-4 bg-gray-900/40 border border-gray-800 rounded-full focus:outline-none focus:border-purple-500 transition text-white placeholder-gray-500 text-sm"
               placeholder="Mot de passe :"
               required
+              disabled={loading}
             />
           </div>
 
@@ -96,6 +114,7 @@ const ActiveCompte = () => {
               className="w-full px-6 py-4 bg-gray-900/40 border border-gray-800 rounded-full focus:outline-none focus:border-purple-500 transition text-white placeholder-gray-500 text-sm"
               placeholder="Confirmation du mot de passe :"
               required
+              disabled={loading}
             />
           </div>
 
@@ -125,10 +144,11 @@ const ActiveCompte = () => {
 
           <button 
             type="submit" 
-            className="w-full py-4 px-5 bg-gradient-to-r from-[#c084fc] via-[#6366f1] to-[#60a5fa] border-none rounded-full text-white text-sm font-medium tracking-[3px] uppercase cursor-pointer transition-all duration-300 flex items-center justify-center gap-3 shadow-[0_8px_25px_rgba(99,102,241,0.3)] hover:-translate-y-0.5 hover:shadow-[0_12px_35px_rgba(99,102,241,0.4)] active:translate-y-0 group"
+            disabled={loading}
+            className="w-full py-4 px-5 bg-gradient-to-r from-[#c084fc] via-[#6366f1] to-[#60a5fa] border-none rounded-full text-white text-sm font-medium tracking-[3px] uppercase cursor-pointer transition-all duration-300 flex items-center justify-center gap-3 shadow-[0_8px_25px_rgba(99,102,241,0.3)] hover:-translate-y-0.5 hover:shadow-[0_12px_35px_rgba(99,102,241,0.4)] active:translate-y-0 group disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            RÉINITIALISER
-            <span className="text-lg font-bold transition-transform duration-300 group-hover:translate-x-1">→</span>
+            {loading ? 'ACTIVATION EN COURS...' : 'RÉINITIALISER'}
+            {!loading && <span className="text-lg font-bold transition-transform duration-300 group-hover:translate-x-1">→</span>}
           </button>
         </form>
 
