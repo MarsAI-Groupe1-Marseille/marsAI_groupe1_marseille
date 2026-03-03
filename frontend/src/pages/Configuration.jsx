@@ -348,42 +348,54 @@ const HomeConfigModal = ({ onClose }) => {
 
   useEffect(() => {
     const load = async () => {
+      let apiConfig = null
+      
+      // Essayer de charger depuis l'API
       try {
         const { data } = await axios.get('/admin/home-config')
         if (data?.config) {
-          // Migration : si awards.stats existe, convertir en awards.items
-          const loaded = { ...DEFAULT_HOME_CONFIG, ...data.config }
-          if (loaded.awards?.stats && !loaded.awards?.items) {
-            loaded.awards.items = loaded.awards.stats.map(s => ({
-              label: s.label, label_en: s.label,
-              sub: s.sub, sub_en: s.sub_en || s.sub, image: s.image || ''
-            }))
-            delete loaded.awards.stats
-          }
-          // Migration : si partners sans items
-          if (!loaded.partners?.items) {
-            loaded.partners = { ...DEFAULT_HOME_CONFIG.partners, ...loaded.partners }
-          }
-          setConfig(loaded)
+          apiConfig = { ...DEFAULT_HOME_CONFIG, ...data.config }
         }
-      } catch {
-        const local = localStorage.getItem('home_config')
-        if (local) {
-          const parsed = JSON.parse(local)
-          // Migration awards
-          if (parsed.awards?.stats && !parsed.awards?.items) {
-            parsed.awards.items = parsed.awards.stats.map(s => ({
-              label: s.label, label_en: s.label,
-              sub: s.sub, sub_en: s.sub_en || s.sub, image: s.image || ''
-            }))
-            delete parsed.awards.stats
-          }
-          if (!parsed.partners?.items) {
-            parsed.partners = { ...DEFAULT_HOME_CONFIG.partners, ...parsed.partners }
-          }
-          setConfig({ ...DEFAULT_HOME_CONFIG, ...parsed })
+      } catch (error) {
+        console.error('Erreur fetch config API:', error)
+      }
+      
+      // Toujours vérifier localStorage pour fusionner les changements locaux
+      const local = localStorage.getItem('home_config')
+      let localConfig = null
+      if (local) {
+        try {
+          localConfig = JSON.parse(local)
+        } catch {}
+      }
+      
+      // Décider quelle config utiliser : API + localStorage (priorité localStorage pour les catégories)
+      const finalConfig = apiConfig || { ...DEFAULT_HOME_CONFIG }
+      
+      // Si localStorage a des catégories, les utiliser (elles sont plus fraîches)
+      if (localConfig?.categories?.items && localConfig.categories.items.length > 0) {
+        finalConfig.categories = {
+          enabled: finalConfig.categories.enabled,
+          items: localConfig.categories.items
         }
       }
+      
+      // Migrations
+      if (finalConfig.awards?.stats && !finalConfig.awards?.items) {
+        finalConfig.awards.items = finalConfig.awards.stats.map(s => ({
+          label: s.label, label_en: s.label,
+          sub: s.sub, sub_en: s.sub_en || s.sub, image: s.image || ''
+        }))
+        delete finalConfig.awards.stats
+      }
+      if (!finalConfig.partners?.items) {
+        finalConfig.partners = { ...DEFAULT_HOME_CONFIG.partners, ...finalConfig.partners }
+      }
+      if (!finalConfig.categories?.items || finalConfig.categories?.enabled === undefined) {
+        finalConfig.categories = { ...DEFAULT_HOME_CONFIG.categories, ...finalConfig.categories }
+      }
+      
+      setConfig(finalConfig)
     }
     load()
   }, [])
@@ -992,7 +1004,7 @@ const Configuration = () => {
   const [showModal, setShowModal] = useState(false)
   const [showHomeModal, setShowHomeModal] = useState(false)
   const [activeSections, setActiveSections] = useState(4)
-  const [adminUser, setAdminUser] = useState({ full_name: "Admin Test", email: "email@exemple.com", job_title: "Directeur" })
+  const [adminUser, setAdminUser] = useState({ full_name: "Admin Test", email: "email@exemple.com", job_title: "Directeur", avatar_url: "" })
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -1010,6 +1022,13 @@ const Configuration = () => {
       }
     }
     verifyAdmin()
+
+    // Listener pour l'événement personnalisé userAvatarUpdated
+    const handleAvatarUpdated = (e) => {
+      setAdminUser(prev => ({ ...prev, avatar_url: e.detail.avatar_url }))
+    }
+    window.addEventListener('userAvatarUpdated', handleAvatarUpdated)
+    return () => window.removeEventListener('userAvatarUpdated', handleAvatarUpdated)
   }, [])
 
   useEffect(() => {
@@ -1072,15 +1091,6 @@ const Configuration = () => {
                   <Settings size={32} /> {t('config_page_title')}
                 </h1>
                 <p className="text-sm md:text-base text-neutral-400 leading-relaxed max-w-2xl">{t('config_page_desc')}</p>
-              </div>
-              <div className="flex flex-col items-center text-center">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center border-2 border-violet-400 shadow-lg mb-4">
-                  <span className="text-white font-bold text-2xl">
-                    {adminUser?.full_name ? adminUser.full_name.split(' ').map(n => n[0]).join('').toUpperCase() : 'A'}
-                  </span>
-                </div>
-                <p className="text-sm font-semibold text-white break-words mb-1">{adminUser?.full_name}</p>
-                <p className="text-xs text-neutral-400 break-all">{adminUser?.email}</p>
               </div>
             </div>
           </div>
