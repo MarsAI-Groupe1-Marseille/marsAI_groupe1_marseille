@@ -40,10 +40,11 @@ axios.interceptors.request.use(async (config) => {
 		return config;
 	}
 	
-	// Pour les requêtes mutations (POST, PUT, DELETE, PATCH)
-	if (!csrfToken) {
-		await fetchCSRFToken();
-	}
+	// Pour les requêtes mutations (POST, PUT, DELETE, PATCH),
+	// on rafraîchit le token à chaque fois pour éviter les tokens périmés
+	// après redémarrage du backend (session store mémoire en dev).
+	await fetchCSRFToken();
+
 	if (csrfToken) {
 		config.headers['X-CSRF-Token'] = csrfToken;
 	}
