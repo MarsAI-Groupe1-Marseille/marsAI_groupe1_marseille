@@ -14,7 +14,7 @@ const sequelize = require('./config/db');
 
 // Import des middlewares de sécurité
 const { helmetConfig, generalLimiter } = require('./middlewares/securityMiddleware');
-const { sessionConfig, csrfProtection } = require('./middlewares/csrfMiddleware');
+const { sessionMiddleware, csrfProtection } = require('./middlewares/csrfMiddleware');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -58,7 +58,7 @@ app.use(generalLimiter);         // Rate limiting général (100 req/15min)
 
 app.use(express.json());
 app.use(cookieParser()); // Pour parser les cookies
-app.use(sessionConfig);  // Session pour CSRF
+app.use(sessionMiddleware);  // Session pour CSRF
 app.use(csrfProtection); // Protection CSRF
 app.use(passport.initialize());
 
@@ -91,6 +91,19 @@ app.use('/uploads', (req, res, next) => {
     next();
 }, express.static(path.join(__dirname, 'uploads')));
 
+// ==========================================
+// GESTION DES ERREURS CSRF
+// ==========================================
+app.use((err, req, res, next) => {
+    if (err.code === 'EBADCSRFTOKEN') {
+        console.warn('Token CSRF invalide détecté');
+        return res.status(403).json({ 
+            error: 'Session invalide ou expirée. Veuillez rafraîchir la page.',
+            code: 'CSRF_INVALID'
+        });
+    }
+    next(err);
+});
 
 // ==========================================
 // LANCEMENT DU SERVEUR
