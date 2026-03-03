@@ -1,5 +1,6 @@
 const { Submission, Director, Collaborator } = require('../models');
 const { uploadVideoToYoutube,uploadSubtitlesToYoutube } = require('../services/youtubeService');
+const { validateUploadedFilesBySignature, cleanupUploadedFiles } = require('../services/fileValidationService');
 const emailService = require('../services/emailService');
 const { Op } = require('sequelize'); 
 const fs = require('fs');
@@ -39,6 +40,20 @@ exports.createSubmission = async (req, res) => {
     const galleryFiles = req.files.gallery_files || [];
 
     try {
+        // Validation forte du contenu reel (signature binaire) des fichiers deja uploades sur S3.
+        const signatureValidation = await validateUploadedFilesBySignature(req.files);
+        if (!signatureValidation.ok) {
+            await cleanupUploadedFiles(req.files);
+            return res.status(400).json({
+                message: 'Fichier invalide.',
+                error: signatureValidation.message,
+                errors: [{
+                    field: signatureValidation.field || 'file',
+                    message: signatureValidation.message
+                }]
+            });
+        }
+
         // --- ÉTAPE 1 : GESTION DU RÉALISATEUR ---
         let director = await Director.findOne({ where: { email: req.body.director_email } });
 
@@ -160,6 +175,7 @@ exports.createSubmission = async (req, res) => {
 
     } catch (error) {
         console.error("Erreur Soumission :", error);
+        await cleanupUploadedFiles(req.files);
         // Note : Pas besoin de fs.unlinkSync ici, car les fichiers sont sur S3.
         // On pourrait ajouter une fonction de nettoyage S3 en cas d'erreur si besoin.
         res.status(500).json({ message: "Erreur serveur.", error: error.message });

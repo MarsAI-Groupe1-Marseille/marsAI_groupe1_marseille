@@ -15,6 +15,8 @@ Pas besoin de compte. Le réalisateur remplit le formulaire et envoie tout.
 
 **Format :** `multipart/form-data` (Important pour les fichiers)
 
+**Securite fichiers :** le backend valide a la fois le `filetype` (extension) **et** la signature binaire reelle du fichier (magic bytes). Un fichier renomme avec une mauvaise extension est rejete.
+
 **Description :** Crée le réalisateur (si nouveau), le film, l'équipe et upload les fichiers.
 
 #### Champs Requis (Body) :
@@ -36,12 +38,46 @@ Pas besoin de compte. Le réalisateur remplit le formulaire et envoie tout.
 | ai_classification | Enum | '100% IA' ou 'Hybrid' |
 | ai_tools | String | Liste des outils (Midjourney, Runway...) |
 | **Fichiers** | | |
-| video_file | File | Le fichier vidéo (.mp4) |
-| poster_file | File | L'affiche (.jpg, .png) |
-| subtitle_file | File | (Optionnel) Le fichier .srt |
-| gallery_files | Files[] | (Optionnel) Jusqu'à 3 images |
+| video_file | File | Le fichier vidéo (filetype: .mp4, .mov, .avi, .mkv) |
+| poster_file | File | L'affiche (filetype: .jpg, .jpeg, .png, .webp) |
+| subtitle_file | File | (Optionnel) Le fichier sous-titre (filetype: .srt, .vtt, .txt) |
+| gallery_files | Files[] | (Optionnel) Jusqu'à 10 images (filetype: .jpg, .jpeg, .png, .webp) |
 | **JSON Data** | | |
-| collaborators | String | JSON stringifié : `[{"role":"Monteur", "first_name":"Bob"}]` |
+| collaborators_json | String | JSON stringifie valide (schema ci-dessous) |
+| director_social_links | String | JSON stringifie valide (schema ci-dessous) |
+
+#### Schema JSON attendu (collaborators_json)
+
+```json
+[
+  {
+    "first_name": "Bob",
+    "last_name": "Martin",
+    "role": "Monteur"
+  }
+]
+```
+
+Contraintes:
+- Type: tableau JSON
+- Max: 50 elements
+- Champs obligatoires par element: `first_name`, `last_name`, `role`
+- Taille des champs: 2 a 100 caracteres
+
+#### Schema JSON attendu (director_social_links)
+
+```json
+{
+  "website": "https://example.com",
+  "instagram": "https://instagram.com/compte",
+  "linkedin": "https://linkedin.com/in/profil"
+}
+```
+
+Contraintes:
+- Type: objet JSON
+- Cles autorisees: `website`, `instagram`, `linkedin`, `youtube`, `vimeo`, `tiktok`, `x`
+- Valeurs: string (max 300 caracteres)
 
 #### JSON Renvoyé (201 Created) :
 

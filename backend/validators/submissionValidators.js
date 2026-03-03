@@ -33,6 +33,76 @@ const validateCommaSeparatedList = (value, fieldName) => {
     return true;
 };
 
+const validateCollaboratorsJson = (value) => {
+    if (!value || value.trim() === '') return true;
+
+    let parsed;
+    try {
+        parsed = JSON.parse(value);
+    } catch (error) {
+        throw new Error('collaborators_json doit etre un JSON valide');
+    }
+
+    if (!Array.isArray(parsed)) {
+        throw new Error('collaborators_json doit etre un tableau JSON');
+    }
+
+    if (parsed.length > 50) {
+        throw new Error('collaborators_json: maximum 50 collaborateurs');
+    }
+
+    parsed.forEach((collab, index) => {
+        if (!collab || typeof collab !== 'object' || Array.isArray(collab)) {
+            throw new Error(`collaborators_json[${index}] doit etre un objet`);
+        }
+
+        const requiredFields = ['first_name', 'last_name', 'role'];
+        requiredFields.forEach((field) => {
+            if (typeof collab[field] !== 'string' || collab[field].trim().length < 2) {
+                throw new Error(`collaborators_json[${index}].${field} requis (min 2 caracteres)`);
+            }
+            if (collab[field].trim().length > 100) {
+                throw new Error(`collaborators_json[${index}].${field} trop long (max 100)`);
+            }
+        });
+    });
+
+    return true;
+};
+
+const validateDirectorSocialLinksJson = (value) => {
+    if (!value || value.trim() === '') return true;
+
+    let parsed;
+    try {
+        parsed = JSON.parse(value);
+    } catch (error) {
+        throw new Error('director_social_links doit etre un JSON valide');
+    }
+
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+        throw new Error('director_social_links doit etre un objet JSON');
+    }
+
+    const allowedKeys = ['website', 'instagram', 'linkedin', 'youtube', 'vimeo', 'tiktok', 'x'];
+    Object.keys(parsed).forEach((key) => {
+        if (!allowedKeys.includes(key)) {
+            throw new Error(`director_social_links: cle non autorisee (${key})`);
+        }
+
+        if (typeof parsed[key] !== 'string' || parsed[key].length > 300) {
+            throw new Error(`director_social_links.${key} doit etre un texte (max 300)`);
+        }
+
+        const normalizedValue = parsed[key].trim();
+        if (normalizedValue.length > 0 && !/^https:\/\//i.test(normalizedValue)) {
+            throw new Error(`director_social_links.${key}: URL https obligatoire`);
+        }
+    });
+
+    return true;
+};
+
 // ===== SUBMISSION CREATION VALIDATORS =====
 const submissionValidators = [
     // Titres
@@ -168,7 +238,15 @@ const submissionValidators = [
         .optional()
         .trim()
         .isLength({ max: 200 }).withMessage('Max 200 caractères')
-        .escape()
+        .escape(),
+
+    // JSON STRUCTURE
+    body('collaborators_json')
+        .optional()
+        .custom(validateCollaboratorsJson),
+    body('director_social_links')
+        .optional()
+        .custom(validateDirectorSocialLinksJson)
 ];
 
 // ===== SUBMISSION ID VALIDATORS =====

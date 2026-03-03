@@ -42,6 +42,16 @@ const SubmissionForm = () => {
     { first_name: '', last_name: '', role: '', email: '' }
   ]);
 
+  const [socialLinks, setSocialLinks] = useState({
+    website: '',
+    instagram: '',
+    linkedin: '',
+    youtube: '',
+    vimeo: '',
+    tiktok: '',
+    x: ''
+  });
+
   const [isLoading, setIsLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [statusMessage, setStatusMessage] = useState(null);
@@ -71,12 +81,39 @@ const SubmissionForm = () => {
     setCollaborators(updatedCollaborators);
   };
 
+  const handleSocialLinkChange = (e) => {
+    const { name, value } = e.target;
+    setSocialLinks(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
   const addCollaborator = () => {
     setCollaborators([...collaborators, { first_name: '', last_name: '', role: '', email: '' }]);
   };
 
   const removeCollaborator = (index) => {
     setCollaborators(collaborators.filter((_, i) => i !== index));
+  };
+
+  const socialFieldLabelMap = {
+    website: 'Site web',
+    instagram: 'Instagram',
+    linkedin: 'LinkedIn',
+    youtube: 'YouTube',
+    vimeo: 'Vimeo',
+    tiktok: 'TikTok',
+    x: 'X / Twitter'
+  };
+
+  const isValidHttpsUrl = (value) => {
+    try {
+      const parsed = new URL(value);
+      return parsed.protocol === 'https:';
+    } catch (error) {
+      return false;
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -86,15 +123,37 @@ const SubmissionForm = () => {
     setValidationErrors([]);
     setUploadProgress(0);
 
+    const socialLinkErrors = Object.entries(socialLinks)
+      .filter(([, value]) => (value || '').trim() !== '')
+      .filter(([, value]) => !isValidHttpsUrl(value.trim()))
+      .map(([field]) => ({
+        field: `director_social_links.${field}`,
+        message: (t('submission_social_invalid_url') || 'URL invalide pour {label}. Utilisez un lien complet commençant par https://')
+          .replace('{label}', socialFieldLabelMap[field] || field)
+      }));
+
+    if (socialLinkErrors.length > 0) {
+      setValidationErrors(socialLinkErrors);
+      setStatusMessage({
+        type: 'error',
+        text: t('submission_validation_error') || 'Erreurs de validation. Veuillez corriger les champs ci-dessous.'
+      });
+      setIsLoading(false);
+      return;
+    }
+
     const data = new FormData();
     Object.keys(formData).forEach(key => data.append(key, formData[key]));
     if (files.video_file) data.append('video_file', files.video_file);
     if (files.poster_file) data.append('poster_file', files.poster_file);
     if (files.subtitle_file) data.append('subtitle_file', files.subtitle_file);
     files.gallery_files.forEach(file => data.append('gallery_files', file));
+    const socialLinksPayload = Object.fromEntries(
+      Object.entries(socialLinks).filter(([, value]) => (value || '').trim() !== '')
+    );
     
     data.append('collaborators_json', JSON.stringify(collaborators));
-    data.append('director_social_links', JSON.stringify({ instagram: '', linkedin: '' }));
+    data.append('director_social_links', JSON.stringify(socialLinksPayload));
 
     try {
       const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/submissions`, data, {
@@ -108,19 +167,32 @@ const SubmissionForm = () => {
       setValidationErrors([]);
     } catch (error) {
       console.error('Erreur soumission:', error.response?.data);
+      const responseData = error.response?.data || {};
       
       // Si c'est une erreur de validation (status 400)
-      if (error.response?.status === 400 && error.response?.data?.errors) {
-        setValidationErrors(error.response.data.errors);
+      if (error.response?.status === 400 && responseData?.errors) {
+        setValidationErrors(responseData.errors);
         setStatusMessage({ 
           type: 'error', 
           text: t('submission_validation_error') || 'Erreurs de validation. Veuillez corriger les champs ci-dessous.' 
+        });
+      } else if (error.response?.status === 400 && responseData?.field && responseData?.message) {
+        setValidationErrors([{ field: responseData.field, message: responseData.message }]);
+        setStatusMessage({
+          type: 'error',
+          text: t('submission_validation_error') || 'Erreurs de validation. Veuillez corriger les champs ci-dessous.'
+        });
+      } else if (error.response?.status === 400 && responseData?.error) {
+        setValidationErrors([{ field: 'file', message: responseData.error }]);
+        setStatusMessage({
+          type: 'error',
+          text: t('submission_validation_error') || 'Erreurs de validation. Veuillez corriger les champs ci-dessous.'
         });
       } else {
         // Autre type d'erreur
         setStatusMessage({ 
           type: 'error', 
-          text: error.response?.data?.message || t('submission_error') || 'Une erreur est survenue lors de la soumission.'
+          text: responseData?.message || t('submission_error') || 'Une erreur est survenue lors de la soumission.'
         });
       }
     } finally {
@@ -169,6 +241,19 @@ const SubmissionForm = () => {
               <div className="md:col-span-2 flex items-center">
                 <input type="checkbox" name="director_newsletter" onChange={handleChange} className="h-5 w-5 text-purple-500 bg-slate-900/50 border-purple-500/30" />
                 <label className="ml-3 text-sm text-purple-100">{t('submission_newsletter')}</label>
+              </div>
+
+              <div className="md:col-span-2">
+                <h3 className="text-lg font-semibold text-purple-200 mb-3">{t('submission_social_links_section')}</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <input type="url" name="website" placeholder={t('submission_social_website')} value={socialLinks.website} onChange={handleSocialLinkChange} className="bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
+                  <input type="url" name="instagram" placeholder={t('submission_social_instagram')} value={socialLinks.instagram} onChange={handleSocialLinkChange} className="bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
+                  <input type="url" name="linkedin" placeholder={t('submission_social_linkedin')} value={socialLinks.linkedin} onChange={handleSocialLinkChange} className="bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
+                  <input type="url" name="youtube" placeholder={t('submission_social_youtube')} value={socialLinks.youtube} onChange={handleSocialLinkChange} className="bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
+                  <input type="url" name="vimeo" placeholder={t('submission_social_vimeo')} value={socialLinks.vimeo} onChange={handleSocialLinkChange} className="bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
+                  <input type="url" name="tiktok" placeholder={t('submission_social_tiktok')} value={socialLinks.tiktok} onChange={handleSocialLinkChange} className="bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
+                  <input type="url" name="x" placeholder={t('submission_social_x')} value={socialLinks.x} onChange={handleSocialLinkChange} className="md:col-span-2 bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
+                </div>
               </div>
             </div>
           </section>
