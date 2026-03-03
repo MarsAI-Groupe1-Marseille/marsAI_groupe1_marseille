@@ -56,7 +56,9 @@ app.use(cors({
 app.use(helmetConfig);           // Headers de sécurité HTTP
 app.use(generalLimiter);         // Rate limiting général (100 req/15min)
 
-app.use(express.json());
+// Autorise des payloads plus volumineux (config home avec images base64 avant upload S3)
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser()); // Pour parser les cookies
 app.use(sessionMiddleware);  // Session pour CSRF
 app.use(csrfProtection); // Protection CSRF

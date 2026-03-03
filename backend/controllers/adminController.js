@@ -4,7 +4,7 @@ const { Op } = require('sequelize');
 // 2. On importe le service d'emailing pour envoyer les notifications aux réalisateurs
 const emailService = require('../services/emailService');
 // 3. On importe le helper pour uploader les images base64 vers S3
-const { processConfigImages } = require('../utils/uploadHelper');
+const { processConfigImages, normalizeConfigImageUrls } = require('../utils/uploadHelper');
 
 // Fonction pour récupérer les statistiques du dashboard
 exports.getDashboardStats = async (req, res) => {
@@ -488,10 +488,18 @@ exports.getHomeConfig = async (req, res) => {
         });
 
         if (siteConfig) {
+            const normalizedConfig = normalizeConfigImageUrls(siteConfig.config_data);
+
+            // Auto-corrige en base si des URLs legacy sont detectees.
+            if (JSON.stringify(normalizedConfig) !== JSON.stringify(siteConfig.config_data)) {
+                siteConfig.config_data = normalizedConfig;
+                await siteConfig.save();
+            }
+
             // Config trouvée en BDD
             return res.status(200).json({ 
                 success: true, 
-                config: siteConfig.config_data 
+                config: normalizedConfig 
             });
         } else {
             // Pas de config en BDD, retourner une config par défaut vide
@@ -524,7 +532,7 @@ exports.updateHomeConfig = async (req, res) => {
         console.log('🔄 Traitement de la config home...');
 
         // 1. Traiter les images base64 et les uploader vers S3
-        const processedConfig = await processConfigImages(config);
+        const processedConfig = normalizeConfigImageUrls(await processConfigImages(config));
 
         console.log('Images traitées et uploadées sur S3');
 

@@ -12,6 +12,68 @@ const s3Client = new S3Client({
     }
 });
 
+const buildScalewayPublicUrl = (fileName) => {
+    const endpoint = process.env.SCALEWAY_ENDPOINT || '';
+    const bucket = process.env.SCALEWAY_BUCKET_NAME;
+
+    if (!bucket) {
+        throw new Error('SCALEWAY_BUCKET_NAME manquant');
+    }
+
+    // Ex: https://s3.fr-par.scw.cloud -> https://<bucket>.s3.fr-par.scw.cloud/<key>
+    try {
+        const endpointUrl = new URL(endpoint);
+        const host = endpointUrl.host || '';
+        const protocol = endpointUrl.protocol || 'https:';
+
+        if (host.startsWith('s3.')) {
+            return `${protocol}//${bucket}.${host}/${fileName}`;
+        }
+
+        // Fallback: host custom, on garde une URL valide de type path-style.
+        return `${protocol}//${host}/${bucket}/${fileName}`;
+    } catch (_error) {
+        // Fallback final basé sur region
+        return `https://${bucket}.s3.${process.env.SCALEWAY_REGION}.scw.cloud/${fileName}`;
+    }
+};
+
+const normalizeLegacyScalewayUrl = (value) => {
+    if (typeof value !== 'string') return value;
+
+    // Corrige l'ancien format: <bucket>.<region>.scw.cloud -> <bucket>.s3.<region>.scw.cloud
+    return value.replace(
+        /^https:\/\/([^.]+)\.([a-z0-9-]+)\.scw\.cloud\/(.+)$/i,
+        'https://$1.s3.$2.scw.cloud/$3'
+    );
+};
+
+const normalizeConfigImageUrls = (config) => {
+    if (!config || typeof config !== 'object') return config;
+
+    const processed = JSON.parse(JSON.stringify(config));
+
+    if (processed.categories?.items && Array.isArray(processed.categories.items)) {
+        for (const item of processed.categories.items) {
+            if (item?.image) item.image = normalizeLegacyScalewayUrl(item.image);
+        }
+    }
+
+    if (processed.awards?.items && Array.isArray(processed.awards.items)) {
+        for (const item of processed.awards.items) {
+            if (item?.image) item.image = normalizeLegacyScalewayUrl(item.image);
+        }
+    }
+
+    if (processed.partners?.items && Array.isArray(processed.partners.items)) {
+        for (const item of processed.partners.items) {
+            if (item?.image) item.image = normalizeLegacyScalewayUrl(item.image);
+        }
+    }
+
+    return processed;
+};
+
 /**
  * Upload une image base64 vers S3 et retourne l'URL publique
  * @param {string} base64Data - L'image en base64 (data:image/png;base64,...)
@@ -51,7 +113,7 @@ async function uploadBase64ToS3(base64Data, folder = 'config') {
         await s3Client.send(command);
 
         // 5. Construire et retourner l'URL publique
-        const publicUrl = `https://${process.env.SCALEWAY_BUCKET_NAME}.${process.env.SCALEWAY_REGION}.scw.cloud/${fileName}`;
+        const publicUrl = buildScalewayPublicUrl(fileName);
         
         return publicUrl;
 
@@ -100,10 +162,11 @@ async function processConfigImages(config) {
         }
     }
 
-    return processed;
+    return normalizeConfigImageUrls(processed);
 }
 
 module.exports = {
     uploadBase64ToS3,
-    processConfigImages
+    processConfigImages,
+    normalizeConfigImageUrls
 };

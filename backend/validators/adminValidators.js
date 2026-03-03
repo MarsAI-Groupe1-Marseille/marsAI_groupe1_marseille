@@ -66,41 +66,44 @@ const deleteJuryListValidator = [
 
 // ===== HOME CONFIG VALIDATORS =====
 const homeConfigValidators = [
-    body('categories')
+    body('config')
+        .notEmpty().withMessage('La configuration est requise')
+        .isObject().withMessage('config doit etre un objet'),
+    body('config.categories.items')
         .optional()
         .custom(value => {
             if (value && !Array.isArray(value)) {
-                throw new Error('Categories doit être un array');
+                throw new Error('config.categories.items doit etre un array');
             }
             return true;
         }),
-    body('categories.*.title')
+    body('config.categories.items.*.title')
         .optional()
         .trim()
         .isLength({ max: 100 }).withMessage('Titre : max 100 caractères')
         .escape(),
-    body('awards')
+    body('config.awards.items')
         .optional()
         .custom(value => {
             if (value && !Array.isArray(value)) {
-                throw new Error('Awards doit être un array');
+                throw new Error('config.awards.items doit etre un array');
             }
             return true;
         }),
-    body('awards.*.label')
+    body('config.awards.items.*.label')
         .optional()
         .trim()
         .isLength({ max: 100 }).withMessage('Label : max 100 caractères')
         .escape(),
-    body('partners')
+    body('config.partners.items')
         .optional()
         .custom(value => {
             if (value && !Array.isArray(value)) {
-                throw new Error('Partners doit être un array');
+                throw new Error('config.partners.items doit etre un array');
             }
             return true;
         }),
-    body('partners.*.name')
+    body('config.partners.items.*.name')
         .optional()
         .trim()
         .isLength({ max: 150 }).withMessage('Nom : max 150 caractères')
