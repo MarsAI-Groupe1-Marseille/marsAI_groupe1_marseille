@@ -16,8 +16,17 @@ const {
 } = require('../validators/authValidators');
 
 
-router.get('/', userController.getAllUsers);
-router.get('/:id', userController.getUserById);
+router.get('/', 
+    verifyToken,                        // 1. Vérification connexion
+    checkRole('admin', 'moderator'),    // 2. Vérification rôle Admin ou Modérateur
+    userController.getAllUsers
+);
+
+router.get('/:id', 
+    verifyToken,                        // 1. Vérification connexion
+    checkRole('admin', 'moderator'),    // 2. Vérification rôle Admin ou Modérateur
+    userController.getUserById
+);
 
 // Cette ligne permet à l'Admin de modifier le rôle d'un utilisateur (jury, admin, modérateur) ou son nom complet ou son email
 router.put('/:id',
