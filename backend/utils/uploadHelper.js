@@ -74,6 +74,60 @@ const normalizeConfigImageUrls = (config) => {
     return processed;
 };
 
+const ALLOWED_BASE64_MIME_TYPES = new Set([
+    'image/jpeg',
+    'image/jpg',
+    'image/png',
+    'image/webp'
+]);
+
+const isJpegBuffer = (buffer) => buffer.length >= 3
+    && buffer[0] === 0xff
+    && buffer[1] === 0xd8
+    && buffer[2] === 0xff;
+
+const isPngBuffer = (buffer) => buffer.length >= 8
+    && buffer[0] === 0x89
+    && buffer[1] === 0x50
+    && buffer[2] === 0x4e
+    && buffer[3] === 0x47
+    && buffer[4] === 0x0d
+    && buffer[5] === 0x0a
+    && buffer[6] === 0x1a
+    && buffer[7] === 0x0a;
+
+const isWebpBuffer = (buffer) => buffer.length >= 12
+    && buffer.subarray(0, 4).toString('ascii') === 'RIFF'
+    && buffer.subarray(8, 12).toString('ascii') === 'WEBP';
+
+const getExtensionFromMime = (mimeType) => {
+    switch (mimeType) {
+        case 'image/jpeg':
+        case 'image/jpg':
+            return 'jpg';
+        case 'image/png':
+            return 'png';
+        case 'image/webp':
+            return 'webp';
+        default:
+            return null;
+    }
+};
+
+const validateImageSignature = (mimeType, buffer) => {
+    switch (mimeType) {
+        case 'image/jpeg':
+        case 'image/jpg':
+            return isJpegBuffer(buffer);
+        case 'image/png':
+            return isPngBuffer(buffer);
+        case 'image/webp':
+            return isWebpBuffer(buffer);
+        default:
+            return false;
+    }
+};
+
 /**
  * Upload une image base64 vers S3 et retourne l'URL publique
  * @param {string} base64Data - L'image en base64 (data:image/png;base64,...)
@@ -88,12 +142,24 @@ async function uploadBase64ToS3(base64Data, folder = 'config') {
             throw new Error('Format base64 invalide');
         }
 
-        const mimeType = matches[1]; // ex: image/png
+        const mimeType = matches[1].toLowerCase(); // ex: image/png
         const base64Content = matches[2];
         const buffer = Buffer.from(base64Content, 'base64');
 
+        // Validation forte: MIME autorise + signature binaire reelle
+        if (!ALLOWED_BASE64_MIME_TYPES.has(mimeType)) {
+            throw new Error(`Type MIME non autorise: ${mimeType}`);
+        }
+
+        if (!validateImageSignature(mimeType, buffer)) {
+            throw new Error(`Le contenu du fichier ne correspond pas au MIME declare (${mimeType})`);
+        }
+
         // 2. Déterminer l'extension
-        const extension = mimeType.split('/')[1]; // png, jpeg, etc.
+        const extension = getExtensionFromMime(mimeType);
+        if (!extension) {
+            throw new Error(`Extension non supportee pour MIME: ${mimeType}`);
+        }
         
         // 3. Générer un nom de fichier unique
         const randomHash = crypto.randomBytes(8).toString('hex');

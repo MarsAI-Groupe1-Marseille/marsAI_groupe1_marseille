@@ -3,6 +3,7 @@ const emailService = require('../services/emailService');
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
 const { sendErrorResponse } = require('../utils/errorHandler');
+const { validateUploadedFilesBySignature, cleanupUploadedFiles } = require('../services/fileValidationService');
 
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
@@ -146,16 +147,37 @@ exports.resetPassword = async (req, res) => {
 exports.activateAccount = async (req, res) => {
     try {
         const { token, new_password, specialite } = req.body;
-        // Avec multer-s3, utiliser req.file.location au lieu de req.file.path
-        const avatar = req.file ? req.file.location : null;
         
         if (!token || !new_password) {
             return res.status(400).json({ error: "Le token et le nouveau mot de passe sont requis." });
         }
+
         const user = await User.findOne({ where: { invite_token: token } });
         if (!user) {
             return res.status(404).json({ error: "Token invalide ou expiré." });
         }
+
+        // Validation forte de l'avatar (signature binaire) si un fichier est uploadé.
+        if (req.file) {
+            const filesByField = { avatar: [req.file] };
+            const signatureValidation = await validateUploadedFilesBySignature(filesByField);
+
+            if (!signatureValidation.ok) {
+                await cleanupUploadedFiles(filesByField);
+                return res.status(400).json({
+                    message: 'Fichier avatar invalide.',
+                    error: signatureValidation.message,
+                    errors: [{
+                        field: signatureValidation.field || 'avatar',
+                        message: signatureValidation.message
+                    }]
+                });
+            }
+        }
+
+        // Avec multer-s3, utiliser req.file.location au lieu de req.file.path
+        const avatar = req.file ? req.file.location : null;
+
         const password_hash = await bcrypt.hash(new_password, 10);
         user.password_hash = password_hash;
         user.invite_token = null;
@@ -180,6 +202,10 @@ exports.activateAccount = async (req, res) => {
 
         res.status(200).json({ message: "Compte activé avec succès." });
     } catch (error) {
+        // Évite les objets orphelins sur S3 si l'activation échoue après upload.
+        if (req.file) {
+            await cleanupUploadedFiles({ avatar: [req.file] });
+        }
         return sendErrorResponse(res, 500, error, 'Erreur lors de l\'activation du compte.');
     }
 };
