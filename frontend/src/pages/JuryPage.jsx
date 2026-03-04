@@ -471,11 +471,11 @@ if (error) {
       ---------------------------------------------------- */}
       {selectedJury && (
         <div 
-          className="fixed inset-0 z-[100] flex items-start md:items-center justify-center p-0 md:p-4 bg-black/95 backdrop-blur-xl overflow-y-auto"
+          className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-black/95 backdrop-blur-xl"
           onMouseDown={(e) => e.target === e.currentTarget && closeModal()}
         >
           {/* La carte modale - Animation "modal-enter" à définir dans ton CSS */}
-          <div className="relative w-full max-w-5xl bg-[#0a0a0a] border border-[var(--color-primary)]/20 md:rounded-[50px] overflow-hidden shadow-[0_0_100px_rgba(34,211,238,0.15)] min-h-screen md:min-h-0 my-0 md:my-8 animate-in zoom-in duration-300">
+          <div className="relative w-full max-w-5xl bg-[#0a0a0a] border border-[var(--color-primary)]/20 rounded-[24px] md:rounded-[50px] overflow-hidden shadow-[0_0_100px_rgba(34,211,238,0.15)] h-[92vh] sm:h-[90vh] md:h-[84vh] animate-in zoom-in duration-300">
             
             {/* Bouton fermer premium */}
             <button 
@@ -486,13 +486,13 @@ if (error) {
               <X size={24} />
             </button>
 
-            <div className="grid grid-cols-1 md:grid-cols-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 h-full overflow-hidden">
               
               {/* PANEL IMAGE avec effet de couleur au hover */}
-              <div className="relative group h-[55vh] md:h-[650px] overflow-hidden">
+              <div className="relative group h-40 sm:h-52 md:h-full overflow-hidden">
                 <img 
                   src={getAvatarUrl(selectedJury)} 
-                  className="w-full h-full object-cover grayscale transition-all duration-700 ease-in-out group-hover:grayscale-0 group-hover:scale-105 opacity-90 group-hover:opacity-100" 
+                  className="w-full h-full object-cover transition-all duration-700 ease-in-out scale-105 opacity-100" 
                   alt={selectedJury.full_name} 
                 />
                 
@@ -500,7 +500,7 @@ if (error) {
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent md:bg-gradient-to-r md:from-transparent md:via-[#0a0a0a]/40 md:to-[#0a0a0a] pointer-events-none" />
 
                 {/* Badge Accrédité (Premium) */}
-                <div className="absolute bottom-6 left-6 rounded-full border border-white/10 bg-black/40 px-5 py-2 backdrop-blur-md">
+                <div className="absolute bottom-4 left-4 rounded-full border border-white/10 bg-black/40 px-4 py-1.5 backdrop-blur-md">
                   <p className="text-white/80 text-[9px] font-black uppercase tracking-[0.4em]">
                     ACCRÉDITÉ MARS / JURY
                   </p>
@@ -508,59 +508,61 @@ if (error) {
               </div>
               
 
-              <div className="p-8 sm:p-10 md:p-14 flex flex-col justify-center">
+              <div className="p-4 sm:p-6 md:p-10 flex flex-col h-full overflow-hidden">
+                <div className="min-h-0 flex-1 overflow-hidden flex flex-col justify-center">
                 {/* official record info from main inserted */}
-                <div className="space-y-2 mb-6">
+                <div className="space-y-1 mb-2 md:mb-3">
                   <h4 className="text-[10px] font-black text-white/40 flex items-center gap-2 uppercase tracking-[0.2em]">
                     <Cpu size={16} className="text-[var(--color-primary)]" /> {t('jury_page_jury_id')}
                   </h4>
-                  <p className="text-base text-white/80 font-light">
+                  <p className="text-xs sm:text-sm md:text-base text-white/80 font-light leading-snug">
                     {t('jury_page_accredited').replace('{id}', selectedJury.id)} <br/>
                     {t('jury_page_registered')} {new Date(selectedJury.created_at).toLocaleDateString()}
                   </p>
                 </div>
-                <div className="flex items-center gap-3 mb-4 text-[var(--color-secondary)]">
+                <div className="flex items-center gap-2 mb-2 md:mb-3 text-[var(--color-secondary)]">
                   <Sparkles size={20} className="animate-spin-slow text-[var(--color-primary)]" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/60">
+                  <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] md:tracking-[0.4em] text-white/60">
                     Session d'Analyse Officielle
                   </span>
                 </div>
                 
-                <h2 className="text-4xl md:text-6xl font-black mb-2 italic text-white leading-none uppercase tracking-tighter">
+                <h2 className="text-2xl sm:text-3xl md:text-5xl font-black mb-1 md:mb-2 italic text-white leading-none uppercase tracking-tighter">
                   {selectedJury.full_name}
                 </h2>
                 
-                <p className="text-[var(--color-primary)] font-bold text-sm mb-6 uppercase tracking-[0.4em]">
+                <p className="text-[var(--color-primary)] font-bold text-[10px] sm:text-xs md:text-sm mb-3 md:mb-5 uppercase tracking-[0.25em] md:tracking-[0.4em]">
                   {parseSpecialite(selectedJury.specialite)}
                 </p>
 
                 {/* Dossier Dossier/Note (Premium) */}
-                <div className="space-y-6">
-                  <div className="p-6 md:p-8 rounded-[30px] bg-white/[0.03] border border-white/10 backdrop-blur-sm">
+                <div className="space-y-3 md:space-y-6">
+                  <div className="p-3 sm:p-4 md:p-6 rounded-[20px] md:rounded-[30px] bg-white/[0.03] border border-white/10 backdrop-blur-sm">
                     <h4 className="text-[10px] font-black text-white/30 flex items-center gap-2 uppercase tracking-[0.2em] mb-4">
                       <Cpu size={16} className="text-[var(--color-primary)]" /> Expertise & Vision
                     </h4>
                     
-                    <p className="text-base text-white/80 font-light leading-relaxed italic mb-6">
+                    <p className="text-xs sm:text-sm md:text-base text-white/80 font-light leading-snug md:leading-relaxed italic mb-3 md:mb-5">
                       "Expert(e) reconnu(e) pour sa capacité à identifier les ruptures technologiques et les impacts éthiques de l'IA générative."
                     </p>
 
-                    <ul className="space-y-4">
-                      <li className="flex items-start gap-4 text-sm text-white/70 font-light">
+                    <ul className="space-y-2 md:space-y-4">
+                      <li className="flex items-start gap-3 text-xs sm:text-sm text-white/70 font-light">
                         <Award size={18} className="text-[var(--color-primary)] shrink-0" /> 
                         <span>Évaluation des critères d'innovation pure.</span>
                       </li>
-                      <li className="flex items-start gap-4 text-sm text-white/70 font-light">
+                      <li className="hidden sm:flex items-start gap-3 text-xs sm:text-sm text-white/70 font-light">
                         <Award size={18} className="text-[var(--color-primary)] shrink-0" /> 
                         <span>Analyse de la viabilité systémique des projets.</span>
                       </li>
                     </ul>
                   </div>
                 </div>
+                </div>
 
                 <button 
                   onClick={closeModal}
-                  className="mars-cta mt-10 w-full py-5 text-[10px] font-black tracking-[0.4em] uppercase rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.3)]"
+                  className="mars-cta mt-3 md:mt-4 w-full py-3 md:py-4 text-[9px] md:text-[10px] font-black tracking-[0.3em] md:tracking-[0.4em] uppercase rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.3)] shrink-0"
                 >
                   Fermer la Fiche
                 </button>
