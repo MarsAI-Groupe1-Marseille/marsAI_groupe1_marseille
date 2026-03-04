@@ -163,7 +163,6 @@ const Dashboard = () => {
     useEffect(() => {
         const verifyAdmin = async () => {
             try {
-                const token = localStorage.getItem('token');
                 const userStr = localStorage.getItem('user');
                 
                 if (!userStr) {

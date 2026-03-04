@@ -1,5 +1,6 @@
 const { JuryEvaluation, JuryList, Submission, JuryMember, JuryListSubmission, User, sequelize } = require('../models');
 const { Op, QueryTypes } = require('sequelize');
+const { sendErrorResponse } = require('../utils/errorHandler');
 
 exports.getAllJury = async (req, res) => {
     try {
@@ -14,7 +15,7 @@ exports.getAllJury = async (req, res) => {
         res.status(200).json({ success: true, juryMembers });
     } catch (error) {
         console.error('Erreur récupération jurys:', error);
-        res.status(500).json({ error: error.message });
+        return sendErrorResponse(res, 500, error, 'Erreur lors de la récupération des jurys.');
     }
 };
 
@@ -107,7 +108,7 @@ exports.getAllJuryWithStats = async (req, res) => {
         res.status(200).json({ success: true, juryMembers: juryMembersWithStats, globalStats });
     } catch (error) {
         console.error('Erreur récupération jurys avec stats:', error);
-        res.status(500).json({ error: error.message });
+        return sendErrorResponse(res, 500, error, 'Erreur lors de la récupération des jurys avec statistiques.');
     }
 };
 
@@ -134,7 +135,7 @@ exports.submitVote = async (req, res) => {
             evaluation 
         });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        return sendErrorResponse(res, 500, error, "Erreur lors de l'enregistrement du vote.");
     }
 };
 
@@ -147,7 +148,7 @@ exports.getJuryVotes = async (req, res) => {
         });
         res.json({ success: true, votes });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        return sendErrorResponse(res, 500, error, 'Erreur lors de la récupération des votes.');
     }
 };
 
@@ -232,6 +233,6 @@ exports.getMyPlaylists = async (req, res) => {
         res.status(200).json({ success: true, playlists: myPlaylists });
     } catch (error) {
         console.error('Erreur récupération playlists:', error);
-        res.status(500).json({ error: error.message });
+        return sendErrorResponse(res, 500, error, 'Erreur lors de la récupération des playlists du jury.');
     }
 };

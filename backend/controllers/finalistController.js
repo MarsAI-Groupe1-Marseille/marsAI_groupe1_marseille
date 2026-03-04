@@ -1,5 +1,6 @@
 const { sequelize, JuryEvaluation, Submission, User } = require('../models');
 const { QueryTypes } = require('sequelize');
+const { sendErrorResponse } = require('../utils/errorHandler');
 
 const parsePositiveInt = (value, fallback) => {
     const parsed = Number.parseInt(value, 10);
@@ -187,7 +188,7 @@ exports.getFinalistCandidates = async (req, res) => {
         });
     } catch (error) {
         console.error('Erreur recuperation finalistes:', error);
-        res.status(500).json({ message: 'Erreur serveur.', error: error.message });
+        return sendErrorResponse(res, 500, error, 'Erreur lors de la récupération des candidats finalistes.');
     }
 };
 
@@ -230,6 +231,6 @@ exports.updateFinalistSelection = async (req, res) => {
         });
     } catch (error) {
         console.error('Erreur mise à jour finalist:', error);
-        res.status(500).json({ message: 'Erreur serveur.', error: error.message });
+        return sendErrorResponse(res, 500, error, 'Erreur lors de la mise à jour de la sélection du finaliste.');
     }
 };
