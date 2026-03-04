@@ -38,10 +38,8 @@ export default function AdminDashboard() {
   useEffect(() => {
     const verifyAdmin = async () => {
       try {
-        const token = localStorage.getItem('token');
         const userStr = localStorage.getItem('user');
         
-        console.log('Token:', token);
         console.log('User:', userStr);
         
         // Si pas de user, on considère qu'il y a un user test/hardcodé

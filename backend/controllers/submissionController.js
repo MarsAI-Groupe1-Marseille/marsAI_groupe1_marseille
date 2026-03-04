@@ -5,6 +5,7 @@ const emailService = require('../services/emailService');
 const { Op } = require('sequelize'); 
 const fs = require('fs');
 const crypto = require('crypto'); // C'est natif dans Node.js
+const { sendErrorResponse } = require('../utils/errorHandler');
 
 // Fonction pour normaliser gallery_urls en array JSON
 const normalizeGalleryUrls = (submission) => {
@@ -178,7 +179,7 @@ exports.createSubmission = async (req, res) => {
         await cleanupUploadedFiles(req.files);
         // Note : Pas besoin de fs.unlinkSync ici, car les fichiers sont sur S3.
         // On pourrait ajouter une fonction de nettoyage S3 en cas d'erreur si besoin.
-        res.status(500).json({ message: "Erreur serveur.", error: error.message });
+        return sendErrorResponse(res, 500, error, 'Erreur lors de la création de la soumission.');
     }
 };
 

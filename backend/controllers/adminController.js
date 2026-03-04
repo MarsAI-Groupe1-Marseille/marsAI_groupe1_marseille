@@ -5,6 +5,7 @@ const { Op } = require('sequelize');
 const emailService = require('../services/emailService');
 // 3. On importe le helper pour uploader les images base64 vers S3
 const { processConfigImages, normalizeConfigImageUrls } = require('../utils/uploadHelper');
+const { sendErrorResponse } = require('../utils/errorHandler');
 
 // Fonction pour récupérer les statistiques du dashboard
 exports.getDashboardStats = async (req, res) => {
@@ -29,7 +30,7 @@ exports.getDashboardStats = async (req, res) => {
         });
     } catch (error) {
         console.error("Erreur lors de la récupération des statistiques :", error);
-        res.status(500).json({ message: "Erreur serveur.", error: error.message });
+        return sendErrorResponse(res, 500, error, 'Erreur lors de la récupération des statistiques.');
     }
 };
 
@@ -97,7 +98,7 @@ exports.getCategoriesDistribution = async (req, res) => {
         res.status(200).json({ categories });
     } catch (error) {
         console.error("Erreur lors de la récupération des catégories :", error);
-        res.status(500).json({ message: "Erreur serveur.", error: error.message });
+        return sendErrorResponse(res, 500, error, 'Erreur lors de la récupération des catégories.');
     }
 };
 
@@ -147,7 +148,7 @@ exports.getSubmissionsChartData = async (req, res) => {
         res.status(200).json({ chartData: weeksData });
     } catch (error) {
         console.error("Erreur lors de la récupération des données du graphique :", error);
-        res.status(500).json({ message: "Erreur serveur.", error: error.message });
+        return sendErrorResponse(res, 500, error, 'Erreur lors de la récupération des données du graphique.');
     }
 };
 
@@ -232,7 +233,7 @@ exports.moderateSubmission = async (req, res) => {
     } catch (error) {
         await transaction.rollback();
         console.error("Erreur Modération :", error);
-        res.status(500).json({ message: "Erreur serveur.", error: error.message });
+        return sendErrorResponse(res, 500, error, 'Erreur lors de la modération.');
     }
 };
 
@@ -259,7 +260,7 @@ exports.createJuryList = async (req, res) => {
         });
     } catch (error) {
         console.error("Erreur lors de la création de la liste de jury :", error);
-        res.status(500).json({ message: "Erreur serveur.", error: error.message });
+        return sendErrorResponse(res, 500, error, 'Erreur lors de la création de la liste de jury.');
     }
 };
 
@@ -302,7 +303,7 @@ exports.getJuryListsWithAssignments = async (req, res) => {
         res.status(200).json({ playlists: payload });
     } catch (error) {
         console.error("Erreur lors de la récupération des playlists :", error);
-        res.status(500).json({ message: "Erreur serveur.", error: error.message });
+        return sendErrorResponse(res, 500, error, 'Erreur lors de la récupération des playlists.');
     }
 };
 // Fonction pour ajouter un film à une liste de jury
@@ -331,7 +332,7 @@ exports.addMovieToPlayList = async (req, res) =>{
         
     } catch (error) {
          console.error("Erreur lors lors de l'assignation ddu film a la playlist :", error);
-        res.status(500).json({ message: "Erreur serveur.", error: error.message });
+        return sendErrorResponse(res, 500, error, "Erreur lors de l'assignation du film à la playlist.");
         
     }
 
@@ -367,7 +368,7 @@ exports.assignedJuryToPlaylist = async (req, res) =>{
     }
     catch(error){
         console.error('Erreur lors de l\'assignation du jury à la playlist :', error);
-        res.status(500).json({ message: "Erreur serveur.", error: error.message });
+        return sendErrorResponse(res, 500, error, "Erreur lors de l'assignation du jury à la playlist.");
     }
 };
 
@@ -391,7 +392,7 @@ exports.removeMovieFromPlaylist = async (req, res) => {
         res.status(200).json({ message: "Film retiré de la playlist." });
     } catch (error) {
         console.error("Erreur lors du retrait du film :", error);
-        res.status(500).json({ message: "Erreur serveur.", error: error.message });
+        return sendErrorResponse(res, 500, error, 'Erreur lors du retrait du film de la playlist.');
     }
 };
 
@@ -415,7 +416,7 @@ exports.removeJuryFromPlaylist = async (req, res) => {
         res.status(200).json({ message: "Jury retiré de la playlist." });
     } catch (error) {
         console.error("Erreur lors du retrait du jury :", error);
-        res.status(500).json({ message: "Erreur serveur.", error: error.message });
+        return sendErrorResponse(res, 500, error, 'Erreur lors du retrait du jury de la playlist.');
     }
 };
 
@@ -446,7 +447,7 @@ exports.deleteJuryList = async (req, res) => {
     } catch (error) {
         await transaction.rollback();
         console.error("Erreur lors de la suppression de la playlist :", error);
-        res.status(500).json({ message: "Erreur serveur.", error: error.message });
+        return sendErrorResponse(res, 500, error, 'Erreur lors de la suppression de la playlist.');
     }
 };
 
@@ -471,7 +472,7 @@ exports.deleteManyJuryLists = async (req, res) => {
     } catch (error) {
         await transaction.rollback();
         console.error("Erreur lors de la suppression des playlists :", error);
-        res.status(500).json({ message: "Erreur serveur.", error: error.message });
+        return sendErrorResponse(res, 500, error, 'Erreur lors de la suppression des playlists.');
     }
 };
 
@@ -511,10 +512,7 @@ exports.getHomeConfig = async (req, res) => {
         }
     } catch (error) {
         console.error("Erreur lors de la récupération de la config home:", error);
-        res.status(500).json({ 
-            message: "Erreur lors de la récupération de la configuration.", 
-            error: error.message 
-        });
+        return sendErrorResponse(res, 500, error, 'Erreur lors de la récupération de la configuration.');
     }
 };
 
@@ -563,9 +561,6 @@ exports.updateHomeConfig = async (req, res) => {
 
     } catch (error) {
         console.error("Erreur lors de la sauvegarde de la config home:", error);
-        res.status(500).json({ 
-            message: "Erreur lors de la sauvegarde de la configuration.", 
-            error: error.message 
-        });
+        return sendErrorResponse(res, 500, error, 'Erreur lors de la sauvegarde de la configuration.');
     }
 };

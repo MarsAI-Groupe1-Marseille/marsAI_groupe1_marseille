@@ -114,8 +114,13 @@ app.use((err, req, res, next) => {
 // ==========================================
 // On synchronise la base de données avant de lancer le serveur
 // (Utile pour vérifier que tout est calé)
-sequelize.sync({alter:true}).then(async () => {
-    console.log("Base de données synchronisée.");
+// IMPORTANT: alter:true uniquement en développement (risque de perte de données en prod)
+const syncOptions = process.env.NODE_ENV === 'production' 
+    ? {} 
+    : { alter: true };
+
+sequelize.sync(syncOptions).then(async () => {
+    console.log(`Base de données synchronisée (${process.env.NODE_ENV || 'development'} mode).`);
     //APPEL DE La FONCTION POUR CREER UN ADMIN
   await createDefaultAdmin();
     app.listen(port, () => {

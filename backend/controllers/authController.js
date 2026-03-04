@@ -1,6 +1,7 @@
 const { User } = require('../models');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const { sendErrorResponse } = require('../utils/errorHandler');
 
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
@@ -42,7 +43,7 @@ exports.login = async (req, res) => {
             }
         }); 
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        return sendErrorResponse(res, 500, error, 'Erreur lors de la connexion.');
     }
 };
 
@@ -102,6 +103,6 @@ exports.logout = async (req, res) => {
             message: "Déconnexion réussie."
         });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        return sendErrorResponse(res, 500, error, 'Erreur lors de la déconnexion.');
     }
 };
