@@ -7,6 +7,7 @@ import {
   Film, Users, Zap, Code2, ChevronLeft, Volume2, Maximize2,
   BarChart3, Clock, User, Mail, MapPin, X
 } from 'lucide-react';
+import { sanitizeText, sanitizeList } from '../utils/sanitize';
 import './film_detail.css';
 
 export default function FilmDetail() {
@@ -234,7 +235,7 @@ export default function FilmDetail() {
               {/* Badge IA */}
               <div className="film-poster-badge">
                 <Zap className="w-4 h-4" />
-                {film.ai_classification}
+                {sanitizeText(film.ai_classification)}
               </div>
             </div>
 
@@ -242,12 +243,12 @@ export default function FilmDetail() {
             <div className="film-info-card">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px', marginBottom: '24px' }}>
                 <div style={{ flex: 1 }}>
-                  <h1>{film.title_original}</h1>
+                  <h1>{sanitizeText(film.title_original)}</h1>
                   {film.title_english && (
-                    <p className="subtitle">{film.title_english}</p>
+                    <p className="subtitle">{sanitizeText(film.title_english)}</p>
                   )}
                   <p className="director">
-                    {t('film_detail_directed_by')} <span className="director-name">{directorName}</span>
+                    {t('film_detail_directed_by')} <span className="director-name">{sanitizeText(directorName)}</span>
                   </p>
                 </div>
 
@@ -281,13 +282,13 @@ export default function FilmDetail() {
                   <p className="quick-info-label">
                     <Globe className="w-4 h-4" /> {t('film_detail_language')}
                   </p>
-                  <p className="quick-info-value">{film.language_main}</p>
+                  <p className="quick-info-value">{sanitizeText(film.language_main)}</p>
                 </div>
                 <div className="quick-info-item">
                   <p className="quick-info-label">
                     <Zap className="w-4 h-4" /> {t('film_detail_ai')}
                   </p>
-                  <p className="quick-info-value">{film.ai_classification}</p>
+                  <p className="quick-info-value">{sanitizeText(film.ai_classification)}</p>
                 </div>
                 <div className="quick-info-item">
                   <p className="quick-info-label">
@@ -309,7 +310,7 @@ export default function FilmDetail() {
                 <div className="tags-container">
                   {tags.map((tag) => (
                     <span key={tag} className="tag">
-                      {tag}
+                      {sanitizeText(tag)}
                     </span>
                   ))}
                 </div>
@@ -322,7 +323,7 @@ export default function FilmDetail() {
                 <Info className="w-6 h-6" style={{ color: '#ffb3ff' }} /> {t('film_detail_synopsis')}
               </h2>
               <p className="synopsis-text">
-                {showFullSynopsis ? film.synopsis_english || film.synopsis_original : film.synopsis_original}
+                {sanitizeText(showFullSynopsis ? film.synopsis_english || film.synopsis_original : film.synopsis_original)}
               </p>
               {film.synopsis_english && (
                 <button 
@@ -340,14 +341,14 @@ export default function FilmDetail() {
                 <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <Code2 className="w-6 h-6" style={{ color: '#ffb3ff' }} /> {t('film_detail_methodology')}
                 </h2>
-                <p className="ai-text">{film.ai_methodology}</p>
+                <p className="ai-text">{sanitizeText(film.ai_methodology)}</p>
                 {film.ai_tools && (
                   <div className="tools-container">
                     <p className="tools-label">{t('film_detail_tools_used')}</p>
                     <div className="tools-list">
-                      {film.ai_tools.split(',').map((tool) => (
+                      {sanitizeList(film.ai_tools).map((tool) => (
                         <span key={tool} className="tool-badge">
-                          {tool.trim()}
+                          {tool}
                         </span>
                       ))}
                     </div>

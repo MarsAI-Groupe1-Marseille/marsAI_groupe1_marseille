@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import axios from "../config/axiosConfig";
 import { useLanguage } from "../context/LanguageContext";
+import { sanitizeText } from "../utils/sanitize";
 
 /* ─── GÉNÉRATEUR DE COULEURS D'AVATAR ─── */
 function getInitialColors(initials) {
@@ -105,8 +106,8 @@ function VotesModal({ film, voteStatus, onClose }) {
                 {isLike ? <ThumbsUp size={16} className={iconColor} /> : <AlertCircle size={16} className={iconColor} />}
                 <span className={`text-xs font-bold uppercase tracking-widest ${iconColor}`}>{statusLabel} {t('selectfinaliste_jury_opinion')}</span>
               </div>
-              <h2 className="text-xl font-black text-white">{film.titre}</h2>
-              <p className="text-sm text-neutral-400 mt-0.5">{film.real}</p>
+              <h2 className="text-xl font-black text-white">{sanitizeText(film.titre)}</h2>
+              <p className="text-sm text-neutral-400 mt-0.5">{sanitizeText(film.real)}</p>
             </div>
             <button onClick={onClose} className="p-2 hover:bg-neutral-800 rounded-lg transition text-neutral-500 hover:text-white">
               <X size={18} />
@@ -125,11 +126,11 @@ function VotesModal({ film, voteStatus, onClose }) {
                 <Avatar initials={c.avatar} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className="font-bold text-sm text-white">{c.jury}</span>
+                    <span className="font-bold text-sm text-white">{sanitizeText(c.jury)}</span>
                     <span className={`text-xs px-2 py-0.5 rounded-full border font-semibold ${badgeColor}`}>{statusLabel}</span>
                   </div>
                   <span className="text-xs text-neutral-500 flex-shrink-0">{c.date}</span>
-                  <p className="text-sm text-neutral-200 leading-relaxed mt-2">{c.text || `(${t('selectfinaliste_no_comment')})`}</p>
+                  <p className="text-sm text-neutral-200 leading-relaxed mt-2">{sanitizeText(c.text) || `(${t('selectfinaliste_no_comment')})`}</p>
                 </div>
               </div>
             </div>
@@ -163,8 +164,8 @@ function CommentsModal({ film, onClose }) {
                 <MessageSquare size={16} className="text-violet-400" />
                 <span className="text-xs font-bold uppercase tracking-widest text-violet-400">{t('selectfinaliste_jury_opinion')}</span>
               </div>
-              <h2 className="text-xl font-black text-white">{film.titre}</h2>
-              <p className="text-sm text-neutral-400 mt-0.5">{film.real}</p>
+              <h2 className="text-xl font-black text-white">{sanitizeText(film.titre)}</h2>
+              <p className="text-sm text-neutral-400 mt-0.5">{sanitizeText(film.real)}</p>
             </div>
             <div className="flex flex-col items-end gap-2">
               <button onClick={onClose} className="p-2 hover:bg-neutral-800 rounded-lg transition text-neutral-500 hover:text-white">
@@ -213,11 +214,11 @@ function CommentsModal({ film, onClose }) {
                     <Avatar initials={c.avatar} />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2 mb-2">
-                        <span className="font-bold text-sm text-white">{c.jury}</span>
+                        <span className="font-bold text-sm text-white">{sanitizeText(c.jury)}</span>
                         <VoteBadge status={c.vote_status} />
                       </div>
                       <span className="text-xs text-neutral-500 flex-shrink-0">{c.date}</span>
-                      <p className="text-sm text-neutral-200 mt-2 leading-relaxed">{c.text || `(${t('selectfinaliste_no_comment')})`}</p>
+                      <p className="text-sm text-neutral-200 mt-2 leading-relaxed">{sanitizeText(c.text) || `(${t('selectfinaliste_no_comment')})`}</p>
                     </div>
                   </div>
                 </div>
