@@ -11,14 +11,14 @@ import './config/axiosConfig' // Configuration globale axios
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <ThemeProvider>
-      <BrowserRouter>
+    <BrowserRouter>
+     <ThemeProvider>
         <LanguageProvider>
           <AuthProvider>
             <App />
           </AuthProvider>
         </LanguageProvider>
-      </BrowserRouter>
-    </ThemeProvider>
+     </ThemeProvider>
+    </BrowserRouter>
   </StrictMode>,
 ) 

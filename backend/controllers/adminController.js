@@ -1,7 +1,153 @@
 // 1. On importe les modèles nécessaires
 const { sequelize, Submission, ModerationTicket, Director, JuryList, JuryListSubmission, JuryMember, User } = require('../models');
+const { Op } = require('sequelize'); 
 // 2. On importe le service d'emailing pour envoyer les notifications aux réalisateurs
 const emailService = require('../services/emailService');
+
+// Fonction pour récupérer les statistiques du dashboard
+exports.getDashboardStats = async (req, res) => {
+    try {
+        // Compter les soumissions par statut d'approbation
+        const totalSubmissions = await Submission.count();
+        const approvedCount = await Submission.count({ 
+            where: { approval_status: 'approved' } 
+        });
+        const rejectedCount = await Submission.count({ 
+            where: { approval_status: 'rejected' } 
+        });
+        const pendingCount = await Submission.count({ 
+            where: { approval_status: { [Op.in]: ['submitted', 'incomplete'] } } 
+        });
+
+        res.status(200).json({
+            totalSubmissions,
+            approved: approvedCount,
+            rejected: rejectedCount,
+            pending: pendingCount
+        });
+    } catch (error) {
+        console.error("Erreur lors de la récupération des statistiques :", error);
+        res.status(500).json({ message: "Erreur serveur.", error: error.message });
+    }
+};
+
+// Fonction pour récupérer la répartition des catégories
+exports.getCategoriesDistribution = async (req, res) => {
+    try {
+        // Récupérer tous les submissions avec leurs theme_tags
+        const submissions = await Submission.findAll({
+            attributes: ['theme_tags'],
+            where: { theme_tags: { [Op.ne]: null } } // Exclure les null
+        });
+
+        // Compter les occurrences de chaque catégorie
+        const categoriesCount = {};
+        let totalCount = 0;
+
+        submissions.forEach(submission => {
+            if (submission.theme_tags) {
+                // Séparer les catégories (peuvent être séparées par virgule/espace)
+                const tags = submission.theme_tags
+                    .split(/[,]/)  // Séparer par virgule
+                    .map(tag => tag.trim())
+                    .filter(tag => tag.length > 0);
+
+                tags.forEach(tag => {
+                    categoriesCount[tag] = (categoriesCount[tag] || 0) + 1;
+                    totalCount++;
+                });
+            }
+        });
+
+        // Calculer les pourcentages et formater les données
+        let allCategories = Object.entries(categoriesCount)
+            .map(([name, count]) => ({
+                name,
+                count,
+                percent: totalCount > 0 ? Math.round((count / totalCount) * 100) : 0
+            }))
+            .sort((a, b) => b.count - a.count); // Trier par nombre décroissant
+
+        // Garder seulement les Top 5 et grouper le reste dans "Autres"
+        const topCount = 5;
+        let categories = [];
+        let othersCount = 0;
+        let othersPercent = 0;
+
+        allCategories.forEach((cat, index) => {
+            if (index < topCount) {
+                categories.push(cat);
+            } else {
+                othersCount += cat.count;
+                othersPercent += cat.percent;
+            }
+        });
+
+        // Ajouter la catégorie "Autres" si elle existe
+        if (othersCount > 0) {
+            categories.push({
+                name: "Autres",
+                count: othersCount,
+                percent: othersPercent > 0 ? othersPercent : Math.round((othersCount / totalCount) * 100)
+            });
+        }
+
+        res.status(200).json({ categories });
+    } catch (error) {
+        console.error("Erreur lors de la récupération des catégories :", error);
+        res.status(500).json({ message: "Erreur serveur.", error: error.message });
+    }
+};
+
+// Fonction pour récupérer les données du graphique (soumissions et approuvés par semaine)
+exports.getSubmissionsChartData = async (req, res) => {
+    try {
+        // Récupérer les 8 dernières semaines de données
+        const weeksData = [];
+        
+        // Générer les données pour les 8 dernières semaines (de la plus ancienne à la plus récente)
+        for (let i = 7; i >= 0; i--) {
+            const weekStart = new Date();
+            weekStart.setDate(weekStart.getDate() - (i * 7));
+            weekStart.setHours(0, 0, 0, 0);
+            
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekEnd.getDate() + 6);
+            weekEnd.setHours(23, 59, 59, 999);
+            
+            // Compter les soumissions de la semaine
+            const soumissionsCount = await Submission.count({
+                where: {
+                    created_at: {
+                        [Op.between]: [weekStart, weekEnd]
+                    }
+                }
+            });
+            
+            // Compter les approuvés de la semaine
+            const approvesCount = await Submission.count({
+                where: {
+                    approval_status: 'approved',
+                    created_at: {
+                        [Op.between]: [weekStart, weekEnd]
+                    }
+                }
+            });
+            
+            const weekNumber = 8 - i; // Sem 1 à Sem 8
+            weeksData.push({
+                mois: `Sem ${weekNumber}`,
+                soumissions: soumissionsCount,
+                approuvés: approvesCount
+            });
+        }
+        
+        res.status(200).json({ chartData: weeksData });
+    } catch (error) {
+        console.error("Erreur lors de la récupération des données du graphique :", error);
+        res.status(500).json({ message: "Erreur serveur.", error: error.message });
+    }
+};
 
 // 3. On implémente la logique de modération dans une seule fonction
 exports.moderateSubmission = async (req, res) => {

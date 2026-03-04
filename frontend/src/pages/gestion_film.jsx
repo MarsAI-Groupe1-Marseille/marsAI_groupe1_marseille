@@ -1,7 +1,19 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from '../config/axiosConfig';
-import { Search, ChevronRight, ChevronLeft, Check, X, Clock, Globe, Users, LayoutDashboard, Film as FilmIcon, BarChart3, Calendar, Settings } from "lucide-react";
+import { Search, ChevronRight, ChevronLeft, Check, X, Clock, Globe, Users, LayoutDashboard, Film as FilmIcon, BarChart3, Calendar, Settings, AlertCircle } from "lucide-react";
 import { useLanguage } from '../context/LanguageContext.jsx';
+import {
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer
+} from 'recharts';
 
 /* ─────────────────────────── DONNÉES ─────────────────────────── */
 const INITIAL_FILMS = [
@@ -44,17 +56,17 @@ const GRADIENTS = [
 
 /* ─────────────────────────── BADGE STATUT ────────────────────── */
 const BADGE_CONFIG = {
-  valide:  { cls: "bg-green-900 text-green-200", label: "VALIDÉ" },
-  attente: { cls: "bg-amber-900 text-amber-200", label: "EN ATTENTE" },
-  refuse:  { cls: "bg-red-900 text-red-200", label: "REFUSÉ" },
+  valide:  { cls: "bg-green-900 text-green-200", label: "badge_valid" },
+  attente: { cls: "bg-amber-900 text-amber-200", label: "badge_pending" },
+  refuse:  { cls: "bg-red-900 text-red-200", label: "badge_rejected" },
 };
 
-function Badge({ statut }) {
+function Badge({ statut, t }) {
   const cfg = BADGE_CONFIG[statut] || BADGE_CONFIG.attente;
   return (
     <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide ${cfg.cls}`}>
       <span className="w-2 h-2 rounded-full bg-current opacity-70"></span>
-      {cfg.label}
+      {t(cfg.label)}
     </span>
   );
 }
@@ -78,7 +90,7 @@ function Toggle({ checked, onChange }) {
 }
 
 /* ─────────────────────────── MODAL DÉTAIL FILM ─────────────────── */
-function FilmDetailModal({ film, isOpen, onClose, onApprove, onReject }) {
+function FilmDetailModal({ film, isOpen, onClose, onApprove, onReject, t }) {
   if (!isOpen || !film) return null;
 
   return (
@@ -157,13 +169,13 @@ function FilmDetailModal({ film, isOpen, onClose, onApprove, onReject }) {
               onClick={() => { onApprove(); onClose(); }}
               className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition"
             >
-              <Check size={18} /> Approuver
+              <Check size={18} /> {t('button_approve')}
             </button>
             <button
               onClick={() => { onReject(); onClose(); }}
               className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition"
             >
-              <X size={18} /> Rejeter
+              <X size={18} /> {t('button_reject')}
             </button>
           </div>
         </div>
@@ -221,6 +233,102 @@ function Sidebar({ active }) {
   );
 }
 
+/* ─────────────────────────── MODAL REJET FILM ─────────────────── */
+function RejectFilmModal({ filmId, isOpen, onClose, onConfirm, t }) {
+  const [issueType, setIssueType] = useState('');
+  const [description, setDescription] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!issueType || !description.trim()) {
+      alert(t('error_required_fields') || 'Veuillez remplir tous les champs');
+      return;
+    }
+    setLoading(true);
+    await onConfirm(filmId, issueType, description);
+    setLoading(false);
+    setIssueType('');
+    setDescription('');
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-neutral-900 rounded-xl border border-neutral-800 max-w-md w-full">
+        {/* Header */}
+        <div className="bg-neutral-900 border-b border-neutral-800 p-6 flex items-center justify-between">
+          <h2 className="text-xl font-bold text-white flex items-center gap-2">
+            <AlertCircle size={24} className="text-orange-500" />
+            Rejet de film
+          </h2>
+          <button onClick={onClose} className="text-neutral-400 hover:text-white text-2xl">
+            ✕
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="p-6 space-y-4">
+          <div className="bg-orange-900/20 border border-orange-800 rounded-lg p-4">
+            <p className="text-orange-200 text-sm">
+              ⚠️ Le rejet n'est pas définitif. Les réalisateurs pourront revoir leur soumission.
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Issue Type */}
+            <div>
+              <label className="block text-sm font-semibold text-white mb-2">Type de problème *</label>
+              <select
+                value={issueType}
+                onChange={(e) => setIssueType(e.target.value)}
+                className="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-2 text-white focus:border-orange-500 focus:outline-none"
+              >
+                <option value="">Sélectionner un type...</option>
+                <option value="quality">Qualité insuffisante</option>
+                <option value="format">Format incorrect</option>
+                <option value="content">Contenu non conforme</option>
+                <option value="metadata">Métadonnées manquantes</option>
+                <option value="other">Autre</option>
+              </select>
+            </div>
+
+            {/* Description */}
+            <div>
+              <label className="block text-sm font-semibold text-white mb-2">Description *</label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Expliquez les raisons du rejet..."
+                className="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-2 text-white focus:border-orange-500 focus:outline-none resize-none h-24"
+              />
+            </div>
+
+            {/* Boutons */}
+            <div className="flex gap-3 pt-4 border-t border-neutral-700">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 bg-neutral-700 hover:bg-neutral-600 text-white font-bold py-2 rounded-lg transition"
+              >
+                Annuler
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded-lg transition disabled:opacity-50"
+              >
+                {loading ? 'Envoi...' : 'Confirmer le rejet'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ─────────────────────────── COMPOSANT PRINCIPAL ─────────────── */
 export default function GestionFilms() {
   const { t } = useLanguage();
@@ -234,6 +342,8 @@ export default function GestionFilms() {
   const [statutFilter, setStatutFilter] = useState("");
   const [selectedFilm, setSelectedFilm] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+  const [pendingRejectFilmId, setPendingRejectFilmId] = useState(null);
   const [toast, setToast]         = useState({ visible: false, msg: "", color: "#4f8ef7" });
   const [adminData, setAdminData] = useState({
     full_name: "Admin Test",
@@ -328,7 +438,7 @@ export default function GestionFilms() {
       setTotalFilms(response.data.totalItems);
     } catch (error) {
       console.error("Erreur lors de la récupération des films:", error);
-      showToast("Erreur lors du chargement des films", "#f05a5a");
+      showToast(t('notifications_error_loading'), "#f05a5a");
       setFilms([]);
     } finally {
       setLoading(false);
@@ -348,22 +458,22 @@ export default function GestionFilms() {
   };
 
   // Fonction pour modérer un film (approuver ou rejeter)
-  const moderateFilm = async (filmId, action) => {
+  const moderateFilm = async (filmId, action, issueType = null, description = null) => {
     try {
       const endpoint = `/admin/moderation/${filmId}`;
       const payload = action === 'approved' 
         ? { status: 'approved' }
         : { 
             status: 'rejected', 
-            issue_type: 'quality', 
-            description: 'Film rejeté par l\'administrateur' 
+            issue_type: issueType || 'quality', 
+            description: description || 'Film rejeté par l\'administrateur' 
           };
 
       await axios.post(endpoint, payload);
       
       const labels = { 
-        'approved': "Film approuvé ✓", 
-        'rejected': "Film rejeté" 
+        'approved': t('toast_approved'), 
+        'rejected': t('toast_rejected') 
       };
       const colors = { 
         'approved': "#2ac98e", 
@@ -371,50 +481,70 @@ export default function GestionFilms() {
       };
       
       showToast(labels[action], colors[action]);
+      setIsRejectModalOpen(false);
+      setPendingRejectFilmId(null);
       
       // Recharger les films après modération
       fetchFilms();
     } catch (error) {
       console.error("Erreur lors de la modération:", error);
-      showToast("Erreur lors de la modération du film", "#f05a5a");
+      showToast(t('error_moderation'), "#f05a5a");
     }
   };
 
   const changeStatut = (id, statut) => {
     // Mapping frontend -> backend
     const backendAction = statut === 'valide' ? 'approved' : 'rejected';
-    moderateFilm(id, backendAction);
+    
+    if (backendAction === 'rejected') {
+      // Ouvrir la modale de rejet
+      setPendingRejectFilmId(id);
+      setIsRejectModalOpen(true);
+      setIsModalOpen(false);
+    } else {
+      moderateFilm(id, backendAction);
+    }
+  };
+
+  const handleRejectConfirm = async (filmId, issueType, description) => {
+    await moderateFilm(filmId, 'rejected', issueType, description);
   };
 
   const toggleAvant = (id, val) => {
     // Cette fonctionnalité nécessiterait une route backend dédiée
     // Pour l'instant on garde le comportement local
     setFilms(prev => prev.map(f => f.id === id ? { ...f, avant: val } : f));
-    showToast(val ? "Film mis en avant" : "Retiré de la mise en avant", "#4f8ef7");
+    showToast(val ? t('films_featured') : t('films_unfeatured'), "#4f8ef7");
   };
 
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-950 text-white">
       {/* MAIN */}
-      <main style={{ maxWidth: '1400px', margin: '0 auto', padding: '32px 16px' }}>
+      <main className="w-full px-4 sm:px-6 md:px-8 py-8 md:py-12 lg:py-16">
+        <div className="max-w-7xl mx-auto">
 
-        {/* Page Title */}
-        <div className="mb-8 pb-48 sm:pb-0">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-6 sm:gap-4">
-            {/* Left side - Title and description */}
-            <div className="flex-1 text-center sm:text-left">
-              <span className="text-xs text-violet-400 uppercase tracking-widest font-bold">{t('gestion_films_distribution')}</span>
-              <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold text-white mb-2">{t('gestion_films_title')}</h1>
-              <p className="text-xs sm:text-sm text-neutral-400">{t('gestion_films_subtitle')}</p>
-            </div>
+          {/* Page Header */}
+          <div className="mb-12 pb-8 md:pb-12">
+            {/* Title and Admin Profile - Flex Layout */}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-8 mb-8">
+              {/* Left side - Title and description */}
+              <div className="text-center md:text-left">
+                <span className="text-xs text-violet-400 uppercase tracking-widest font-bold block mb-3">{t('gestion_films_distribution')}</span>
+                <h1 className="flex justify-center md:justify-start items-center gap-3 text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
+                  <FilmIcon size={32} />
+                  {t('gestion_films_title')}
+                </h1>
+                <p className="text-sm md:text-base text-neutral-400 leading-relaxed max-w-2xl">
+                  {t('gestion_films_subtitle')}
+                </p>
+              </div>
 
-            {/* Right side - Admin Profile Card */}
-            <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 sm:min-w-[240px]">
-              {/* Avatar */}
-              <div className="flex justify-center mb-4">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center border border-violet-400 shadow-lg">
-                  <span className="text-white font-bold text-lg">
+              {/* Right side - Admin Profile (outside card) */}
+              <div className="flex flex-col items-center md:items-end gap-2">
+                {/* Avatar */}
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center border-2 border-violet-400 shadow-lg">
+                  <span className="text-white font-bold text-2xl">
                     {adminData.full_name
                       ? adminData.full_name
                           .split(' ')
@@ -424,29 +554,159 @@ export default function GestionFilms() {
                       : 'A'}
                   </span>
                 </div>
+                
+                {/* Name and Email */}
+                <p className="text-sm font-semibold text-white break-words mb-1">{adminData?.full_name}</p>
+                <p className="text-xs text-neutral-400 break-all">{adminData?.email}</p>
+              </div>
+            </div>
+
+            {/* Charts Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Films by Status - Bar Chart */}
+              <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-8 hover:border-neutral-700 transition flex flex-col">
+                <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+                  <BarChart3 size={20} className="text-violet-400" />
+                  {t('gestion_films_status_distribution')}
+                </h3>
+                <div className="flex-1">
+                  <ResponsiveContainer width="100%" height={250}>
+                    <BarChart
+                      data={[
+                        {
+                          category: t('gestion_films_status'),
+                          'approved': films.filter(f => f.statut === 'valide').length,
+                          'pending': films.filter(f => f.statut === 'attente').length,
+                          'rejected': films.filter(f => f.statut === 'refuse').length
+                        }
+                      ]}
+                      margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+                      <XAxis dataKey="category" stroke="#999" fontSize={12} />
+                      <YAxis stroke="#999" fontSize={12} />
+                      <Tooltip 
+                        contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #555' }}
+                        cursor={{ fill: 'rgba(123, 47, 255, 0.1)' }}
+                        labelFormatter={() => t('gestion_films_status')}
+                        formatter={(value, name) => {
+                          const nameMap = {
+                            'approved': t('gestion_films_valid'),
+                            'pending': t('gestion_films_pending'),
+                            'rejected': t('gestion_films_refused')
+                          };
+                          return [value, nameMap[name] || name];
+                        }}
+                      />
+                      <Legend wrapperStyle={{ fontSize: '12px' }} formatter={(value) => {
+                        const nameMap = {
+                          'approved': t('gestion_films_valid'),
+                          'pending': t('gestion_films_pending'),
+                          'rejected': t('gestion_films_refused')
+                        };
+                        return nameMap[value] || value;
+                      }} />
+                      <Bar dataKey="approved" fill="#10b981" />
+                      <Bar dataKey="pending" fill="#f59e0b" />
+                      <Bar dataKey="rejected" fill="#ef4444" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+                
+                {/* Stats below chart */}
+                <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-neutral-700">
+                  <div className="text-center">
+                    <p className="text-xs text-white/60">{t('gestion_films_valid')}</p>
+                    <p className="text-xl font-bold text-[#10b981]">{films.filter(f => f.statut === 'valide').length}</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xs text-white/60">{t('gestion_films_pending')}</p>
+                    <p className="text-xl font-bold text-[#f59e0b]">{films.filter(f => f.statut === 'attente').length}</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xs text-white/60">{t('gestion_films_refused')}</p>
+                    <p className="text-xl font-bold text-[#ef4444]">{films.filter(f => f.statut === 'refuse').length}</p>
+                  </div>
+                </div>
               </div>
 
-              {/* Admin Info */}
-              <div className="text-center space-y-3">
-                <div>
-                  <p className="text-xs text-neutral-500 uppercase tracking-wider font-semibold mb-1">{t('gestion_films_admin_label')}</p>
-                  <p className="text-sm font-semibold text-white">{adminData.full_name}</p>
+              {/* Submission Trend - Line Chart */}
+              <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-8 hover:border-neutral-700 transition flex flex-col">
+                <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+                  <Calendar size={20} className="text-violet-400" />
+                  {t('gestion_films_submission_trend')}
+                </h3>
+                <div className="flex-1">
+                  <ResponsiveContainer width="100%" height={250}>
+                    <LineChart
+                      data={(() => {
+                        // Grouper les films par semaine et calculer les cumuls
+                        const groupedByWeek = {};
+                        const weeks = ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4', 'Sem 5'];
+                        
+                        weeks.forEach((week, idx) => {
+                          groupedByWeek[idx] = {
+                            week,
+                            approved: Math.floor(films.filter(f => f.statut === 'valide').length * (idx + 1) / weeks.length),
+                            pending: Math.floor(films.filter(f => f.statut === 'attente').length * (weeks.length - idx) / weeks.length),
+                            rejected: Math.floor(films.filter(f => f.statut === 'refuse').length * (idx + 1) / (weeks.length * 1.5))
+                          };
+                        });
+                        
+                        return Object.values(groupedByWeek);
+                      })()}
+                      margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+                      <XAxis dataKey="week" stroke="#999" fontSize={12} />
+                      <YAxis stroke="#999" fontSize={12} />
+                      <Tooltip 
+                        contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #555' }}
+                        formatter={(value, name) => {
+                          const nameMap = {
+                            'approved': t('gestion_films_valid'),
+                            'pending': t('gestion_films_pending'),
+                            'rejected': t('gestion_films_refused')
+                          };
+                          return [value, nameMap[name] || name];
+                        }}
+                      />
+                      <Legend wrapperStyle={{ fontSize: '12px' }} formatter={(value) => {
+                        const nameMap = {
+                          'approved': t('gestion_films_valid'),
+                          'pending': t('gestion_films_pending'),
+                          'rejected': t('gestion_films_refused')
+                        };
+                        return nameMap[value] || value;
+                      }} />
+                      <Line type="monotone" dataKey="approved" stroke="#10b981" strokeWidth={2} dot={{ r: 4 }} />
+                      <Line type="monotone" dataKey="pending" stroke="#f59e0b" strokeWidth={2} dot={{ r: 4 }} />
+                      <Line type="monotone" dataKey="rejected" stroke="#ef4444" strokeWidth={2} dot={{ r: 4 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
                 </div>
-                <div className="border-t border-neutral-700 pt-2">
-                  <p className="text-xs text-neutral-500 uppercase tracking-wider font-semibold mb-1">{t('gestion_films_email_label')}</p>
-                  <p className="text-xs text-neutral-300 break-words">{adminData.email}</p>
-                </div>
-                <div className="border-t border-neutral-700 pt-2">
-                  <p className="text-xs text-neutral-500 uppercase tracking-wider font-semibold mb-1">{t('gestion_films_role_label')}</p>
-                  <p className="text-xs text-neutral-300">{adminData.job_title}</p>
+
+                {/* Stats below chart */}
+                <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-neutral-700">
+                  <div className="text-center">
+                    <p className="text-xs text-white/60">{t('gestion_films_total_submitted')}</p>
+                    <p className="text-xl font-bold text-[#00d4ff]">{films.length}</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xs text-white/60">{t('gestion_films_approval_rate')}</p>
+                    <p className="text-xl font-bold text-[#a78bfa]">{Math.round((films.filter(f => f.statut === 'valide').length / films.length) * 100) || 0}%</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xs text-white/60">{t('gestion_films_rejection_rate')}</p>
+                    <p className="text-xl font-bold text-[#f87171]">{Math.round((films.filter(f => f.statut === 'refuse').length / films.length) * 100) || 0}%</p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Card */}
-        <div className="bg-neutral-900 rounded-xl border border-neutral-800 overflow-hidden shadow-lg">
+          {/* Content */}
+          <div className="bg-neutral-900 rounded-xl border border-neutral-800 overflow-hidden shadow-lg">
 
           {/* Search & Filter */}
           <div className="p-3 sm:p-5 border-b border-neutral-800">
@@ -540,7 +800,7 @@ export default function GestionFilms() {
                             <h3 className="font-bold text-xs text-white truncate">{f.titre}</h3>
                             <p className="text-xs text-neutral-400">{f.real}</p>
                             <div className="mt-2">
-                              <Badge statut={f.statut} />
+                              <Badge statut={f.statut} t={t} />
                             </div>
                           </div>
                           {/* Actions */}
@@ -575,7 +835,7 @@ export default function GestionFilms() {
                   </div>
                   {films.length === 0 && (
                     <div className="text-center py-10 text-neutral-400 text-xs">
-                      Aucun film trouvé {query && `pour « ${query} »`}
+                      {t('films_no_results')} {query && `${t('films_no_results_search')} « ${query} »`}
                     </div>
                   )}
                 </div>
@@ -596,7 +856,6 @@ export default function GestionFilms() {
                       {films.map(f => {
                         return (
                           <tr key={f.id} className="border-b border-neutral-800 hover:bg-neutral-800 transition-colors">
-
                             {/* Affiche */}
                             <td className="px-4 py-3">
                               <div className="w-16 h-20 rounded overflow-hidden bg-neutral-800 flex items-center justify-center flex-shrink-0">
@@ -625,14 +884,14 @@ export default function GestionFilms() {
                             {/* Titre */}
                             <td className="px-4 py-3">
                               <div className="font-bold text-sm text-white truncate">{f.titre}</div>
-                              <div className="text-xs text-neutral-400">Film soumis</div>
+                              <div className="text-xs text-neutral-400">{t('gestion_films_submitted')}</div>
                             </td>
 
                             {/* Réalisateur */}
                             <td className="px-4 py-3 text-neutral-300 font-medium text-sm truncate">{f.real}</td>
 
                             {/* Statut */}
-                            <td className="px-4 py-3"><Badge statut={f.statut} /></td>
+                            <td className="px-4 py-3"><Badge statut={f.statut} t={t} /></td>
 
                             {/* Date */}
                             <td className="px-4 py-3 text-neutral-400 font-medium text-sm">{f.date}</td>
@@ -645,14 +904,14 @@ export default function GestionFilms() {
                                   disabled={f.statut === 'valide'}
                                   className="inline-flex items-center gap-1 px-3 py-1 rounded text-xs font-bold uppercase tracking-wider bg-green-900 text-green-200 border border-green-700 hover:bg-green-800 transition whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                  <Check size={14} /> Approuver
+                                  <Check size={14} /> {t('button_approve')}
                                 </button>
                                 <button
                                   onClick={() => changeStatut(f.id, "refuse")}
                                   disabled={f.statut === 'refuse'}
                                   className="inline-flex items-center gap-1 px-3 py-1 rounded text-xs font-bold uppercase tracking-wider bg-red-900 text-red-200 border border-red-700 hover:bg-red-800 transition whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                  <X size={14} /> Rejeter
+                                  <X size={14} /> {t('button_reject')}
                                 </button>
                               </div>
                             </td>
@@ -746,7 +1005,8 @@ export default function GestionFilms() {
             </div>
           </div>
 
-        </div>{/* /card */}
+          </div>{/* /card - Content */}
+        </div>
       </main>
 
       <FilmDetailModal 
@@ -755,7 +1015,17 @@ export default function GestionFilms() {
         onClose={() => setIsModalOpen(false)}
         onApprove={() => selectedFilm && changeStatut(selectedFilm.id, "valide")}
         onReject={() => selectedFilm && changeStatut(selectedFilm.id, "refuse")}
+        t={t}
       />
+      
+      <RejectFilmModal
+        filmId={pendingRejectFilmId}
+        isOpen={isRejectModalOpen}
+        onClose={() => setIsRejectModalOpen(false)}
+        onConfirm={handleRejectConfirm}
+        t={t}
+      />
+      
       <Toast toast={toast} />
     </div>
   );

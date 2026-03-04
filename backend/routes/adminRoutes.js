@@ -1,9 +1,32 @@
 const express = require('express');
 const router = express.Router();
 const adminController = require('../controllers/adminController');
+const finalistController = require('../controllers/finalistController');
 const { verifyToken, checkRole } = require('../middlewares/authMiddleware');
 
+// URL : GET http://localhost:3000/api/admin/dashboard/stats
+// route pour récupérer les statistiques du dashboard (films soumis, approuvés, rejetés, en attente)
+router.get('/dashboard/stats',
+    verifyToken,          // 1. Vérification connexion
+    checkRole('admin'),   // 2. Vérification rôle Admin
+    adminController.getDashboardStats // 3. Récupération des stats
+);
 
+// URL : GET http://localhost:3000/api/admin/dashboard/categories
+// route pour récupérer la répartition des catégories (theme_tags)
+router.get('/dashboard/categories',
+    verifyToken,          // 1. Vérification connexion
+    checkRole('admin'),   // 2. Vérification rôle Admin
+    adminController.getCategoriesDistribution // 3. Récupération des catégories
+);
+
+// URL : GET http://localhost:3000/api/admin/dashboard/chart-data
+// route pour récupérer les données du graphique (soumissions et approuvés par semaine)
+router.get('/dashboard/chart-data',
+    verifyToken,          // 1. Vérification connexion
+    checkRole('admin'),   // 2. Vérification rôle Admin
+    adminController.getSubmissionsChartData // 3. Récupération des données du graphique
+);
 
 // URL : POST http://localhost:3000/api/admin/moderation/:submissionId
 // route pour modérer une soumission (approbation ou refus avec motif)
@@ -54,6 +77,19 @@ router.post('/assigne-jury',
     verifyToken,
     checkRole('admin'),
     adminController.assignedJuryToPlaylist);
+
+// route pour recuperer les films candidats finalistes (votes jury)
+router.get('/finalists',
+    verifyToken,
+    checkRole('admin'),
+    finalistController.getFinalistCandidates);
+
+// route pour mettre à jour la sélection et le prix d'un finalist
+// Body : { is_selected: true/false, award_winner: 'Nom du prix' }
+router.put('/finalists/:submissionId',
+    verifyToken,
+    checkRole('admin'),
+    finalistController.updateFinalistSelection);
 
 // route qui retire un jury d'une playlist
 router.delete('/assigne-jury',

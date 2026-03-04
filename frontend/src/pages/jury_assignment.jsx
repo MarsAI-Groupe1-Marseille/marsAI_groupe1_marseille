@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Plus, Trash2, Users, ChevronLeft, ChevronRight } from "lucide-react";
 import axios from "../config/axiosConfig.js";
+import { useLanguage } from "../context/LanguageContext";
+import { useAuth } from "../context/AuthContext";
 
 /**
  * ============================================================
@@ -16,6 +18,8 @@ import axios from "../config/axiosConfig.js";
  */
 
 export default function JuryAssignment() {
+  const { t } = useLanguage();
+  const { user } = useAuth();
   // ========================================================================
   // ÉTATS: Données provenant de la base
   // ========================================================================
@@ -42,7 +46,7 @@ export default function JuryAssignment() {
   const [currentPageJurorsAssigned, setCurrentPageJurorsAssigned] = useState(0);
 
   const formatDuration = (seconds) => {
-    if (!seconds) return "Durée inconnue";
+    if (!seconds) return t('jury_assignment_duration_unknown');
     const minutes = Math.max(1, Math.round(seconds / 60));
     return `${minutes} min`;
   };
@@ -242,68 +246,90 @@ export default function JuryAssignment() {
   const currentPlaylist = playlists.find(pl => pl.id === currentPlaylistId);
 
   return (
-    <div className="min-h-screen bg-neutral-950 py-10 px-6">
-      <div className="max-w-7xl mx-auto space-y-10">
-        {/* HEADER SECTION */}
-        <header className="bg-neutral-900 border border-neutral-800 rounded-xl p-8">
-          {/* Titre avec icone */}
-          <div className="flex items-center gap-4 mb-3">
-            <Users className="text-violet-300" size={30} />
-            <h1 className="text-4xl font-bold text-white">Assignation des Jurys et Films</h1>
-          </div>
-          
-          {/* Sous-titre */}
-          <p className="text-neutral-400 mb-6 ml-16">
-            Gérez les films sélectionnés et les jurés assignés pour cette playlist
-          </p>
-          <div className="text-lg font-bold text-white mb-6 ml-16">
-            Playlist active : {currentPlaylist?.name || "Aucune sélection"}
-          </div>
-        </header>
+    <div className="min-h-screen bg-gradient-to-br from-[#0a0e27] via-[#1a1f3a] to-[#0f1628]">
+      <main className="w-full px-4 sm:px-6 md:px-8 py-8 md:py-12 lg:py-16">
+        <div className="max-w-7xl mx-auto">
 
-        {/* ============================================================
-            SECTION 0: LISTE DES PLAYLISTS
-            ============================================================ */}
-        <section className="mb-8">
-          <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
-            <div className="bg-gradient-to-r from-violet-600 to-violet-800 px-8 py-4">
-              <h2 className="text-lg font-bold text-white">Playlists disponibles</h2>
-            </div>
-            <div className="p-8">
-              {isLoading ? (
-                <div className="text-neutral-400">Chargement des playlists...</div>
-              ) : playlists.length === 0 ? (
-                <div className="text-neutral-500">Aucune playlist disponible.</div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                  {paginate(playlists, currentPagePlaylists, playlistsPerPage).map((playlist) => (
-                    <button
-                      key={playlist.id}
-                      onClick={() => setCurrentPlaylistId(playlist.id)}
-                      className="text-left border rounded-lg p-4 transition"
-                      style={{
-                        borderColor: playlist.id === currentPlaylistId ? "rgba(139,92,246,0.8)" : "rgba(255,255,255,0.08)",
-                        background: playlist.id === currentPlaylistId ? "rgba(139,92,246,0.1)" : "rgba(255,255,255,0.03)"
-                      }}
-                    >
-                      <div className="text-white font-semibold truncate">{playlist.name}</div>
-                      <div className="text-xs text-neutral-400 mt-1">
-                        {playlist.films?.length || 0} films · {playlist.jury?.length || 0} jurys
-                      </div>
-                    </button>
-                  ))}
+          {/* Page Header */}
+          <div className="mb-12 pb-8 md:pb-12">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-8">
+              {/* Left side - Title and description */}
+              <div className="text-center md:text-left">
+                <span className="text-xs text-violet-400 uppercase tracking-widest font-bold block mb-3">{t('admin_space')}</span>
+                <h1 className="flex justify-center md:justify-start items-center gap-3 text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
+                  <Users size={32} />
+                  {t('jury_assignment_title')}
+                </h1>
+                <p className="text-sm md:text-base text-neutral-400 leading-relaxed max-w-2xl">
+                  {t('jury_assignment_desc')}
+                </p>
+              </div>
+
+              {/* Right side - Admin Profile (outside card) */}
+              <div className="flex flex-col items-center md:items-end gap-2">
+                {/* Avatar */}
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center border-2 border-violet-400 shadow-lg">
+                  <span className="text-white font-bold text-2xl">
+                    {user?.full_name
+                      ? user.full_name
+                          .split(' ')
+                          .map(n => n[0])
+                          .join('')
+                          .toUpperCase()
+                      : 'A'}
+                  </span>
                 </div>
-              )}
+                {/* Admin Info */}
+                <div className="text-center md:text-right">
+                  <p className="text-base font-semibold text-white">{user?.full_name}</p>
+                  <p className="text-xs text-neutral-400">{user?.email}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          {/* ============================================================
+              SECTION 0: LISTE DES PLAYLISTS
+              ============================================================ */}
+          <section className="mb-8">
+            <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
+              <div className="bg-gradient-to-r from-violet-600 to-violet-800 px-8 py-4">
+                <h2 className="text-lg font-bold text-white">{t('jury_assignment_playlists')}</h2>
+              </div>
+              <div className="p-8">
+                {isLoading ? (
+                  <div className="text-neutral-400">{t('jury_assignment_loading')}</div>
+                ) : playlists.length === 0 ? (
+                  <div className="text-neutral-500">{t('jury_assignment_no_playlists')}</div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {paginate(playlists, currentPagePlaylists, playlistsPerPage).map((playlist) => (
+                      <button
+                        key={playlist.id}
+                        onClick={() => setCurrentPlaylistId(playlist.id)}
+                        className="text-left border rounded-lg p-4 transition"
+                        style={{
+                          borderColor: playlist.id === currentPlaylistId ? "rgba(139,92,246,0.8)" : "rgba(255,255,255,0.08)",
+                          background: playlist.id === currentPlaylistId ? "rgba(139,92,246,0.1)" : "rgba(255,255,255,0.03)"
+                        }}
+                      >
+                        <div className="text-white font-semibold truncate">{playlist.name}</div>
+                        <div className="text-xs text-neutral-400 mt-1">
+                          {playlist.films?.length || 0} films · {playlist.jury?.length || 0} jurys
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
 
-              {playlists.length > playlistsPerPage && (
-                <div className="mt-6 flex items-center justify-between">
-                  <button
-                    onClick={() => setCurrentPagePlaylists(Math.max(0, currentPagePlaylists - 1))}
-                    disabled={currentPagePlaylists === 0}
-                    className="p-2 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition"
-                  >
-                    <ChevronLeft size={18} />
-                  </button>
+                {playlists.length > playlistsPerPage && (
+                  <div className="mt-6 flex items-center justify-between">
+                    <button
+                      onClick={() => setCurrentPagePlaylists(Math.max(0, currentPagePlaylists - 1))}
+                      disabled={currentPagePlaylists === 0}
+                      className="p-2 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition"
+                    >
+                      <ChevronLeft size={18} />
+                    </button>
                   <span className="text-neutral-400 text-sm">
                     Page {currentPagePlaylists + 1} / {getTotalPages(playlists, playlistsPerPage)}
                   </span>
@@ -315,15 +341,14 @@ export default function JuryAssignment() {
                     <ChevronRight size={18} />
                   </button>
                 </div>
-              )}
+                )}
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        
-        {/* ============================================================
-            SECTION 1: GESTION DES FILMS
-            ============================================================
+          {/* ============================================================
+              SECTION 1: GESTION DES FILMS
+              ============================================================
             Deux colonnes: Films disponibles vs Films sélectionnés
         */}
         <section className="mb-8">
@@ -332,7 +357,7 @@ export default function JuryAssignment() {
             {/* Header avec fond dégradé violet (from-violet-600 to-violet-800) */}
             <div className="bg-gradient-to-r from-violet-600 to-violet-800 px-8 py-4">
               {/* Titre blanc de la section */}
-              <h2 className="text-lg font-bold text-white">1. Sélection des Films</h2>
+              <h2 className="text-lg font-bold text-white">{t('jury_assignment_section_films')}</h2>
             </div>
             {/* Grille 2 colonnes (1 colonne sur petit écran, 2 sur large) */}
             <div className="p-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -342,7 +367,7 @@ export default function JuryAssignment() {
               <div>
                 {/* Titre avec le nombre de films disponibles */}
                 <h3 className="text-md font-semibold text-white mb-4">
-                  Films Disponibles ({films.length})
+                  {t('jury_assignment_films_available')} ({films.length})
                 </h3>
                 {/* Conteneur liste: bordure grise, fond semi-transparent, bord inférieur entre items */}
                 <div className="border border-neutral-800 rounded-lg bg-neutral-800/50 divide-y divide-neutral-700 overflow-hidden">
@@ -375,7 +400,7 @@ export default function JuryAssignment() {
                   ) : (
                     // SI aucun film disponible, afficher message vide
                     <div className="px-4 py-6 text-center text-neutral-500">
-                      Tous les films sont sélectionnés
+                      {t('jury_assignment_all_films_selected')}
                     </div>
                   )}
                 </div>
@@ -409,7 +434,7 @@ export default function JuryAssignment() {
               <div>
                 {/* Titre avec nombre de films sélectionnés */}
                 <h3 className="text-md font-semibold text-white mb-4">
-                  Films Sélectionnés ({selectedFilms.length})
+                  {t('jury_assignment_films_selected')} ({selectedFilms.length})
                 </h3>
                 {/* Conteneur liste: même style que la colonne gauche */}
                 <div className="border border-neutral-800 rounded-lg bg-neutral-800/50 divide-y divide-neutral-700 overflow-hidden">
@@ -439,7 +464,7 @@ export default function JuryAssignment() {
                   ) : (
                     // SI aucun film sélectionné, afficher message vide
                     <div className="px-4 py-6 text-center text-neutral-500">
-                      Aucun film sélectionné
+                      {t('jury_assignment_no_films')}
                     </div>
                   )}
                 </div>
@@ -478,7 +503,7 @@ export default function JuryAssignment() {
           <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
             {/* Header dégradé violet */}
             <div className="bg-gradient-to-r from-violet-600 to-violet-800 px-8 py-4">
-              <h2 className="text-lg font-bold text-white">2. Assignation des Jurés</h2>
+              <h2 className="text-lg font-bold text-white">{t('jury_assignment_section_jurors')}</h2>
             </div>
             {/* Grille 2 colonnes (responsive: 1 mobile, 2 desktop) */}
             <div className="p-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -488,7 +513,7 @@ export default function JuryAssignment() {
               <div>
                 {/* Titre avec compteur */}
                 <h3 className="text-md font-semibold text-white mb-4">
-                  Membres Disponibles ({jurors.length})
+                  {t('jury_assignment_jurors_available')} ({jurors.length})
                 </h3>
                 {/* Conteneur liste */}
                 <div className="border border-neutral-800 rounded-lg bg-neutral-800/50 divide-y divide-neutral-700 overflow-hidden">
@@ -528,7 +553,7 @@ export default function JuryAssignment() {
                   ) : (
                     // Message si tous les jurés sont déjà assignés
                     <div className="px-4 py-6 text-center text-neutral-500">
-                      Tous les jurés sont assignés
+                      {t('jury_assignment_all_jurors_assigned')}
                     </div>
                   )}
                 </div>
@@ -562,7 +587,7 @@ export default function JuryAssignment() {
               <div>
                 {/* Titre avec compteur */}
                 <h3 className="text-md font-semibold text-white mb-4">
-                  Jurés Assignés ({assignedJurors.length})
+                  {t('jury_assignment_jurors_assigned')} ({assignedJurors.length})
                 </h3>
                 {/* Conteneur liste */}
                 <div className="border border-neutral-800 rounded-lg bg-neutral-800/50 divide-y divide-neutral-700 overflow-hidden">
@@ -600,7 +625,7 @@ export default function JuryAssignment() {
                   ) : (
                     // Message si aucun juré assigné
                     <div className="px-4 py-6 text-center text-neutral-500">
-                      Aucun juré assigné
+                      {t('jury_assignment_no_jurors')}
                     </div>
                   )}
                 </div>
@@ -629,7 +654,8 @@ export default function JuryAssignment() {
           </div>
         </section>
 
-      </div>
+        </div>
+      </main>
     </div>
   );
 }

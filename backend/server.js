@@ -30,8 +30,21 @@ const juryRoutes = require('./routes/juryRoutes');
 // ==========================================
 // MIDDLEWARES
 // ==========================================
+const allowedOrigins = [
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'http://localhost:5175',
+];
+
 app.use(cors({
-    origin: 'http://localhost:5173',
+    origin: (origin, callback) => {
+        // Si pas d'origin (requête depuis le serveur), on autorise
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true
 }));
 app.use(express.json());
@@ -48,7 +61,16 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);        
 app.use('/api/submissions', submissionRoutes); 
 app.use('/api/admin', adminRoutes); // Routes admin (validation des films, modération, etc.)
-app.use('/api/jury', juryRoutes); // Routes jury (votes, évaluations, etc.)
+
+// ... Tes autres routes
+app.use('/api/submissions', submissionRoutes); 
+app.use('/api/admin', adminRoutes);
+
+// AJOUTE CETTE LIGNE ICI 👇
+app.use('/api/jury', juryRoutes); 
+
+// ...
+
 
 // Servir les fichiers statiques du dossier uploads avec chemin absolu
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
