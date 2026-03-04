@@ -8,6 +8,8 @@ const { csrfProtection } = require('../middlewares/csrfMiddleware');
 const { validateRequest } = require('../middlewares/validationMiddleware');
 const { loginValidators } = require('../validators/authValidators');
 
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+
 router.post('/login', 
     strictLoginLimiter,     // Limiter par IP (5 erreurs/15min)
     csrfProtection,
@@ -23,7 +25,7 @@ router.get('/google',
 router.get('/google/callback', 
     passport.authenticate('google', { 
         session: false,
-        failureRedirect: 'http://localhost:5173/login?error=not_invited' 
+        failureRedirect: `${FRONTEND_URL}/login?error=not_invited`
     }), 
     authController.googleCallback
 );

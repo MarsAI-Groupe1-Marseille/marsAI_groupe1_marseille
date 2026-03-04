@@ -1,6 +1,8 @@
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 
+const BACKEND_URL = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 3000}`;
+
 // ===== RATE LIMITERS =====
 
 // Handler personnalisé pour formater les erreurs du rate limiter en JSON
@@ -104,12 +106,12 @@ const helmetConfig = helmet({
             styleSrc: ["'self'", "'unsafe-inline'"],
             imageSrc: [
                 "'self'",
-                "http://localhost:3000",
+                BACKEND_URL,
                 "data:",
                 "https:",
                 "blob:"
             ],
-            connectSrc: ["'self'", "http://localhost:3000", "https://www.googleapis.com", "https://accounts.google.com"],
+            connectSrc: ["'self'", BACKEND_URL, "https://www.googleapis.com", "https://accounts.google.com"],
             fontSrc: ["'self'", "data:"],
             frameSrc: ["'none'"],
             objectSrc: ["'none'"],

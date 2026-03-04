@@ -3,6 +3,8 @@ const emailService = require('../services/emailService');
 const crypto = require('crypto');
  const bcrypt = require('bcrypt');
 
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+
 /**
  * TICKET #74 : INVITATION D'UN UTILISATEUR (Jury, Admin, Modérateur)
  * Implémentation générique pour créer tout type d'utilisateur avec invitation par email.
@@ -40,7 +42,7 @@ exports.createUser = async (req, res) => {
 
         // 4. Construction du lien magique et envoi de l'email
         // Le lien renvoie vers le frontend avec le token en paramètre.
-        const resetLink = `http://localhost:5173/active-compte?token=${token}`;
+        const resetLink = `${FRONTEND_URL}/active-compte?token=${token}`;
         
         // On appelle le service d'emailing adapté au rôle.
         await emailService.sendUserInvitation(email, full_name, role, resetLink);
@@ -90,7 +92,7 @@ exports.forgotPassword = async (req, res) => {
         await user.save();
 
         // Construire le lien de réinitialisation
-        const resetLink = `http://localhost:5173/reset-password?token=${resetToken}`;
+        const resetLink = `${FRONTEND_URL}/reset-password?token=${resetToken}`;
 
         // Envoyer l'email avec le lien
         await emailService.sendResetPasswordEmail(email, user.full_name || 'utilisateur', resetLink);
