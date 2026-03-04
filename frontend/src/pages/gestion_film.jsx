@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import axios, { fetchCSRFToken } from '../config/axiosConfig';
 import { Search, ChevronRight, ChevronLeft, Check, X, Clock, Globe, Users, LayoutDashboard, Film as FilmIcon, BarChart3, Calendar, Settings, AlertCircle } from "lucide-react";
 import { useLanguage } from '../context/LanguageContext.jsx';
-import { sanitizeText, sanitizeList } from '../utils/sanitize';
 import {
   BarChart,
   Bar,
@@ -99,7 +98,7 @@ function FilmDetailModal({ film, isOpen, onClose, onApprove, onReject, t }) {
       <div className="bg-neutral-900 rounded-xl border border-neutral-800 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header avec fermeture */}
         <div className="sticky top-0 bg-neutral-900 border-b border-neutral-800 p-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-white">{sanitizeText(film.titre)}</h2>
+          <h2 className="text-2xl font-bold text-white">{film.titre}</h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-neutral-800 rounded-lg transition text-neutral-400 hover:text-white"
@@ -116,7 +115,7 @@ function FilmDetailModal({ film, isOpen, onClose, onApprove, onReject, t }) {
               width="100%"
               height="420"
               src={`https://www.youtube.com/embed/${film.youtubeId}`}
-              title={sanitizeText(film.titre)}
+              title={film.titre}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
               className="w-full"
@@ -127,7 +126,7 @@ function FilmDetailModal({ film, isOpen, onClose, onApprove, onReject, t }) {
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-neutral-800 rounded-lg p-4">
               <p className="text-neutral-400 text-sm uppercase tracking-wider font-semibold">Réalisateur</p>
-              <p className="text-white font-bold text-lg mt-1">{sanitizeText(film.real)}</p>
+              <p className="text-white font-bold text-lg mt-1">{film.real}</p>
             </div>
             <div className="bg-neutral-800 rounded-lg p-4">
               <p className="text-neutral-400 text-sm uppercase tracking-wider font-semibold">Durée</p>
@@ -138,13 +137,13 @@ function FilmDetailModal({ film, isOpen, onClose, onApprove, onReject, t }) {
             </div>
             <div className="bg-neutral-800 rounded-lg p-4">
               <p className="text-neutral-400 text-sm uppercase tracking-wider font-semibold">Email</p>
-              <p className="text-white font-bold text-lg mt-1 truncate">{sanitizeText(film.email)}</p>
+              <p className="text-white font-bold text-lg mt-1 truncate">{film.email}</p>
             </div>
             <div className="bg-neutral-800 rounded-lg p-4">
               <p className="text-neutral-400 text-sm uppercase tracking-wider font-semibold">Localisation</p>
               <div className="flex items-center gap-2 mt-1">
                 <Globe size={16} className="text-violet-400" />
-                <p className="text-white font-bold text-lg">{sanitizeText(film.ville)}</p>
+                <p className="text-white font-bold text-lg">{film.ville}</p>
               </div>
             </div>
           </div>
@@ -152,12 +151,12 @@ function FilmDetailModal({ film, isOpen, onClose, onApprove, onReject, t }) {
           {/* Synopsis */}
           <div className="bg-neutral-800 rounded-lg p-4">
             <p className="text-neutral-400 text-sm uppercase tracking-wider font-semibold mb-2">Synopsis</p>
-            <p className="text-neutral-200 leading-relaxed">{sanitizeText(film.synopsis)}</p>
+            <p className="text-neutral-200 leading-relaxed">{film.synopsis}</p>
           </div>
 
           {/* Tags */}
           <div className="flex gap-2 flex-wrap">
-            {sanitizeList(film.tags).map((tag, idx) => (
+            {(film.tags || '').split(',').map(t => t.trim()).filter(Boolean).map((tag, idx) => (
               <span key={idx} className="bg-violet-900 text-violet-200 px-3 py-1 rounded-full text-sm font-semibold">
                 {tag}
               </span>

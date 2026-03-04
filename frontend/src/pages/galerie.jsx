@@ -14,7 +14,6 @@ import { useNavigate } from 'react-router-dom'
 
 // useLanguage: Hook pour accéder aux traductions
 import { useLanguage } from '../context/LanguageContext'
-import { sanitizeText } from '../utils/sanitize'
 
 // Importe le fichier CSS pour styliser la galerie
 import '../pages/galerie.css'
@@ -307,19 +306,19 @@ const Galerie = () => {
                 {/* INFORMATIONS DU FILM (Titre, Synopsis, Durée) */}
                 <div className="film-info">
                   {/* TITRE DU FILM */}
-                  <h3 className="film-title">{sanitizeText(film.title_original)}</h3>
+                  <h3 className="film-title">{film.title_original}</h3>
                   
                   {/* RÉALISATEUR */}
                   {film.Director && (
                     <p className="film-director" style={{fontSize: '0.85rem', color: '#9090b0', marginBottom: '8px'}}>
-                      {t('gallery_by')} {sanitizeText(film.Director.first_name)} {sanitizeText(film.Director.last_name)}
+                      {t('gallery_by')} {film.Director.first_name} {film.Director.last_name}
                     </p>
                   )}
                   
                   {/* SYNOPSIS (Extrait limité à 80 caractères) */}
                   <p className="film-synopsis">
                     {/* Ternaire (? :): Si synopsis existe, affiche 80 premiers caractères + "..." */}
-                    {film.synopsis_original ? `${sanitizeText(film.synopsis_original).substring(0, 80)}...` : t('gallery_no_synopsis')}
+                    {film.synopsis_original ? `${film.synopsis_original.substring(0, 80)}...` : t('gallery_no_synopsis')}
                   </p>
                   
                   {/* DURÉE DU FILM */}
@@ -437,7 +436,7 @@ const Galerie = () => {
                 <div className="modal-poster">
                   <img 
                     src={`${import.meta.env.VITE_API_URL}${selectedFilm.poster_url}`} 
-                    alt={sanitizeText(selectedFilm.title_original)} 
+                    alt={selectedFilm.title_original} 
                     onError={(e) => {
                       e.target.src = "https://placehold.co/400x600?text=Pas+d'affiche"
                     }}
@@ -448,26 +447,26 @@ const Galerie = () => {
               {/* DÉTAILS DU FILM */}
               <div className="modal-details">
                 {/* TITRE DU FILM */}
-                <h2>{sanitizeText(selectedFilm.title_original)}</h2>
+                <h2>{selectedFilm.title_original}</h2>
                 
                 {/* TITRE ANGLAIS SI DIFFÉRENT */}
                 {selectedFilm.title_english && selectedFilm.title_english !== selectedFilm.title_original && (
                   <p style={{color: '#9090b0', fontSize: '1.1rem', marginTop: '-10px', marginBottom: '15px'}}>
-                    ({sanitizeText(selectedFilm.title_english)})
+                    ({selectedFilm.title_english})
                   </p>
                 )}
                 
                 {/* RÉALISATEUR */}
                 {selectedFilm.Director && (
                   <p style={{color: '#ffb3ff', fontSize: '1rem', marginBottom: '15px'}}>
-                    {t('detail_director')} <strong>{sanitizeText(selectedFilm.Director.first_name)} {sanitizeText(selectedFilm.Director.last_name)}</strong>
+                    {t('detail_director')} <strong>{selectedFilm.Director.first_name} {selectedFilm.Director.last_name}</strong>
                   </p>
                 )}
                 
                 {/* SYNOPSIS COMPLET */}
                 <p className="modal-synopsis">
                   {/* Affiche le synopsis ou un message par défaut */}
-                  {sanitizeText(selectedFilm.synopsis_original) || t('detail_no_synopsis_available')}
+                  {selectedFilm.synopsis_original || t('detail_no_synopsis_available')}
                 </p>
 
                 {/* SYNOPSIS ANGLAIS SI DISPONIBLE */}
@@ -475,7 +474,7 @@ const Galerie = () => {
                   <div style={{marginTop: '15px', padding: '15px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px'}}>
                     <p style={{fontSize: '0.85rem', color: '#9090b0', marginBottom: '5px'}}>{t('detail_english_synopsis')}</p>
                     <p style={{fontSize: '0.9rem', color: '#c0c0e0', lineHeight: '1.5'}}>
-                      {sanitizeText(selectedFilm.synopsis_english)}
+                      {selectedFilm.synopsis_english}
                     </p>
                   </div>
                 )}
@@ -489,27 +488,27 @@ const Galerie = () => {
                   
                   {/* Langue principale */}
                   {selectedFilm.language_main && (
-                    <p><strong>{t('detail_language')}</strong> {sanitizeText(selectedFilm.language_main)}</p>
+                    <p><strong>{t('detail_language')}</strong> {selectedFilm.language_main}</p>
                   )}
                   
                   {/* Thèmes/Genres */}
                   {selectedFilm.theme_tags && (
-                    <p><strong>{t('detail_genres')}</strong> {sanitizeText(selectedFilm.theme_tags)}</p>
+                    <p><strong>{t('detail_genres')}</strong> {selectedFilm.theme_tags}</p>
                   )}
                   
                   {/* Classification IA */}
                   {selectedFilm.ai_classification && (
-                    <p><strong>{t('detail_ai_class')}</strong> {sanitizeText(selectedFilm.ai_classification)}</p>
+                    <p><strong>{t('detail_ai_class')}</strong> {selectedFilm.ai_classification}</p>
                   )}
                   
                   {/* Outils IA */}
                   {selectedFilm.ai_tools && (
-                    <p><strong>{t('detail_ai_tools')}</strong> {sanitizeText(selectedFilm.ai_tools)}</p>
+                    <p><strong>{t('detail_ai_tools')}</strong> {selectedFilm.ai_tools}</p>
                   )}
                   
                   {/* Méthodologie IA */}
                   {selectedFilm.ai_methodology && (
-                    <p><strong>{t('detail_methodology')} :</strong> {sanitizeText(selectedFilm.ai_methodology)}</p>
+                    <p><strong>{t('detail_methodology')} :</strong> {selectedFilm.ai_methodology}</p>
                   )}
                   
                   {/* Sous-titres */}
