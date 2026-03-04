@@ -2,6 +2,7 @@ import React, { useState,useEffect } from "react";
 import { Users, Eye, Pencil, Trash2, UserPlus } from "lucide-react";
 import axios from '../config/axiosConfig';
 import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
 
 // Dashboard User Component - Force recompile
 
@@ -78,7 +79,8 @@ function FormEdition({ user, editingData, setEditingData, onSave, onCancel, isLo
 }
 
 
-function UserRow({ user, isEditing, toggleEdit, editingData, setEditingData, onSaveUser, onDeleteUser, isLoading, t }) {
+function UserRow({ user, isEditing, toggleEdit, editingData, setEditingData, onSaveUser, onDeleteUser, isLoading, t, currentUserRole }) {
+    const isModerator = currentUserRole === "moderator";
     
     return (
         <>
@@ -98,17 +100,29 @@ function UserRow({ user, isEditing, toggleEdit, editingData, setEditingData, onS
                         {t('dashboard_user_see')}
                     </button>
 
-                    <button onClick={() => {
-                        toggleEdit(user.id);
-                        if (!editingData?.id || editingData.id !== user.id) {
-                            setEditingData({ id: user.id, full_name: user.full_name, email: user.email, role: user.role });
-                        }
-                    }} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-800 hover:bg-gradient-to-r hover:from-violet-500 hover:to-pink-500 transition text-sm">
+                    <button 
+                        onClick={() => {
+                            if (!isModerator) {
+                                toggleEdit(user.id);
+                                if (!editingData?.id || editingData.id !== user.id) {
+                                    setEditingData({ id: user.id, full_name: user.full_name, email: user.email, role: user.role });
+                                }
+                            }
+                        }} 
+                        disabled={isModerator}
+                        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-800 hover:bg-gradient-to-r hover:from-violet-500 hover:to-pink-500 transition text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        title={isModerator ? "Action non autorisée pour les modérateurs" : ""}
+                    >
                         <Pencil size={16} />
                         {t('dashboard_user_edit')}
                     </button>
 
-                    <button onClick={() => onDeleteUser(user.id, user.full_name)} disabled={isLoading} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-800 hover:bg-red-600 transition text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                    <button 
+                        onClick={() => !isModerator && onDeleteUser(user.id, user.full_name)} 
+                        disabled={isLoading || isModerator} 
+                        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-800 hover:bg-red-600 transition text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        title={isModerator ? "Action non autorisée pour les modérateurs" : ""}
+                    >
                         <Trash2 size={16} />
                         Supprimer
                     </button>
@@ -134,6 +148,8 @@ function UserRow({ user, isEditing, toggleEdit, editingData, setEditingData, onS
 
 export default function DashboardUser() {
     const { t } = useLanguage();
+    const { user: currentUser } = useAuth();
+    const isModerator = currentUser?.role === "moderator";
     const [usersList, setUsersList] = useState([]);
     const [editingUserId, setEditingUserId] = useState(null);
     const [editingData, setEditingData] = useState(null);
@@ -265,8 +281,11 @@ export default function DashboardUser() {
                 </div>
 
                 <button
-                    onClick={() => setShowAddForm(!showAddForm)}
-                    className="flex flex-wrap justify-center items-center gap-2 px-4 py-2 rounded-lg font-semibold text-white bg-gradient-to-r from-violet-500 to-pink-500 hover:opacity-90 transition w-full md:w-auto">
+                    onClick={() => !isModerator && setShowAddForm(!showAddForm)}
+                    disabled={isModerator}
+                    className="flex flex-wrap justify-center items-center gap-2 px-4 py-2 rounded-lg font-semibold text-white bg-gradient-to-r from-violet-500 to-pink-500 hover:opacity-90 transition w-full md:w-auto disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:opacity-50"
+                    title={isModerator ? "Action non autorisée pour les modérateurs" : ""}
+                >
                     <UserPlus size={18} />
                     {t('dashboard_user_add')}
                 </button>
@@ -353,6 +372,7 @@ export default function DashboardUser() {
                         onDeleteUser={handleDeleteUser}
                         isLoading={isLoading}
                         t={t}
+                        currentUserRole={currentUser?.role}
                     />
                 ))}
             </section>

@@ -91,8 +91,10 @@ export default function DashboardJury() {
   const disliked = votes.filter(v => v.vote_status === "DISLIKE").length;
   const discussion = votes.filter(v => v.vote_status === "DISCUSS").length;
   
-  // Nombre total de films assignés
-  const totalFilmsAssigned = playlists.reduce((acc, playlist) => acc + (playlist.videos?.length || 0), 0);
+  // Nombre total de films assignés (sans doublons entre playlists)
+  const totalFilmsAssigned = new Set(
+    playlists.flatMap((playlist) => (playlist.videos || []).map((video) => video.id))
+  ).size;
 
   return (
     <div className="min-h-screen bg-black text-white relative overflow-hidden">

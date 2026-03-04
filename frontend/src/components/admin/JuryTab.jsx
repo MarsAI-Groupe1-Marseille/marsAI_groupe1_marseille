@@ -2,11 +2,14 @@ import { useState, useEffect } from 'react';
 import { useFilms } from '../../hooks/useFilms';
 import axios from '../../config/axiosConfig';
 import { useLanguage } from '../../context/LanguageContext.jsx';
+import { useAuth } from '../../context/AuthContext.jsx';
 import { BarChart3, Users, ThumbsUp, ThumbsDown, MessageCircle, Trophy, Scale, UserCheck, FileText, TrendingUp } from 'lucide-react';
 
 export default function JuryTab() {
   const { films } = useFilms();
   const { t } = useLanguage();
+  const { user: currentUser } = useAuth();
+  const isModerator = currentUser?.role === "moderator";
   const [juryMembers, setJuryMembers] = useState([]);
   const [globalStats, setGlobalStats] = useState({
     jury_count: 0,
@@ -219,8 +222,10 @@ export default function JuryTab() {
             <h3 className="text-lg md:text-xl font-bold text-violet-400">{t('jury_tab_members')}</h3>
           </div>
           <button
-            onClick={() => setShowForm(!showForm)}
-            className="w-full sm:w-auto bg-violet-500 hover:bg-violet-600 text-white font-semibold py-2 px-6 rounded-lg transition"
+            onClick={() => !isModerator && setShowForm(!showForm)}
+            disabled={isModerator}
+            className="w-full sm:w-auto bg-violet-500 hover:bg-violet-600 text-white font-semibold py-2 px-6 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-violet-500"
+            title={isModerator ? "Action non autorisée pour les modérateurs" : ""}
           >
             {t('jury_tab_add_member')}
           </button>

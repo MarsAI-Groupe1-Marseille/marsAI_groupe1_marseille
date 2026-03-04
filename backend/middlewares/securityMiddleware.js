@@ -1,26 +1,44 @@
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 
+const BACKEND_URL = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 3000}`;
+
 // ===== RATE LIMITERS =====
 
-// Limiteur GÉNÉRAL : 100 requêtes par 15 minutes pour toutes les routes
+// Handler personnalisé pour formater les erreurs du rate limiter en JSON
+const rateLimitHandler = (req, res) => {
+    return res.status(429).json({
+        success: false,
+        message: 'Trop de requêtes, réessayez dans 15 minutes.',
+        error: 'RATE_LIMIT_EXCEEDED',
+        retryAfter: Math.ceil(req.rateLimit.resetTime / 1000) // Temps en secondes
+    });
+};
+
+// Limiteur GÉNÉRAL : 500 requêtes par 15 minutes par IP (très permissif, anti-abus basique)
 const generalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100,                   // 100 requêtes max par IP
-    message: 'Trop de requêtes, réessayez dans 15 minutes.',
+    max: 500,                   // 500 requêtes max par IP (permissif pour éviter bloquer 2 jurés sur même réseau)
+    handler: rateLimitHandler,  // Utiliser notre handler personnalisé
     standardHeaders: true,      // Return rate limit info in the `RateLimit-*` headers
     legacyHeaders: false,       // Disable the `X-RateLimit-*` headers
     skip: (req) => {
-        // Les administrateurs ne sont pas limités
+        // Les administrateurs et routes publiques légitimes ne sont pas limités
         return req.user && req.user.role === 'admin';
     }
 });
 
-// Limiteur STRICT LOGIN : 5 tentatives par 15 minutes
+// Limiteur STRICT LOGIN : 5 tentatives par 15 minutes PAR IP
 const strictLoginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 5,
-    message: 'Trop de tentatives de connexion. Réessayez dans 15 minutes.',
+    handler: (req, res) => {
+        return res.status(429).json({
+            success: false,
+            message: 'Trop de tentatives de connexion. Réessayez dans 15 minutes.',
+            error: 'RATE_LIMIT_LOGIN'
+        });
+    },
     skipSuccessfulRequests: true, // Ne compte que les erreurs
     standardHeaders: true,
     legacyHeaders: false
@@ -30,7 +48,13 @@ const strictLoginLimiter = rateLimit({
 const forgotPasswordLimiter = rateLimit({
     windowMs: 60 * 60 * 1000, // 1 heure
     max: 3,
-    message: 'Trop de demandes. Réessayez dans 1 heure.',
+    handler: (req, res) => {
+        return res.status(429).json({
+            success: false,
+            message: 'Trop de demandes. Réessayez dans 1 heure.',
+            error: 'RATE_LIMIT_FORGOT_PASSWORD'
+        });
+    },
     standardHeaders: true,
     legacyHeaders: false
 });
@@ -39,9 +63,37 @@ const forgotPasswordLimiter = rateLimit({
 const uploadLimiter = rateLimit({
     windowMs: 60 * 60 * 1000,
     max: 10,
-    message: 'Trop d\'uploads. Réessayez dans 1 heure.',
+    handler: (req, res) => {
+        return res.status(429).json({
+            success: false,
+            message: 'Trop d\'uploads. Réessayez dans 1 heure.',
+            error: 'RATE_LIMIT_UPLOAD'
+        });
+    },
     standardHeaders: true,
     legacyHeaders: false
+});
+
+// Limiteur AUTHENTIFIÉ : 200 requêtes par 15 minutes PAR IP
+// Pour les routes protégées (/api/jury/*, /api/admin/*, /api/users/*, /api/submissions/*)
+// Limit plus élevée que le general limiter car ces routes concernent les utilisateurs authentifiés
+// Chaque utilisateur a sa propre session/authentification même s'ils partagent une IP
+const authenticatedLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 200,
+    handler: (req, res) => {
+        return res.status(429).json({
+            success: false,
+            message: 'Trop de requêtes. Vous avez atteint la limite. Réessayez dans 15 minutes.',
+            error: 'RATE_LIMIT_AUTH_EXCEEDED'
+        });
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    skip: (req) => {
+        // Les administrateurs ne sont pas limités
+        return req.user && req.user.role === 'admin';
+    }
 });
 
 // ===== HELMET CONFIGURATION =====
@@ -54,12 +106,12 @@ const helmetConfig = helmet({
             styleSrc: ["'self'", "'unsafe-inline'"],
             imageSrc: [
                 "'self'",
-                "http://localhost:3000",
+                BACKEND_URL,
                 "data:",
                 "https:",
                 "blob:"
             ],
-            connectSrc: ["'self'", "http://localhost:3000", "https://www.googleapis.com", "https://accounts.google.com"],
+            connectSrc: ["'self'", BACKEND_URL, "https://www.googleapis.com", "https://accounts.google.com"],
             fontSrc: ["'self'", "data:"],
             frameSrc: ["'none'"],
             objectSrc: ["'none'"],
@@ -92,5 +144,6 @@ module.exports = {
     strictLoginLimiter,
     forgotPasswordLimiter,
     uploadLimiter,
+    authenticatedLimiter,
     helmetConfig
 };

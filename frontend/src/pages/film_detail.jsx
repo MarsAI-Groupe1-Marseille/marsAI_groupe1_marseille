@@ -345,9 +345,9 @@ export default function FilmDetail() {
                   <div className="tools-container">
                     <p className="tools-label">{t('film_detail_tools_used')}</p>
                     <div className="tools-list">
-                      {film.ai_tools.split(',').map((tool) => (
+                      {(film.ai_tools || '').split(',').map(t => t.trim()).filter(Boolean).map((tool) => (
                         <span key={tool} className="tool-badge">
-                          {tool.trim()}
+                          {tool}
                         </span>
                       ))}
                     </div>

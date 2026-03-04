@@ -163,6 +163,9 @@ exports.getMyPlaylists = async (req, res) => {
                     through: { 
                         attributes: [] // On ne veut pas les attributs de la table de jointure
                     },
+                    where: {
+                        approval_status: 'approved' // Filtrer uniquement les films approuvés
+                    },
                     include: [
                         {
                             model: require('../models').Director,

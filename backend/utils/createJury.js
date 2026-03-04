@@ -8,9 +8,15 @@ const createDefaultJury = async () => {
     await sequelize.authenticate();
     console.log('✓ Connexion à la base de données réussie');
 
-    const juryEmail = 'jury@test.fr';
-    const juryPassword = 'jury123456';
-    const juryName = 'Jury Test';
+    // Récupérer les credentials depuis les variables d'environnement
+    const juryEmail = process.env.JURY_DEFAULT_EMAIL || 'jury@test.fr';
+    const juryPassword = process.env.JURY_DEFAULT_PASSWORD;
+    const juryName = process.env.JURY_DEFAULT_NAME || 'Jury Test';
+
+    if (!juryPassword) {
+      console.warn('JURY_DEFAULT_PASSWORD non défini dans .env - création jury désactivée');
+      return;
+    }
 
     // Vérifier si le jury existe déjà
     const existingJury = await User.findOne({ where: { email: juryEmail } });
@@ -30,24 +36,24 @@ const createDefaultJury = async () => {
         specialite: JSON.stringify(['IA Créative', 'Production Vidéo'])
       });
 
-      console.log('✓ Jury créé avec succès !');
+      console.log('Jury créé avec succès !');
       console.log('────────────────────────────────────');
-      console.log('📧 Email: ' + juryEmail);
-      console.log('🔐 Mot de passe: ' + juryPassword);
-      console.log('👤 Nom: ' + juryName);
-      console.log('👑 Rôle: jury');
+      console.log('Email: ' + juryEmail);
+      console.log('Mot de passe: [PROTÉGÉ - voir .env]');
+      console.log('Nom: ' + juryName);
+      console.log('Rôle: jury');
       console.log('────────────────────────────────────');
       console.log('\n✓ Vous pouvez maintenant vous connecter à la partie jury !');
     } else {
-      console.log('✓ Le jury existe déjà.');
+      console.log('Le jury existe déjà.');
       console.log('────────────────────────────────────');
-      console.log('📧 Email: ' + juryEmail);
-      console.log('🔐 Mot de passe: ' + juryPassword);
+      console.log('Email: ' + juryEmail);
+      console.log('Mot de passe: [PROTÉGÉ - voir .env]');
       console.log('────────────────────────────────────');
     }
 
   } catch (error) {
-    console.error('❌ Erreur lors de la création du jury :', error.message);
+    console.error('Erreur lors de la création du jury :', error.message);
   } finally {
     await sequelize.close();
     process.exit(0);

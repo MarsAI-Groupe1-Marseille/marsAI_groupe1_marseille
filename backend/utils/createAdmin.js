@@ -3,8 +3,14 @@ const { User } = require('../models');
 
 const createDefaultAdmin = async () => {
   try {
-    const adminEmail = 'admin@gmail.com'; // L'email de l'admin par défaut
-    const adminPassword = 'AdminPassword123!'; // Le mot de passe par défaut
+    // Récupérer les credentials depuis les variables d'environnement
+    const adminEmail = process.env.ADMIN_DEFAULT_EMAIL || 'admin@gmail.com';
+    const adminPassword = process.env.ADMIN_DEFAULT_PASSWORD;
+
+    if (!adminPassword) {
+      console.warn('ADMIN_DEFAULT_PASSWORD non défini dans .env - création admin désactivée');
+      return;
+    }
 
     // 1. On vérifie si l'admin existe déjà
     const existingAdmin = await User.findOne({ where: { email: adminEmail } });
@@ -26,7 +32,7 @@ const createDefaultAdmin = async () => {
 
       console.log('Admin créé avec succès !');
       console.log(`Email: ${adminEmail}`);
-      console.log(`Password: ${adminPassword}`);
+      console.log('Mot de passe: [PROTÉGÉ - voir .env]');
     } else {
       console.log('L\'administrateur existe déjà. Pas besoin de le recréer.');
     }

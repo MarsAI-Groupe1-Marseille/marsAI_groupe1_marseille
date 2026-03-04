@@ -5,6 +5,7 @@ const upload = require('../middlewares/uploadMiddleware'); // Import du middlewa
 const { validateRequest } = require('../middlewares/validationMiddleware');
 const { csrfProtection } = require('../middlewares/csrfMiddleware');
 const { submissionValidators } = require('../validators/submissionValidators');
+const { uploadLimiter } = require('../middlewares/securityMiddleware');
 
 const uploadSubmissionFields = upload.fields([
     { name: 'video_file', maxCount: 1 },
@@ -41,6 +42,7 @@ const handleSubmissionUpload = (req, res, next) => {
 // Route pour créer une nouvelle soumission avec upload de fichiers
 
 router.post('/', 
+    uploadLimiter,              // Limiter les uploads: 10/h par IP
     handleSubmissionUpload,
     csrfProtection,
     submissionValidators,

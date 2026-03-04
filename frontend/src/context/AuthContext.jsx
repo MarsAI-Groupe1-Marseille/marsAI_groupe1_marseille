@@ -55,8 +55,8 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      // Optionnel: appeler une route de logout si le backend en a une
-      // await axios.post('/auth/logout');
+      // Appeler l'endpoint de déconnexion du backend
+      await axios.post('/auth/logout');
       
       // Nettoyer le user
       localStorage.removeItem('user');

@@ -13,7 +13,7 @@ const createDefaultAdmin = require('./utils/createAdmin');
 const sequelize = require('./config/db');
 
 // Import des middlewares de sécurité
-const { helmetConfig, generalLimiter } = require('./middlewares/securityMiddleware');
+const { helmetConfig, generalLimiter, authenticatedLimiter } = require('./middlewares/securityMiddleware');
 const { sessionMiddleware, csrfProtection } = require('./middlewares/csrfMiddleware');
 
 const app = express();
@@ -34,11 +34,11 @@ const juryRoutes = require('./routes/juryRoutes');
 // ==========================================
 // MIDDLEWARES
 // ==========================================
-const allowedOrigins = [
-    'http://localhost:5173',
-    'http://localhost:5174',
-    'http://localhost:5175',
-];
+const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+const allowedOrigins = (process.env.CORS_ORIGINS || frontendUrl)
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
 
 app.use(cors({
     origin: (origin, callback) => {
@@ -54,7 +54,7 @@ app.use(cors({
 
 // === MIDDLEWARES DE SÉCURITÉ ===
 app.use(helmetConfig);           // Headers de sécurité HTTP
-app.use(generalLimiter);         // Rate limiting général (100 req/15min)
+app.use(generalLimiter);         // Rate limiting général (500 req/15min par IP) - permissif pour multi-utilisateurs sur même réseau
 
 // Autorise des payloads plus volumineux (config home avec images base64 avant upload S3)
 app.use(express.json({ limit: '10mb' }));
@@ -76,10 +76,12 @@ app.get('/api/csrf-token', (req, res) => {
 
 // Utilisation des routes préfixées
 app.use('/api/auth', authRoutes);         
-app.use('/api/users', userRoutes);        
-app.use('/api/submissions', submissionRoutes); 
-app.use('/api/admin', adminRoutes); // Routes admin (validation des films, modération, etc.)
-app.use('/api/jury', juryRoutes); 
+
+// Limiter les routes authentifiées par user (évite que 2 jurés sur même réseau se bloquent)
+app.use('/api/users', authenticatedLimiter, userRoutes);        
+app.use('/api/submissions', authenticatedLimiter, submissionRoutes); 
+app.use('/api/admin', authenticatedLimiter, adminRoutes); // Routes admin (validation des films, modération, etc.)
+app.use('/api/jury', authenticatedLimiter, juryRoutes); 
 
 // ...
 

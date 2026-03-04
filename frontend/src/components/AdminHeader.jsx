@@ -75,14 +75,16 @@ const AdminHeader = () => {
           >
             <span className="text-xs lg:text-sm">{t('admin_jury')}</span>
           </Link>
-          <Link
-            to="/Configuration"
-            className="mars-btn mars-glow inline-flex items-center justify-center p-1.5 md:p-2"
-            aria-label="Configuration"
-            title={t('admin_config')}
-          >
-            <span className="text-xs lg:text-sm">{t('admin_config')}</span>
-          </Link>
+          {user?.role === "admin" && (
+            <Link
+              to="/Configuration"
+              className="mars-btn mars-glow inline-flex items-center justify-center p-1.5 md:p-2"
+              aria-label="Configuration"
+              title={t('admin_config')}
+            >
+              <span className="text-xs lg:text-sm">{t('admin_config')}</span>
+            </Link>
+          )}
            <button
             type="button"
             onClick={toggleLanguage}

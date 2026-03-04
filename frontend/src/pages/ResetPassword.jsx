@@ -40,7 +40,13 @@ const ResetPassword = () => {
       alert('Mot de passe réinitialisé avec succès.');
       navigate('/login');
     } catch (err) {
-      setError(err.response?.data?.error || 'Erreur lors de la réinitialisation.');
+      // Afficher les erreurs de validation du backend
+      if (err.response?.data?.errors && Array.isArray(err.response.data.errors)) {
+        const validationErrors = err.response.data.errors.map(e => e.message).join(' • ');
+        setError(validationErrors);
+      } else {
+        setError(err.response?.data?.error || 'Erreur lors de la réinitialisation.');
+      }
     } finally {
       setLoading(false);
     }

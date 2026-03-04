@@ -2,6 +2,8 @@ const { User } = require('../models');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+
 exports.login = async (req, res) => {
     try{
         const{ email, password } = req.body;
@@ -48,7 +50,7 @@ exports.login = async (req, res) => {
 exports.googleCallback = async (req, res) => {
     try {
         if (!req.user) {
-            return res.redirect('http://localhost:5173/login?error=auth_failed');
+            return res.redirect(`${FRONTEND_URL}/login?error=auth_failed`);
         }
 
         const token = jwt.sign(
@@ -64,14 +66,16 @@ exports.googleCallback = async (req, res) => {
             maxAge: 24 * 60 * 60 * 1000 
         });
 
-        const redirectUrl = req.user.role === 'admin' 
-            ? 'http://localhost:5173/dashboard' 
-            : 'http://localhost:5173/';
+        const redirectUrl = req.user.role === 'admin' || req.user.role === 'moderator'
+            ? `${FRONTEND_URL}/dashboard`
+            : req.user.role === 'jury'
+            ? `${FRONTEND_URL}/dashboardJury`
+            : `${FRONTEND_URL}/login?error=invalid_role`;
 
         res.redirect(redirectUrl);
 
     } catch (error) {
-        res.redirect('http://localhost:5173/login?error=server_error');
+        res.redirect(`${FRONTEND_URL}/login?error=server_error`);
     }
 };
 exports.getMe = async (req, res) => {
@@ -83,4 +87,21 @@ exports.getMe = async (req, res) => {
         full_name: req.user.full_name,
         role: req.user.role
     });
+};
+
+exports.logout = async (req, res) => {
+    try {
+        // Effacer le cookie JWT
+        res.clearCookie('token', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict'
+        });
+
+        res.json({
+            message: "Déconnexion réussie."
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 };

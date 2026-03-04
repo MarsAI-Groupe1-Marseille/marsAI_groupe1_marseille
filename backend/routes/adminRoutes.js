@@ -19,7 +19,7 @@ const {
 // route pour récupérer les statistiques du dashboard (films soumis, approuvés, rejetés, en attente)
 router.get('/dashboard/stats',
     verifyToken,          // 1. Vérification connexion
-    checkRole('admin'),   // 2. Vérification rôle Admin
+    checkRole('admin', 'moderator'),   // 2. Vérification rôle Admin
     adminController.getDashboardStats // 3. Récupération des stats
 );
 
@@ -27,7 +27,7 @@ router.get('/dashboard/stats',
 // route pour récupérer la répartition des catégories (theme_tags)
 router.get('/dashboard/categories',
     verifyToken,          // 1. Vérification connexion
-    checkRole('admin'),   // 2. Vérification rôle Admin
+    checkRole('admin', 'moderator'),   // 2. Vérification rôle Admin
     adminController.getCategoriesDistribution // 3. Récupération des catégories
 );
 
@@ -35,7 +35,7 @@ router.get('/dashboard/categories',
 // route pour récupérer les données du graphique (soumissions et approuvés par semaine)
 router.get('/dashboard/chart-data',
     verifyToken,          // 1. Vérification connexion
-    checkRole('admin'),   // 2. Vérification rôle Admin
+    checkRole('admin', 'moderator'),   // 2. Vérification rôle Admin
     adminController.getSubmissionsChartData // 3. Récupération des données du graphique
 );
 
@@ -44,7 +44,7 @@ router.get('/dashboard/chart-data',
 // Body : { status: 'approved' } ou { status: 'rejected', issue_type: '...', description: '...' }
 router.post('/moderation/:submissionId', 
     verifyToken,          // 1. Vérification connexion
-    checkRole('admin'),   // 2. Vérification rôle Admin
+    checkRole('admin', 'moderator'),   // 2. Vérification rôle Admin
     csrfProtection,       // 3. Protection CSRF
     moderateSubmissionValidators,
     validateRequest,
@@ -62,7 +62,7 @@ router.post('/jury-list',
 // route pour afficher les playlists avec films et jurys assignés
 router.get('/jury-lists',
     verifyToken,
-    checkRole('admin'),
+    checkRole('admin', 'moderator'),
     adminController.getJuryListsWithAssignments
 );
 // route pour supprimer une playlist

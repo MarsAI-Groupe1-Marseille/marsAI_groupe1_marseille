@@ -156,9 +156,9 @@ function FilmDetailModal({ film, isOpen, onClose, onApprove, onReject, t }) {
 
           {/* Tags */}
           <div className="flex gap-2 flex-wrap">
-            {film.tags.split(',').map((tag, idx) => (
+            {(film.tags || '').split(',').map(t => t.trim()).filter(Boolean).map((tag, idx) => (
               <span key={idx} className="bg-violet-900 text-violet-200 px-3 py-1 rounded-full text-sm font-semibold">
-                {tag.trim()}
+                {tag}
               </span>
             ))}
           </div>

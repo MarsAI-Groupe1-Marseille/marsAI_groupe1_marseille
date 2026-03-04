@@ -44,22 +44,28 @@ function Card({ label, value }) {
         </div>
     );
 }
-// Le composant React ActionCard reçoit des "props" : title, buttonText, onClick :
-function ActionCard({ title, buttonText, onClick, icon }) {
+// Le composant React ActionCard reçoit des "props" : title, buttonText, onClick, icon, disabled :
+function ActionCard({ title, buttonText, onClick, icon, disabled = false }) {
     return (
-        <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 flex flex-col justify-between hover:bg-neutral-800 transition">
+        <div className={`bg-neutral-900 border border-neutral-800 rounded-2xl p-6 flex flex-col justify-between transition ${
+            disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-neutral-800'
+        }`}>
             <div className="flex items-center gap-4 mb-6">
-                <div className="text-violet-500">
+                <div className={disabled ? "text-neutral-500" : "text-violet-500"}>
                     {icon}
                 </div>
-                <h3 className="text-lg font-semibold text-violet-400">
+                <h3 className={`text-lg font-semibold ${
+                    disabled ? 'text-neutral-500' : 'text-violet-400'
+                }`}>
                     {title}
                 </h3>
             </div>
             <button
             // onClick={onClick} → quand on cliques sur le bouton, la fonction passée en prop est exécutée :
-                onClick={onClick}
-                className="bg-violet-500 hover:bg-violet-600 text-white font-semibold py-2 px-4 rounded"
+                onClick={disabled ? undefined : onClick}
+                disabled={disabled}
+                className="bg-violet-500 hover:bg-violet-600 text-white font-semibold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-violet-500"
+                title={disabled ? "Action non autorisée pour les modérateurs" : ""}
             >
                 {buttonText}
             </button>
@@ -69,6 +75,9 @@ function ActionCard({ title, buttonText, onClick, icon }) {
 
 const Dashboard = () => {
     const { t } = useLanguage();
+    const userStr = localStorage.getItem('user');
+    const currentUser = userStr ? JSON.parse(userStr) : null;
+    const isModerator = currentUser?.role === "moderator";
     const [adminUser, setAdminUser] = useState({
         full_name: "Admin Test",
         email: "email@exemple.com",
@@ -331,13 +340,24 @@ const Dashboard = () => {
                                 icon={<Users size={28} />}
                             />
                         </Link>
-                        <Link to="/selectfinaliste" className="block">
-                            <ActionCard
-                                title={t('dashboard_finalists_selection')}
-                                buttonText={t('dashboard_finalists_button')}
-                                icon={<Film size={28} />}
-                            />
-                        </Link>
+                        {isModerator ? (
+                            <div className="block">
+                                <ActionCard
+                                    title={t('dashboard_finalists_selection')}
+                                    buttonText={t('dashboard_finalists_button')}
+                                    icon={<Film size={28} />}
+                                    disabled={true}
+                                />
+                            </div>
+                        ) : (
+                            <Link to="/selectfinaliste" className="block">
+                                <ActionCard
+                                    title={t('dashboard_finalists_selection')}
+                                    buttonText={t('dashboard_finalists_button')}
+                                    icon={<Film size={28} />}
+                                />
+                            </Link>
+                        )}
                     </section>
                 </div>
             </main>

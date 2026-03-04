@@ -26,7 +26,13 @@ const Connexion = () => {
       const user = await login(formData.email, formData.password);
       console.log('Login successful:', user);
       // Rediriger selon le rôle
-      user.role === 'admin' ? navigate('/dashboard') : navigate('/dashboardJury');    
+      if (user.role === 'admin' || user.role === 'moderator') {
+        navigate('/dashboard');
+      } else if (user.role === 'jury') {
+        navigate('/dashboardJury');
+      } else {
+        setError('Rôle non autorisé');
+      }
     } catch (error) {
       setError(error.response?.data?.message || 'Erreur de connexion');
     }   

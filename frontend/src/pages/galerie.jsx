@@ -318,7 +318,7 @@ const Galerie = () => {
                   {/* SYNOPSIS (Extrait limité à 80 caractères) */}
                   <p className="film-synopsis">
                     {/* Ternaire (? :): Si synopsis existe, affiche 80 premiers caractères + "..." */}
-                    {film.synopsis_original ? film.synopsis_original.substring(0, 80) + '...' : t('gallery_no_synopsis')}
+                    {film.synopsis_original ? `${film.synopsis_original.substring(0, 80)}...` : t('gallery_no_synopsis')}
                   </p>
                   
                   {/* DURÉE DU FILM */}
