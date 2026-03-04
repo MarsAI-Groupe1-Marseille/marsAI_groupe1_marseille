@@ -6,6 +6,15 @@ const { sequelize } = require('../models');
 // ===== DÉTECTION ENVIRONNEMENT =====
 const isProduction = process.env.NODE_ENV === 'production';
 
+// ===== VALIDATION DU SECRET EN PRODUCTION =====
+if (isProduction && !process.env.SESSION_SECRET) {
+    throw new Error('ERREUR SÉCURITÉ: SESSION_SECRET doit être défini en production');
+}
+
+if (!process.env.SESSION_SECRET && !isProduction) {
+    console.warn('SESSION_SECRET non défini - utilisation d\'un secret par défaut (DEV UNIQUEMENT)');
+}
+
 // ===== SESSION STORE : Sequelize en PROD, Mémoire en DEV =====
 const sessionStore = isProduction 
     ? new SequelizeStore({ 
