@@ -219,7 +219,7 @@ const SubmissionForm = () => {
                 <select name="director_civility" onChange={handleChange} className="w-full bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400">
                   <option value="M">{t('submission_civility_mr')}</option>
                   <option value="F">{t('submission_civility_ms')}</option>
-                  <option value="NB">{t('submission_civility_nb')}</option>
+                  <option value="Iel">{t('submission_civility_nb')}</option>
                 </select>
               </div>
               <input type="text" name="director_firstname" placeholder={t('submission_firstname')} onChange={handleChange} required className="w-full bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
