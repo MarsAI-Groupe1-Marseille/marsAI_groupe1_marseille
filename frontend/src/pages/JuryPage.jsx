@@ -511,12 +511,8 @@ if (error) {
               <div className="p-4 sm:p-6 md:p-10 flex flex-col h-full overflow-hidden">
                 <div className="min-h-0 flex-1 overflow-hidden flex flex-col justify-center">
                 {/* official record info from main inserted */}
-                <div className="space-y-1 mb-2 md:mb-3">
-                  <h4 className="text-[10px] font-black text-white/40 flex items-center gap-2 uppercase tracking-[0.2em]">
-                    <Cpu size={16} className="text-[var(--color-primary)]" /> {t('jury_page_jury_id')}
-                  </h4>
-                  <p className="text-xs sm:text-sm md:text-base text-white/80 font-light leading-snug">
-                    {t('jury_page_accredited').replace('{id}', selectedJury.id)} <br/>
+                <div className="space-y-1 mb-2 md:mb-3">               
+                  <p className="text-xs sm:text-sm md:text-base text-white/80 font-light leading-snug">                   
                     {t('jury_page_registered')} {new Date(selectedJury.created_at).toLocaleDateString()}
                   </p>
                 </div>
