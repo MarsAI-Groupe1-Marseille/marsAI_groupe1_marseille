@@ -508,47 +508,47 @@ if (error) {
               </div>
               
 
-              <div className="p-4 sm:p-6 md:p-10 flex flex-col h-full overflow-hidden">
-                <div className="min-h-0 flex-1 overflow-hidden flex flex-col justify-center">
+              <div className="p-4 sm:p-5 md:p-8 flex flex-col h-full justify-between overflow-hidden">
+                <div className="flex flex-col space-y-2 md:space-y-3">
                 {/* official record info from main inserted */}
-                <div className="space-y-1 mb-2 md:mb-3">               
-                  <p className="text-xs sm:text-sm md:text-base text-white/80 font-light leading-snug">                   
+                <div className="space-y-0.5">               
+                  <p className="text-[10px] sm:text-xs md:text-sm text-white/70 font-light leading-tight">                   
                     {t('jury_page_registered')} {new Date(selectedJury.created_at).toLocaleDateString()}
                   </p>
                 </div>
-                <div className="flex items-center gap-2 mb-2 md:mb-3 text-[var(--color-secondary)]">
-                  <Sparkles size={20} className="animate-spin-slow text-[var(--color-primary)]" />
-                  <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] md:tracking-[0.4em] text-white/60">
+                <div className="flex items-center gap-2 text-[var(--color-secondary)]">
+                  <Sparkles size={16} className="animate-spin-slow text-[var(--color-primary)]" />
+                  <span className="text-[8px] md:text-[9px] font-black uppercase tracking-[0.25em] md:tracking-[0.35em] text-white/60">
                     Session d'Analyse Officielle
                   </span>
                 </div>
                 
-                <h2 className="text-2xl sm:text-3xl md:text-5xl font-black mb-1 md:mb-2 italic text-white leading-none uppercase tracking-tighter">
+                <h2 className="text-xl sm:text-2xl md:text-4xl font-black italic text-white leading-none uppercase tracking-tighter pt-1">
                   {selectedJury.full_name}
                 </h2>
                 
-                <p className="text-[var(--color-primary)] font-bold text-[10px] sm:text-xs md:text-sm mb-3 md:mb-5 uppercase tracking-[0.25em] md:tracking-[0.4em]">
+                <p className="text-[var(--color-primary)] font-bold text-[9px] sm:text-[10px] md:text-xs uppercase tracking-[0.2em] md:tracking-[0.3em] leading-relaxed">
                   {parseSpecialite(selectedJury.specialite)}
                 </p>
 
                 {/* Dossier Dossier/Note (Premium) */}
-                <div className="space-y-3 md:space-y-6">
-                  <div className="p-3 sm:p-4 md:p-6 rounded-[20px] md:rounded-[30px] bg-white/[0.03] border border-white/10 backdrop-blur-sm">
-                    <h4 className="text-[10px] font-black text-white/30 flex items-center gap-2 uppercase tracking-[0.2em] mb-4">
-                      <Cpu size={16} className="text-[var(--color-primary)]" /> Expertise & Vision
+                <div className="pt-1">
+                  <div className="p-3 sm:p-3.5 md:p-5 rounded-[18px] md:rounded-[24px] bg-white/[0.03] border border-white/10 backdrop-blur-sm">
+                    <h4 className="text-[9px] font-black text-white/30 flex items-center gap-2 uppercase tracking-[0.15em] mb-2 md:mb-3">
+                      <Cpu size={14} className="text-[var(--color-primary)]" /> Expertise & Vision
                     </h4>
                     
-                    <p className="text-xs sm:text-sm md:text-base text-white/80 font-light leading-snug md:leading-relaxed italic mb-3 md:mb-5">
+                    <p className="text-[10px] sm:text-xs md:text-sm text-white/75 font-light leading-snug italic mb-2 md:mb-3">
                       "Expert(e) reconnu(e) pour sa capacité à identifier les ruptures technologiques et les impacts éthiques de l'IA générative."
                     </p>
 
-                    <ul className="space-y-2 md:space-y-4">
-                      <li className="flex items-start gap-3 text-xs sm:text-sm text-white/70 font-light">
-                        <Award size={18} className="text-[var(--color-primary)] shrink-0" /> 
+                    <ul className="space-y-1.5 md:space-y-2.5">
+                      <li className="flex items-start gap-2 text-[10px] sm:text-xs text-white/65 font-light">
+                        <Award size={14} className="text-[var(--color-primary)] shrink-0 mt-0.5" /> 
                         <span>Évaluation des critères d'innovation pure.</span>
                       </li>
-                      <li className="hidden sm:flex items-start gap-3 text-xs sm:text-sm text-white/70 font-light">
-                        <Award size={18} className="text-[var(--color-primary)] shrink-0" /> 
+                      <li className="hidden sm:flex items-start gap-2 text-[10px] sm:text-xs text-white/65 font-light">
+                        <Award size={14} className="text-[var(--color-primary)] shrink-0 mt-0.5" /> 
                         <span>Analyse de la viabilité systémique des projets.</span>
                       </li>
                     </ul>
@@ -558,7 +558,7 @@ if (error) {
 
                 <button 
                   onClick={closeModal}
-                  className="mars-cta mt-3 md:mt-4 w-full py-3 md:py-4 text-[9px] md:text-[10px] font-black tracking-[0.3em] md:tracking-[0.4em] uppercase rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.3)] shrink-0"
+                  className="mars-cta mt-3 md:mt-4 w-full py-2.5 md:py-3.5 text-[9px] md:text-[10px] font-black tracking-[0.3em] md:tracking-[0.4em] uppercase rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.3)]"
                 >
                   Fermer la Fiche
                 </button>
