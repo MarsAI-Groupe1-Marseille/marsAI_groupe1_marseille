@@ -23,7 +23,9 @@ export const AuthProvider = ({ children }) => {
       }
 
       try {
-        const response = await axios.get('/auth/me');
+        const response = await axios.get('/auth/me', {
+          skipErrorHandling: true // Ne pas afficher l'erreur sur les pages publiques
+        });
         if (response?.data) {
           localStorage.setItem('user', JSON.stringify(response.data));
           setUser(response.data);
