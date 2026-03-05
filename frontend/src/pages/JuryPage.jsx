@@ -24,8 +24,8 @@ const openSound = new Audio("/sounds/open.mp3");
 const closeSound = new Audio("/sounds/close.mp3");
 
 //  Optionnel : volume par défaut (évite de surprendre)
-openSound.volume = 0.25;
-closeSound.volume = 0.25;
+openSound.volume = 0.15;
+closeSound.volume = 0.15;
 
 const playSound = (type) => {
   const audio = type === "open" ? openSound : closeSound;
