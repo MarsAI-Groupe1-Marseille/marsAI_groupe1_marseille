@@ -40,8 +40,7 @@ const JuryPage = () => {
   -------------------------------------------------------- */
   
   // Hook pour les traductions
-  const { t } = useLanguage();
-  const { lang } = useLanguage();
+const { t, lang } = useLanguage();
   
   // Constantes pour les filtres (pour éviter les problèmes de comparaison avec traductions)
   const FILTER_ALL = 'all';
@@ -318,7 +317,20 @@ if (error) {
         {/* Title */}
         <div className={`relative z-10 text-center px-4 mars-reveal ${isVisible ? "is-visible" : ""}`}>
           <h1 className="text-4xl sm:text-5xl md:text-7xl font-black italic uppercase tracking-tighter mb-2 leading-none">
-            Le <span className="text-[var(--color-primary)] text-glow">Grand</span>&nbsp;Jury
+            {/* Le <span className="text-[var(--color-primary)] text-glow">Grand</span>&nbsp;Jury */}
+            {/* <span className="text-[var(--color-primary)] text-glow">
+              {lang === 'fr' ? 'Le Grand' : 'The Great'}
+            </span>
+            &nbsp;{t("jury_page_title_suffix")} */}
+            {lang === 'fr' ? (
+    <>
+      Le <span className="text-[var(--color-primary)] text-glow">Grand</span> Jury
+    </>
+  ) : (
+    <>
+      The <span className="text-[var(--color-primary)] text-glow">Great</span> Jury
+    </>
+  )}
           </h1>
         </div>
       </section>
@@ -350,7 +362,9 @@ if (error) {
           {/* Text */}
           <div className="flex-1 text-center lg:text-left">
             <div className="mars-cta w-full inline-flex items-center tracking-[0.3em] gap-3 px-6 py-4 sm:py-5 rounded-full bg-[var(--color-primary)] text-black text-[10px] font-black uppercase mb-6 animate-pulse">
-              <Star size={14} fill="currentColor" /> Présidence du Jury
+              <Star size={14} fill="currentColor" />
+              {/* Présidence du Jury */}
+              {t('jury_presidency_label')}
             </div>
 
             <h2 className="text-3xl sm:text-4xl md:text-7xl font-black uppercase italic leading-none mb-4">
@@ -358,7 +372,11 @@ if (error) {
             </h2>
 
             <p className="text-[var(--color-primary)] font-bold tracking-[0.35em] text-[11px] sm:text-xs uppercase mb-6">
-              {ADMIN_DATA.specialite[lang] || ADMIN_DATA.specialite.fr}
+              {/* {ADMIN_DATA.specialite[lang] || ADMIN_DATA.specialite.fr} */}
+              {/* On s'assure de n'afficher qu'une chaîne de caractères */}
+              {typeof ADMIN_DATA.specialite === 'object' 
+              ? (ADMIN_DATA.specialite[lang] || ADMIN_DATA.specialite.fr) 
+              : ADMIN_DATA.specialite}
             </p>
 
             <p className="text-[var(--color-text)]/60 italic text-lg sm:text-xl font-light mb-8 md:mb-10 max-w-2xl leading-relaxed">
@@ -417,7 +435,11 @@ if (error) {
       <section className="container-mars px-4">
         <div className={`relative z-10 text-center px-4 mars-reveal ${isVisible ? "is-visible" : ""}`}>
           <h2 className="text-4xl sm:text-5xl md:text-7xl font-black italic uppercase tracking-tighter mb-2 leading-none">
-            <span className="text-[var(--color-primary)] text-glow">Nos</span>&nbsp;Jury
+            <span className="text-[var(--color-primary)] text-glow">
+              {/* Nos */}
+              {lang === 'fr' ? 'Nos' : 'Our'}
+            </span>
+            &nbsp;Jury
           </h2>
 
           <div className="h-2 w-56 sm:w-72 bg-[var(--gradient-brand)] mx-auto rounded-full mt-6 mb-10 shadow-[0_0_20px_var(--color-primary)]" />
@@ -515,7 +537,8 @@ if (error) {
                 {/* Badge Accrédité (Premium) */}
                 <div className="absolute bottom-4 left-4 rounded-full border border-white/10 bg-black/40 px-4 py-1.5 backdrop-blur-md">
                   <p className="text-white/80 text-[9px] font-black uppercase tracking-[0.4em]">
-                    ACCRÉDITÉ MARS / JURY
+                    {/* ACCRÉDITÉ MARS / JURY */}
+                    {t('jury_modal_accredited')}
                   </p>
                 </div>
               </div>
@@ -532,7 +555,8 @@ if (error) {
                 <div className="flex items-center gap-2 mb-2 md:mb-3 text-[var(--color-secondary)]">
                   <Sparkles size={20} className="animate-spin-slow text-[var(--color-primary)]" />
                   <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] md:tracking-[0.4em] text-white/60">
-                    Session d'Analyse Officielle
+                    {/* Session d'Analyse Officielle */}
+                    {t('jury_modal_session')}
                   </span>
                 </div>
                 
@@ -548,21 +572,30 @@ if (error) {
                 <div className="space-y-3 md:space-y-6">
                   <div className="p-3 sm:p-4 md:p-6 rounded-[20px] md:rounded-[30px] bg-white/[0.03] border border-white/10 backdrop-blur-sm">
                     <h4 className="text-[10px] font-black text-white/30 flex items-center gap-2 uppercase tracking-[0.2em] mb-4">
-                      <Cpu size={16} className="text-[var(--color-primary)]" /> Expertise & Vision
+                      <Cpu size={16} className="text-[var(--color-primary)]" /> 
+                      {/* Expertise & Vision */}
+                      "{t('jury_modal_expertise')}"
                     </h4>
                     
                     <p className="text-xs sm:text-sm md:text-base text-white/80 font-light leading-snug md:leading-relaxed italic mb-3 md:mb-5">
-                      "Expert(e) reconnu(e) pour sa capacité à identifier les ruptures technologiques et les impacts éthiques de l'IA générative."
+                      {/* "Expert(e) reconnu(e) pour sa capacité à identifier les ruptures technologiques et les impacts éthiques de l'IA générative." */}
+                      "{t('jury_modal_bio_placeholder')}"
                     </p>
 
                     <ul className="space-y-2 md:space-y-4">
                       <li className="flex items-start gap-3 text-xs sm:text-sm text-white/70 font-light">
                         <Award size={18} className="text-[var(--color-primary)] shrink-0" /> 
-                        <span>Évaluation des critères d'innovation pure.</span>
+                        <span>
+                          {/* Évaluation des critères d'innovation pure. */}
+                          {t('jury_modal_criteria_1')}
+                        </span>
                       </li>
                       <li className="hidden sm:flex items-start gap-3 text-xs sm:text-sm text-white/70 font-light">
                         <Award size={18} className="text-[var(--color-primary)] shrink-0" /> 
-                        <span>Analyse de la viabilité systémique des projets.</span>
+                        <span>
+                          {/* Analyse de la viabilité systémique des projets. */}
+                          {t('jury_modal_criteria_2')}
+                        </span>
                       </li>
                     </ul>
                   </div>
@@ -573,7 +606,8 @@ if (error) {
                   onClick={closeModal}
                   className="mars-cta mt-3 md:mt-4 w-full py-3 md:py-4 text-[9px] md:text-[10px] font-black tracking-[0.3em] md:tracking-[0.4em] uppercase rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.3)] shrink-0"
                 >
-                  Fermer la Fiche
+                  {/* Fermer la Fiche */}
+                  {t('jury_modal_close')}
                 </button>
               </div>
             </div>

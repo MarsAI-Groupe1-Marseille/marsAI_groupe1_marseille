@@ -689,9 +689,32 @@ export const LanguageProvider = ({ children }) => {
         'home_btn_login_jury': 'Connexion Jury',
         'home_cta_get_started': 'Commencer',
         'home_cta_learn_more': 'En savoir plus',
-        // Jury Page Keys        
+        // Jury Page Keys   
+        'jury_presidency_label': 'Présidence du Festival',     
         "jury_president_title": "Visionnaire IA & Président du Jury",
-        "jury_president_bio": "Pionnier des technologies génératives, il définit la direction artistique et éthique du Mars AI Festival."
+        "jury_president_bio": "Pionnier des technologies génératives, il définit la direction artistique et éthique du Mars AI Festival.",
+        // --- JuryPage Modal & UI (FR) ---
+        'jury_page_presidency_badge': 'Présidence du Jury',
+        'jury_modal_badge': 'ACCRÉDITÉ MARS / JURY',
+        'jury_modal_session': 'Session d\'Analyse Officielle',
+        'jury_modal_expertise_title': 'Expertise & Vision',
+        'jury_modal_quote': 'Expert(e) reconnu(e) pour sa capacité à identifier les ruptures technologiques et les impacts éthiques de l\'IA générative.',
+        'jury_modal_bullet_1': 'Évaluation des critères d\'innovation pure.',
+        'jury_modal_bullet_2': 'Analyse de la viabilité systémique des projets.',
+        'jury_modal_close': 'Fermer la Fiche',
+        'jury_modal_close_aria': 'Fermer',
+        'jury_dossier_note_prefix': 'Spécialisation confirmée :',
+        'jury_dossier_note_suffix': 'Analyse fine, décision nette.',
+        'jury_page_title_suffix': 'Jury',
+
+        // Dans la section 'fr'
+        'jury_modal_accredited': 'ACCRÉDITÉ MARS / JURY',
+        'jury_modal_session': "Session d'Analyse Officielle",
+        'jury_modal_expertise': 'Expertise & Vision',
+        'jury_modal_bio_placeholder': "Expert(e) reconnu(e) pour sa capacité à identifier les ruptures technologiques et les impacts éthiques de l'IA générative.",
+        'jury_modal_criteria_1': "Évaluation des critères d'innovation pure.",
+        'jury_modal_criteria_2': "Analyse de la viabilité systémique des projets.",
+        'jury_modal_close': 'Fermer la Fiche'
 
       },
       en: {
@@ -1357,8 +1380,30 @@ export const LanguageProvider = ({ children }) => {
         'selectfinaliste_film_selected_no_award': 'Film selected without award',
         'selectfinaliste_error_save_award': 'Error saving award',
         // Jury Page Keys (English)
+        'jury_presidency_label': 'Festival Presidency',
         "jury_president_title": "AI Visionary & Jury President",
-        "jury_president_bio": "A pioneer in generative technologies, he shapes the artistic and ethical direction of the Mars AI Festival."
+        "jury_president_bio": "A pioneer in generative technologies, he shapes the artistic and ethical direction of the Mars AI Festival.",
+        // --- JuryPage Modal & UI (EN) ---
+        'jury_page_presidency_badge': 'Jury Presidency',
+        'jury_modal_badge': 'MARS ACCREDITED / JURY',
+        'jury_modal_session': 'Official Analysis Session',
+        'jury_modal_expertise_title': 'Expertise & Vision',
+        'jury_modal_quote': 'A recognized expert with a talent for identifying technological breakthroughs and the ethical impact of generative AI.',
+        'jury_modal_bullet_1': 'Evaluation of pure innovation criteria.',
+        'jury_modal_bullet_2': 'Analysis of the systemic viability of projects.',
+        'jury_modal_close': 'Close Profile',
+        'jury_modal_close_aria': 'Close',
+        'jury_dossier_note_prefix': 'Confirmed specialization:',
+        'jury_dossier_note_suffix': 'Sharp analysis, clear decision.',
+        'jury_page_title_suffix': 'Jury',
+        // Dans la section Modal du JuryPage
+        'jury_modal_accredited': 'MARS ACCREDITED / JURY',
+        'jury_modal_session': 'Official Analysis Session',
+        'jury_modal_expertise': 'Expertise & Vision',
+        'jury_modal_bio_placeholder': "Recognized expert for their ability to identify technological breakthroughs and ethical impacts of generative AI.",
+        'jury_modal_criteria_1': 'Evaluation of pure innovation criteria.',
+        'jury_modal_criteria_2': 'Analysis of systemic project viability.',
+        'jury_modal_close': 'Close Profile'
       }
     };
 
