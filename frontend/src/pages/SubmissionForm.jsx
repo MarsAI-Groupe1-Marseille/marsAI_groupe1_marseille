@@ -218,7 +218,7 @@ const SubmissionForm = () => {
                 <label className="block text-sm text-purple-200 mb-2">{t('submission_civility')}</label>
                 <select name="director_civility" onChange={handleChange} className="w-full bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400">
                   <option value="M">{t('submission_civility_mr')}</option>
-                  <option value="F">{t('submission_civility_ms')}</option>
+                  <option value="Mme">{t('submission_civility_ms')}</option>
                   <option value="Iel">{t('submission_civility_nb')}</option>
                 </select>
               </div>

@@ -544,11 +544,11 @@ if (error) {
               </div>
               
 
-              <div className="p-4 sm:p-6 md:p-10 flex flex-col h-full overflow-hidden">
-                <div className="min-h-0 flex-1 overflow-hidden flex flex-col justify-center">
+              <div className="p-4 sm:p-5 md:p-8 flex flex-col h-full justify-between overflow-hidden">
+                <div className="flex flex-col space-y-2 md:space-y-3">
                 {/* official record info from main inserted */}
-                <div className="space-y-1 mb-2 md:mb-3">               
-                  <p className="text-xs sm:text-sm md:text-base text-white/80 font-light leading-snug">                   
+                <div className="space-y-0.5">               
+                  <p className="text-[10px] sm:text-xs md:text-sm text-white/70 font-light leading-tight">                   
                     {t('jury_page_registered')} {new Date(selectedJury.created_at).toLocaleDateString()}
                   </p>
                 </div>
@@ -560,11 +560,11 @@ if (error) {
                   </span>
                 </div>
                 
-                <h2 className="text-2xl sm:text-3xl md:text-5xl font-black mb-1 md:mb-2 italic text-white leading-none uppercase tracking-tighter">
+                <h2 className="text-xl sm:text-2xl md:text-4xl font-black italic text-white leading-none uppercase tracking-tighter pt-1">
                   {selectedJury.full_name}
                 </h2>
                 
-                <p className="text-[var(--color-primary)] font-bold text-[10px] sm:text-xs md:text-sm mb-3 md:mb-5 uppercase tracking-[0.25em] md:tracking-[0.4em]">
+                <p className="text-[var(--color-primary)] font-bold text-[9px] sm:text-[10px] md:text-xs uppercase tracking-[0.2em] md:tracking-[0.3em] leading-relaxed">
                   {parseSpecialite(selectedJury.specialite)}
                 </p>
 
@@ -604,7 +604,7 @@ if (error) {
 
                 <button 
                   onClick={closeModal}
-                  className="mars-cta mt-3 md:mt-4 w-full py-3 md:py-4 text-[9px] md:text-[10px] font-black tracking-[0.3em] md:tracking-[0.4em] uppercase rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.3)] shrink-0"
+                  className="mars-cta mt-3 md:mt-4 w-full py-2.5 md:py-3.5 text-[9px] md:text-[10px] font-black tracking-[0.3em] md:tracking-[0.4em] uppercase rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.3)]"
                 >
                   {/* Fermer la Fiche */}
                   {t('jury_modal_close')}
