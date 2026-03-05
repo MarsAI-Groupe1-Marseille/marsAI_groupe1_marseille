@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { useLanguage } from "../context/LanguageContext";
+
+import { useLanguage } from "../context/LanguageContext.jsx";
 import {
   Star,
   Award,
@@ -40,6 +41,7 @@ const JuryPage = () => {
   
   // Hook pour les traductions
   const { t } = useLanguage();
+  const { lang } = useLanguage();
   
   // Constantes pour les filtres (pour éviter les problèmes de comparaison avec traductions)
   const FILTER_ALL = 'all';
@@ -55,19 +57,30 @@ const JuryPage = () => {
   /* -------------------------------------------------------
      DATA PRESIDENT (statique)
   -------------------------------------------------------- */
+
   const ADMIN_DATA = {
-    full_name: "Jean-Baptiste G.",
-    role: "admin",
-    specialite: "Visionnaire IA & Président du Jury",
-    bio: "Pionnier des technologies génératives, il définit la direction artistique et éthique du Mars AI Festival.",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800",
-    socials: {
-      linkedin: "https://www.linkedin.com/bruno",
-      x: "https://www.x.com/marsai_festival",
-      facebook: "https://www.facebook.com/marsai.festival",
-      instagram: "https://www.instagram.com/marsai.festival"
-    },
-  };
+  full_name: "GUILLAMO Stéphane.",
+  role: "admin",
+
+  // Champs bilingues
+  specialite: {
+    fr: "Visionnaire IA & Président du Jury",
+    en: "AI Visionary & Jury President",
+  },
+  bio: {
+    fr: "Pionnier des technologies génératives, il définit la direction artistique et éthique du Mars AI Festival.",
+    en: "A pioneer in generative technologies, he shapes the artistic and ethical direction of the Mars AI Festival.",
+  },
+
+  image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800",
+
+  socials: {
+    linkedin: "https://www.linkedin.com/bruno",
+    x: "https://www.x.com/marsai_festival",
+    facebook: "https://www.facebook.com/marsai.festival",
+    instagram: "https://www.instagram.com/marsai.festival",
+  },
+};
 
   //  Helper flag for rendering the presidency badge; can be driven by props or API later
   const president = true;
@@ -345,11 +358,11 @@ if (error) {
             </h2>
 
             <p className="text-[var(--color-primary)] font-bold tracking-[0.35em] text-[11px] sm:text-xs uppercase mb-6">
-              {ADMIN_DATA.specialite}
+              {ADMIN_DATA.specialite[lang] || ADMIN_DATA.specialite.fr}
             </p>
 
             <p className="text-[var(--color-text)]/60 italic text-lg sm:text-xl font-light mb-8 md:mb-10 max-w-2xl leading-relaxed">
-              "{ADMIN_DATA.bio}"
+              "{ADMIN_DATA.bio[lang] || ADMIN_DATA.bio.fr}"
             </p>
 
             {/* Socials */}

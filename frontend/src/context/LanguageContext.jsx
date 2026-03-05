@@ -689,6 +689,10 @@ export const LanguageProvider = ({ children }) => {
         'home_btn_login_jury': 'Connexion Jury',
         'home_cta_get_started': 'Commencer',
         'home_cta_learn_more': 'En savoir plus',
+        // Jury Page Keys        
+        "jury_president_title": "Visionnaire IA & Président du Jury",
+        "jury_president_bio": "Pionnier des technologies génératives, il définit la direction artistique et éthique du Mars AI Festival."
+
       },
       en: {
         'home': 'HOME',
@@ -1352,6 +1356,9 @@ export const LanguageProvider = ({ children }) => {
         'selectfinaliste_award_assigned': 'Award assigned: {award}',
         'selectfinaliste_film_selected_no_award': 'Film selected without award',
         'selectfinaliste_error_save_award': 'Error saving award',
+        // Jury Page Keys (English)
+        "jury_president_title": "AI Visionary & Jury President",
+        "jury_president_bio": "A pioneer in generative technologies, he shapes the artistic and ethical direction of the Mars AI Festival."
       }
     };
 
