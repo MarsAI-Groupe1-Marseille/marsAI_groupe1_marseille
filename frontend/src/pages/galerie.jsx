@@ -4,7 +4,7 @@
 // React: Bibliothèque principale pour créer les composants
 // useState: Hook pour gérer l'état local (variables réactives)
 // useEffect: Hook pour exécuter du code à des moments spécifiques
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 
 // axios: Bibliothèque pour faire des requêtes HTTP vers l'API
 import axios from '../config/axiosConfig'
@@ -15,8 +15,17 @@ import { useNavigate } from 'react-router-dom'
 // useLanguage: Hook pour accéder aux traductions
 import { useLanguage } from '../context/LanguageContext'
 
+// GSAP: Animation library
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+
+gsap.registerPlugin(ScrollTrigger)
+
 // Importe le fichier CSS pour styliser la galerie
 import '../pages/galerie.css'
+
+// Starry Background component
+import StarryBackground from '../components/StarryBackground.jsx'
 
 // ============================================================
 // COMPOSANT PRINCIPAL - Galerie
@@ -28,6 +37,10 @@ const Galerie = () => {
   
   // Hook pour les traductions
   const { t } = useLanguage()
+
+  // Refs pour les animations
+  const headerRef = useRef(null)
+  const filmsGridRef = useRef(null)
 
   // ========== GESTION DE L'ÉTAT (State Management) ==========
   
@@ -71,6 +84,28 @@ const Galerie = () => {
   const [totalPages, setTotalPages] = useState(1)
   const [totalItems, setTotalItems] = useState(0)
 
+  // Mode (dark/light) - pour les couleurs de texte de la pagination
+  const [currentMode, setCurrentMode] = useState('dark')
+
+  // ========== EFFET: Détection du mode (dark/light) ==========
+  useEffect(() => {
+    // Initialiser le mode
+    const mode = document.documentElement.getAttribute('data-mode') === 'light' ? 'light' : 'dark'
+    setCurrentMode(mode)
+
+    // Écouter les changements de mode
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'data-mode') {
+          const newMode = document.documentElement.getAttribute('data-mode') === 'light' ? 'light' : 'dark'
+          setCurrentMode(newMode)
+        }
+      })
+    })
+
+    observer.observe(document.documentElement, { attributes: true })
+    return () => observer.disconnect()
+  }, [])
 
   // ========== EFFET: Récupération initiale de tous les genres ==========
   // S'exécute UNE SEULE FOIS au chargement pour récupérer tous les genres disponibles
@@ -202,6 +237,88 @@ const Galerie = () => {
     }
   }, [debouncedSearchTerm])
 
+  // ========== EFFET: Animation du header de la galerie ==========
+  useEffect(() => {
+    if (!headerRef.current) return
+
+    const headerTitle = headerRef.current.querySelector('h1')
+    const headerSubtitle = headerRef.current.querySelector('p')
+
+    const tl = gsap.timeline({ delay: 0.1 })
+    
+    tl.fromTo(
+      headerTitle,
+      { opacity: 0, y: 30, scale: 0.95 },
+      { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: 'back.out' }
+    )
+    .fromTo(
+      headerSubtitle,
+      { opacity: 0, y: 20 },
+      { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out' },
+      '-=0.4'
+    )
+
+    return () => tl.kill()
+  }, [])
+
+  // ========== EFFET: Animation des cartes de films au scroll ==========
+  useEffect(() => {
+    if (!filmsGridRef.current || films.length === 0) return
+
+    const filmCards = filmsGridRef.current.querySelectorAll('.film-card')
+    
+    // Animation d'entrance au scroll
+    gsap.fromTo(
+      filmCards,
+      { opacity: 0, y: 60, scale: 0.9, rotation: 5 },
+      {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        rotation: 0,
+        duration: 0.6,
+        stagger: 0.08,
+        ease: 'back.out',
+        scrollTrigger: {
+          trigger: filmsGridRef.current,
+          start: 'top 80%',
+          end: 'top 50%',
+          scrub: false,
+          markers: false
+        }
+      }
+    )
+
+    // Hover animation pour chaque carte
+    filmCards.forEach((card) => {
+      card.addEventListener('mouseenter', () => {
+        gsap.to(card, {
+          scale: 1.08,
+          duration: 0.3,
+          ease: 'power2.out',
+          y: -10
+        })
+      })
+
+      card.addEventListener('mouseleave', () => {
+        gsap.to(card, {
+          scale: 1,
+          duration: 0.3,
+          ease: 'power2.out',
+          y: 0
+        })
+      })
+    })
+
+    return () => {
+      ScrollTrigger.getAll().forEach(t => t.kill())
+      filmCards.forEach((card) => {
+        card.removeEventListener('mouseenter', null)
+        card.removeEventListener('mouseleave', null)
+      })
+    }
+  }, [films])
+
   // ========== RENDU CONDITIONNEL - GESTION DU CHARGEMENT ==========
   // Si les données sont en train de charger, affiche le message "Chargement..."
   if (loading) {
@@ -227,11 +344,14 @@ const Galerie = () => {
   // ========== RENDU PRINCIPAL - AFFICHAGE DE LA GALERIE ==========
   // Après le chargement, affiche la galerie complète
   return (
-    <div className="galerie-container">
+    <>
+      <StarryBackground />
+      <div className="galerie-wrapper" style={{ position: 'relative', zIndex: 2 }}>
+      <div className="galerie-container" style={{ position: 'relative', zIndex: 2 }}>
       {/* EN-TÊTE DE LA GALERIE */}
-      <div className="galerie-header">
+      <div ref={headerRef} className="galerie-header">
         {/* Titre principal de la page */}
-        <h1>{t('gallery_title')}</h1>
+        <h1 style={{color: currentMode === 'light' ? '#000000' : 'white'}}>{t('gallery_title')}</h1>
         {/* Sous-titre descriptif */}
         <p>{t('gallery_subtitle')}</p>
       </div>
@@ -276,7 +396,7 @@ const Galerie = () => {
       ) : (
         // CAS 2: Affiche la grille des films
         <>
-          <div className="films-grid">
+          <div ref={filmsGridRef} className="films-grid">
             {/* Boucle sur chaque film avec .map() */}
             {/* film: C'est un film dans la boucle */}
             {films.map((film) => (
@@ -310,7 +430,7 @@ const Galerie = () => {
                   
                   {/* RÉALISATEUR */}
                   {film.Director && (
-                    <p className="film-director" style={{fontSize: '0.85rem', color: '#9090b0', marginBottom: '8px'}}>
+                    <p className="film-director" style={{fontSize: '0.85rem', color: currentMode === 'light' ? '#666666' : '#9090b0', marginBottom: '8px'}}>
                       {t('gallery_by')} {film.Director.first_name} {film.Director.last_name}
                     </p>
                   )}
@@ -318,7 +438,7 @@ const Galerie = () => {
                   {/* SYNOPSIS (Extrait limité à 80 caractères) */}
                   <p className="film-synopsis">
                     {/* Ternaire (? :): Si synopsis existe, affiche 80 premiers caractères + "..." */}
-                    {film.synopsis_original ? `${film.synopsis_original.substring(0, 80)}...` : t('gallery_no_synopsis')}
+                    {film.synopsis_original ? film.synopsis_original.substring(0, 80) + '...' : t('gallery_no_synopsis')}
                   </p>
                   
                   {/* DURÉE DU FILM */}
@@ -350,7 +470,7 @@ const Galerie = () => {
                   background: currentPage === 1 ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 0, 150, 0.3)',
                   border: '1px solid #ff0096',
                   borderRadius: '8px',
-                  color: 'white',
+                  color: currentMode === 'light' ? 'black' : 'white',
                   cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
                   transition: 'all 0.3s ease'
                 }}
@@ -371,7 +491,7 @@ const Galerie = () => {
                         background: currentPage === pageNum ? '#ff0096' : 'rgba(255, 255, 255, 0.1)',
                         border: '1px solid #ff0096',
                         borderRadius: '8px',
-                        color: 'white',
+                        color: currentMode === 'light' ? 'black' : 'white',
                         cursor: 'pointer',
                         fontWeight: currentPage === pageNum ? 'bold' : 'normal',
                         transition: 'all 0.3s ease'
@@ -392,7 +512,7 @@ const Galerie = () => {
                   background: currentPage === totalPages ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 0, 150, 0.3)',
                   border: '1px solid #ff0096',
                   borderRadius: '8px',
-                  color: 'white',
+                  color: currentMode === 'light' ? 'black' : 'white',
                   cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
                   transition: 'all 0.3s ease'
                 }}
@@ -405,7 +525,7 @@ const Galerie = () => {
           {/* Affichage du nombre total de films */}
           <div style={{
             textAlign: 'center',
-            color: '#b0b0d0',
+            color: currentMode === 'light' ? '#666666' : '#b0b0d0',
             fontSize: '0.9rem',
             marginTop: '10px'
           }}>
@@ -447,18 +567,18 @@ const Galerie = () => {
               {/* DÉTAILS DU FILM */}
               <div className="modal-details">
                 {/* TITRE DU FILM */}
-                <h2>{selectedFilm.title_original}</h2>
+                <h2 style={{color: currentMode === 'light' ? '#000000' : 'white'}}>{selectedFilm.title_original}</h2>
                 
                 {/* TITRE ANGLAIS SI DIFFÉRENT */}
                 {selectedFilm.title_english && selectedFilm.title_english !== selectedFilm.title_original && (
-                  <p style={{color: '#9090b0', fontSize: '1.1rem', marginTop: '-10px', marginBottom: '15px'}}>
+                  <p style={{color: currentMode === 'light' ? '#666666' : '#9090b0', fontSize: '1.1rem', marginTop: '-10px', marginBottom: '15px'}}>
                     ({selectedFilm.title_english})
                   </p>
                 )}
                 
                 {/* RÉALISATEUR */}
                 {selectedFilm.Director && (
-                  <p style={{color: '#ffb3ff', fontSize: '1rem', marginBottom: '15px'}}>
+                  <p style={{color: currentMode === 'light' ? '#000000' : '#ffb3ff', fontSize: '1rem', marginBottom: '15px'}}>
                     {t('detail_director')} <strong>{selectedFilm.Director.first_name} {selectedFilm.Director.last_name}</strong>
                   </p>
                 )}
@@ -472,8 +592,8 @@ const Galerie = () => {
                 {/* SYNOPSIS ANGLAIS SI DISPONIBLE */}
                 {selectedFilm.synopsis_english && (
                   <div style={{marginTop: '15px', padding: '15px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px'}}>
-                    <p style={{fontSize: '0.85rem', color: '#9090b0', marginBottom: '5px'}}>{t('detail_english_synopsis')}</p>
-                    <p style={{fontSize: '0.9rem', color: '#c0c0e0', lineHeight: '1.5'}}>
+                    <p style={{fontSize: '0.85rem', color: currentMode === 'light' ? '#666666' : '#9090b0', marginBottom: '5px'}}>{t('detail_english_synopsis')}</p>
+                    <p style={{fontSize: '0.9rem', color: currentMode === 'light' ? '#333333' : '#c0c0e0', lineHeight: '1.5'}}>
                       {selectedFilm.synopsis_english}
                     </p>
                   </div>
@@ -508,7 +628,27 @@ const Galerie = () => {
                   
                   {/* Méthodologie IA */}
                   {selectedFilm.ai_methodology && (
-                    <p><strong>{t('detail_methodology')} :</strong> {selectedFilm.ai_methodology}</p>
+                    <div className="ai-methodology-section">
+                      <h2 style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-code-xml w-6 h-6" aria-hidden="true" style={{color: currentMode === 'light' ? '#000000' : 'rgb(255, 179, 255)'}}>
+                          <path d="m18 16 4-4-4-4"></path>
+                          <path d="m6 8-4 4 4 4"></path>
+                          <path d="m14.5 4-5 16"></path>
+                        </svg>
+                        {t('detail_methodology')}
+                      </h2>
+                      <p className="ai-text">{selectedFilm.ai_methodology}</p>
+                      {selectedFilm.ai_tools && (
+                        <div className="tools-container">
+                          <p className="tools-label">{t('detail_ai_tools')}:</p>
+                          <div className="tools-list">
+                            {selectedFilm.ai_tools.split(',').map((tool, index) => (
+                              <span key={index} className="tool-badge">{tool.trim()}</span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   )}
                   
                   {/* Sous-titres */}
@@ -518,7 +658,7 @@ const Galerie = () => {
                 {/* GALERIE D'IMAGES */}
                 {selectedFilm.gallery_urls && selectedFilm.gallery_urls.length > 0 && (
                   <div style={{marginTop: '25px'}}>
-                    <h3 style={{color: '#ffb3ff', fontSize: '1.2rem', marginBottom: '15px'}}>{t('gallery_images')}</h3>
+                    <h3 style={{color: currentMode === 'light' ? '#000000' : '#ffb3ff', fontSize: '1.2rem', marginBottom: '15px'}}>{t('gallery_images')}</h3>
                     <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '10px'}}>
                       {selectedFilm.gallery_urls.map((url, index) => (
                         <img 
@@ -565,6 +705,8 @@ const Galerie = () => {
         </div>
       )}
     </div>
+    </div>
+    </>
   )
 }
 

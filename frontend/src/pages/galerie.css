@@ -12,12 +12,14 @@
   /* Espacement intérieur: 40px haut/bas, 20px gauche/droite */
   padding: 40px 20px;
   
-  /* Gradient sombre de couleur: 135 degrés (du haut-gauche au bas-droite)
-     #0a0e27 = bleu très foncé (0%), #1a1f3a = bleu foncé (100%) */
-  background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+  /* Fond transparent pour voir le fond étoilé */
+  background: transparent;
   
   /* Hauteur minimale de 100% de la fenêtre (100vh = 100% viewport height) */
   min-height: 100vh;
+  
+  /* Opacité complète: 1 = 100% visible */
+  opacity: 1;
 }
 
 /* ============================================================
@@ -33,6 +35,9 @@
   
   /* Couleur du texte: blanc */
   color: white;
+  
+  /* Transparent pour voir les étoiles */
+  background: transparent;
 }
 
 /* Titre principal (h1) dans l'en-tête */
@@ -84,6 +89,9 @@
   
   /* Centre les éléments horizontalement */
   justify-content: center;
+  
+  /* Transparent pour voir les étoiles */
+  background: transparent;
 }
 
 /* Barre de recherche et sélecteur de tri */
@@ -165,6 +173,9 @@
   
   /* Marge en bas: 40px */
   margin-bottom: 40px;
+  
+  /* Transparent pour voir les étoiles */
+  background: transparent;
 }
 
 /* ============================================================
@@ -537,8 +548,8 @@
    ============================================================ */
 
 .modal-meta {
-  /* Fond très léger rose */
-  background: rgba(255, 0, 150, 0.05);
+  /* Fond transparent pour voir les étoiles */
+  background: transparent;
   
   /* Espacement: 20px */
   padding: 20px;
@@ -731,4 +742,259 @@
   .modal-synopsis {
     font-size: 0.9rem;
   }
+}
+
+/* --- GALERIE WRAPPER: Transparent pour voir les étoiles --- */
+.galerie-wrapper {
+  background: transparent !important;
+  opacity: 1;
+}
+
+/* --- MODE LIGHT : Transparent aussi --- */
+:root[data-mode="light"] .galerie-wrapper {
+  background: transparent !important;
+}
+
+/* --- MODE LIGHT : Film titles en noir --- */
+:root[data-mode="light"] .film-title {
+  color: #000000;
+}
+
+/* --- MODE LIGHT : Modal content transparent --- */
+:root[data-mode="light"] .modal-content {
+  background: transparent;
+  border: 2px solid #ff0096;
+}
+
+/* --- MODE LIGHT : Modal meta transparent --- */
+:root[data-mode="light"] .modal-meta {
+  background: transparent !important;
+}
+
+/* ============================================================
+   AI METHODOLOGY SECTION
+   ============================================================ */
+
+.ai-methodology-section {
+  /* Transparent pour voir les étoiles */
+  background: transparent;
+  
+  /* Espacement */
+  padding: 20px 0;
+  
+  /* Bordure rose subtile */
+  border-left: 4px solid #ff0096;
+  
+  /* Marge */
+  margin-bottom: 25px;
+  
+  /* Padding intérieur */
+  padding-left: 20px;
+}
+
+.ai-methodology-section h2 {
+  /* Rose clair */
+  color: #ffb3ff;
+  
+  /* Taille */
+  font-size: 1.3rem;
+  
+  /* Poids */
+  font-weight: 700;
+  
+  /* Marges */
+  margin: 0 0 15px 0;
+}
+
+.ai-text {
+  /* Couleur du texte */
+  color: #c0c0e0;
+  
+  /* Taille */
+  font-size: 1rem;
+  
+  /* Hauteur de ligne */
+  line-height: 1.6;
+  
+  /* Marges */
+  margin: 10px 0 20px 0;
+}
+
+.tools-container {
+  /* Transparent */
+  background: transparent;
+  
+  /* Marges */
+  margin-top: 15px;
+}
+
+.tools-label {
+  /* Couleur rose */
+  color: #ffb3ff;
+  
+  /* Petit texte */
+  font-size: 0.95rem;
+  
+  /* Poids */
+  font-weight: 600;
+  
+  /* Marges */
+  margin: 0 0 10px 0;
+}
+
+.tools-list {
+  /* Flex */
+  display: flex;
+  
+  /* Flex-wrap pour aller à la ligne */
+  flex-wrap: wrap;
+  
+  /* Espacement */
+  gap: 8px;
+}
+
+.tool-badge {
+  /* Fond rose semi-transparent */
+  background: rgba(255, 0, 150, 0.2);
+  
+  /* Couleur rose */
+  color: #ffb3ff;
+  
+  /* Bordure rose */
+  border: 1px solid #ff0096;
+  
+  /* Padding */
+  padding: 6px 12px;
+  
+  /* Coins arrondis */
+  border-radius: 20px;
+  
+  /* Petit texte */
+  font-size: 0.9rem;
+  
+  /* Transition */
+  transition: all 0.3s ease;
+}
+
+.tool-badge:hover {
+  /* Fond plus opaque au survol */
+  background: rgba(255, 0, 150, 0.3);
+  
+  /* Ombre rose */
+  box-shadow: 0 0 10px rgba(255, 0, 150, 0.3);
+}
+
+/* --- MODE LIGHT : AI Methodology transparent --- */
+:root[data-mode="light"] .ai-methodology-section {
+  background: transparent !important;
+  border-left-color: #ff0096;
+}
+
+:root[data-mode="light"] .ai-methodology-section h2 {
+  color: #000000;
+}
+
+:root[data-mode="light"] .ai-text {
+  color: #333333;
+}
+
+:root[data-mode="light"] .tools-label {
+  color: #000000;
+}
+
+:root[data-mode="light"] .tool-badge {
+  background: rgba(255, 0, 150, 0.15);
+  color: #ff0096;
+  border-color: #ff0096;
+}
+
+/* --- MODE LIGHT : Film cards transparent --- */
+:root[data-mode="light"] .film-card {
+  background: transparent;
+  border: 1px solid rgba(255, 0, 150, 0.3);
+  backdrop-filter: blur(0px);
+}
+
+:root[data-mode="light"] .film-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+}
+
+:root[data-mode="light"] .film-title {
+  color: #000000;
+}
+
+:root[data-mode="light"] .film-synopsis {
+  color: #333333;
+}
+
+:root[data-mode="light"] .film-info {
+  color: #000000;
+}
+
+/* --- MODE LIGHT : TOUS LES TEXTES EN NOIR/GRIS --- */
+:root[data-mode="light"] .modal-body {
+  color: #000000 !important;
+}
+
+:root[data-mode="light"] .modal-details p,
+:root[data-mode="light"] .modal-details h2,
+:root[data-mode="light"] .modal-details h3 {
+  color: #000000 !important;
+}
+
+:root[data-mode="light"] .modal-synopsis {
+  color: #333333 !important;
+}
+
+:root[data-mode="light"] .modal-meta p {
+  color: #333333 !important;
+}
+
+:root[data-mode="light"] .modal-meta strong {
+  color: #000000 !important;
+}
+
+:root[data-mode="light"] .ai-methodology-section h2 {
+  color: #000000 !important;
+}
+
+:root[data-mode="light"] .ai-text {
+  color: #333333 !important;
+}
+
+:root[data-mode="light"] .tools-label {
+  color: #000000 !important;
+}
+
+:root[data-mode="light"] .tool-badge {
+  color: #ff0096 !important;
+}
+
+/* --- MODE LIGHT : TOUS LES BLANCS → NOIRS --- */
+:root[data-mode="light"] {
+  --text-color-white: #000000 !important;
+}
+
+:root[data-mode="light"] .galerie-header,
+:root[data-mode="light"] .galerie-controls,
+:root[data-mode="light"] .search-input,
+:root[data-mode="light"] .sort-select,
+:root[data-mode="light"] .modal-body,
+:root[data-mode="light"] .film-info,
+:root[data-mode="light"] .modal-close,
+:root[data-mode="light"] .loading,
+:root[data-mode="light"] .error-message,
+:root[data-mode="light"] .no-films {
+  color: #000000 !important;
+}
+
+:root[data-mode="light"] h1,
+:root[data-mode="light"] h2,
+:root[data-mode="light"] h3,
+:root[data-mode="light"] h4,
+:root[data-mode="light"] h5,
+:root[data-mode="light"] h6,
+:root[data-mode="light"] p {
+  color: #000000 !important;
 }

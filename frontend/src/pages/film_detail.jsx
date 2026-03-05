@@ -8,6 +8,7 @@ import {
   BarChart3, Clock, User, Mail, MapPin, X
 } from 'lucide-react';
 import './film_detail.css';
+import StarryBackground from '../components/StarryBackground.jsx';
 
 export default function FilmDetail() {
   // Hook pour les traductions
@@ -190,7 +191,9 @@ export default function FilmDetail() {
   };
 
   return (
-    <div className="film-detail-container">
+    <>
+      <StarryBackground />
+      <div className="film-detail-container" style={{ position: 'relative', zIndex: 2 }}>
       <main className="film-detail-main">
         {/* Bouton retour simple en haut */}
         <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '20px 16px 0 16px' }}>
@@ -345,9 +348,9 @@ export default function FilmDetail() {
                   <div className="tools-container">
                     <p className="tools-label">{t('film_detail_tools_used')}</p>
                     <div className="tools-list">
-                      {(film.ai_tools || '').split(',').map(t => t.trim()).filter(Boolean).map((tool) => (
+                      {film.ai_tools.split(',').map((tool) => (
                         <span key={tool} className="tool-badge">
-                          {tool}
+                          {tool.trim()}
                         </span>
                       ))}
                     </div>
@@ -467,5 +470,6 @@ export default function FilmDetail() {
         </div>
       )}
     </div>
+    </>
   );
 }
