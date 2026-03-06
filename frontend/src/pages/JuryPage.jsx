@@ -349,7 +349,7 @@ if (error) {
 
 
       <section className="container-mars -mt-16 sm:-mt-20 relative z-20 px-4 mb-24 sm:mb-28 md:mb-32">
-        <div className="glass-panel rounded-[34px] sm:rounded-[40px] md:rounded-[80px] w-full max-w-6xl mx-auto p-6 sm:p-8 md:p-12 flex flex-col lg:flex-row items-center gap-8 md:gap-12 border border-white/10 shadow-2xl backdrop-blur-md">
+        <div className="glass-panel rounded-[34px] sm:rounded-[40px] md:rounded-[80px] w-full max-w-6xl mx-auto p-6 sm:p-8 md:p-12 flex flex-col lg:flex-row items-center gap-8 md:gap-12 border border-white/10 shadow-2xl backdrop-blur-md shadow-lg hover:shadow-[0_0_40px_var(--color-primary)]/20 transition-shadow duration-500">
           {/* Image */}
           <div className="w-full max-w-[420px] lg:max-w-none lg:w-1/3 aspect-square overflow-hidden rounded-[26px] sm:rounded-[30px] md:rounded-[60px] border-4 border-[var(--color-primary)]/70 shadow-[0_0_40px_rgba(34,211,238,0.3)]">
             <img
@@ -453,7 +453,7 @@ if (error) {
           {juryList.map((user) => (
             <div key={user.id} className={`mars-reveal ${isVisible ? "is-visible" : ""}`}>
               {/* Card */}
-              <div className="mars-btn card-jury relative overflow-hidden rounded-[36px] sm:rounded-[46px] md:rounded-[60px] border border-white/10 bg-[var(--card-bg)] h-full flex flex-col group transition-all duration-500 hover:border-[var(--color-primary)]/50">
+              <div className="mars-btn card-jury relative overflow-hidden rounded-[36px] sm:rounded-[46px] md:rounded-[60px] border border-white/10 bg-[var(--card-bg)] h-full flex flex-col group transition-all duration-500 hover:border-[var(--color-primary)]/50 shadow-lg hover:shadow-[0_0_40px_var(--color-primary)]/20 transition-shadow duration-500">
                 
                 {/* Image */}
                 <div className="relative h-72 sm:h-80 w-full p-4">
@@ -510,7 +510,7 @@ if (error) {
           onMouseDown={(e) => e.target === e.currentTarget && closeModal()}
         >
           {/* La carte modale - Animation "modal-enter" à définir dans ton CSS */}
-          <div className="relative w-full max-w-5xl bg-[#0a0a0a] border border-[var(--color-primary)]/20 rounded-[24px] md:rounded-[50px] overflow-hidden shadow-[0_0_100px_rgba(34,211,238,0.15)] h-[92vh] sm:h-[90vh] md:h-[84vh] animate-in zoom-in duration-300">
+          <div className="relative w-full max-w-5xl bg-[#0a0a0a] border border-[var(--color-primary)]/20 rounded-[24px] md:rounded-[50px] overflow-hidden shadow-[0_0_100px_rgba(34,211,238,0.15)] h-[92vh] sm:h-[90vh] md:h-[84vh] animate-in zoom-in duration-300 shadow-lg hover:shadow-[0_0_40px_var(--color-primary)]/20 transition-shadow duration-500">
             
             {/* Bouton fermer premium */}
             <button 
