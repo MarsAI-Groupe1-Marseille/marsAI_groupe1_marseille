@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import axios from '../config/axiosConfig';
 import { useError } from '../context/ErrorContext.jsx';
+import StarryBackground from '../components/StarryBackground.jsx';
 
 const ActiveCompte = () => {
   const [password, setPassword] = useState('');
@@ -11,9 +12,24 @@ const ActiveCompte = () => {
   const [searchParams] = useSearchParams();
   const { addError } = useError();
   const tokenFromSearch = searchParams.get('token');
-  const token = tokenFromSearch 
+  const token = tokenFromSearch;
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [currentMode, setCurrentMode] = useState('dark');
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      const mode = document.documentElement.getAttribute('data-mode');
+      setCurrentMode(mode || 'dark');
+    });
+
+    const mode = document.documentElement.getAttribute('data-mode');
+    setCurrentMode(mode || 'dark');
+
+    observer.observe(document.documentElement, { attributes: true });
+
+    return () => observer.disconnect();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -68,76 +84,184 @@ const ActiveCompte = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center">
-      <div className="w-full max-w-[450px] px-5">
+    <>
+    <StarryBackground />
+    <div style={{
+      minHeight: '100vh',
+      backgroundColor: currentMode === 'light' ? '#ffffff' : '#000000',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      position: 'relative',
+      zIndex: 10
+    }}>
+      <div style={{ width: '100%', maxWidth: '450px', paddingLeft: '1.25rem', paddingRight: '1.25rem' }}>
         
         {/* Icon User */}
-        <div className="flex justify-center mb-10 relative">
-          <div className="relative">
-            <div className="w-[70px] h-[70px] bg-[#6366f1] rounded-full flex items-center justify-center">
-              <svg className="w-[35px] h-[35px] fill-white" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2.5rem', position: 'relative' }}>
+          <div style={{ position: 'relative' }}>
+            <div style={{
+              width: '70px',
+              height: '70px',
+              backgroundColor: '#6366f1',
+              borderRadius: '9999px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <svg style={{
+                width: '35px',
+                height: '35px',
+                fill: '#ffffff'
+              }} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
               </svg>
             </div>
-            <div className="absolute top-0 right-0 w-[18px] h-[18px] bg-[#3b82f6] rounded-full border-2 border-black"></div>
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              width: '18px',
+              height: '18px',
+              backgroundColor: '#3b82f6',
+              borderRadius: '9999px',
+              border: `2px solid ${currentMode === 'light' ? '#ffffff' : '#000000'}`
+            }}></div>
           </div>
         </div>
 
         {/* Title */}
-        <h1 className="text-2xl md:text-3xl font-bold text-center mb-8 tracking-widest text-gray-300">
+        <h1 style={{
+          fontSize: currentMode === 'light' ? '1.875rem' : '2rem',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          marginBottom: '2rem',
+          letterSpacing: '0.1em',
+          color: currentMode === 'light' ? '#333333' : '#d1d5db'
+        }}>
             ACTIVER VOTRE COMPTE
         </h1>
 
         {/* Form */}
         <form onSubmit={handleSubmit}>
-          <div className="mb-5">
+          <div style={{ marginBottom: '1.25rem' }}>
             <input
               type="password"
               id="password"
               name="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-6 py-4 bg-gray-900/40 border border-gray-800 rounded-full focus:outline-none focus:border-purple-500 transition text-white placeholder-gray-500 text-sm"
+              style={{
+                width: '100%',
+                padding: '1rem 1.5rem',
+                backgroundColor: currentMode === 'light' ? '#f3f0ff' : 'rgba(17, 24, 39, 0.4)',
+                border: `1px solid ${currentMode === 'light' ? 'rgba(124,58,237,0.3)' : '#1f2937'}`,
+                borderRadius: '9999px',
+                outline: 'none',
+                color: currentMode === 'light' ? '#000000' : '#ffffff',
+                fontSize: '0.875rem',
+                transition: 'all 0.3',
+                opacity: loading ? 0.5 : 1,
+                cursor: loading ? 'not-allowed' : 'pointer'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = currentMode === 'light' ? '#7c3aed' : '#a060ff';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = currentMode === 'light' ? 'rgba(124,58,237,0.3)' : '#1f2937';
+              }}
               placeholder="Mot de passe :"
               required
               disabled={loading}
             />
           </div>
 
-          <div className="mb-5">
+          <div style={{ marginBottom: '1.25rem' }}>
             <input
               type="password"
               id="confirmPassword"
               name="confirmPassword"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full px-6 py-4 bg-gray-900/40 border border-gray-800 rounded-full focus:outline-none focus:border-purple-500 transition text-white placeholder-gray-500 text-sm"
+              style={{
+                width: '100%',
+                padding: '1rem 1.5rem',
+                backgroundColor: currentMode === 'light' ? '#f3f0ff' : 'rgba(17, 24, 39, 0.4)',
+                border: `1px solid ${currentMode === 'light' ? 'rgba(124,58,237,0.3)' : '#1f2937'}`,
+                borderRadius: '9999px',
+                outline: 'none',
+                color: currentMode === 'light' ? '#000000' : '#ffffff',
+                fontSize: '0.875rem',
+                transition: 'all 0.3s',
+                opacity: loading ? 0.5 : 1,
+                cursor: loading ? 'not-allowed' : 'pointer'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = currentMode === 'light' ? '#7c3aed' : '#a060ff';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = currentMode === 'light' ? 'rgba(124,58,237,0.3)' : '#1f2937';
+              }}
               placeholder="Confirmation du mot de passe :"
               required
               disabled={loading}
             />
           </div>
 
-          <div className="mb-5">
-            <div className="text-xs text-gray-500 mb-2">Avatar (Photo de profil)</div>
+          <div style={{ marginBottom: '1.25rem' }}>
+            <div style={{
+              fontSize: '0.75rem',
+              color: currentMode === 'light' ? '#999999' : '#999999',
+              marginBottom: '0.5rem'
+            }}>Avatar (Photo de profil)</div>
             <input
               type="file"
               id="avatar"
               name="avatar"
               accept="image/*"
               onChange={(e) => setAvatarFile(e.target.files && e.target.files[0] ? e.target.files[0] : null)}
-              className="w-full px-6 py-4 bg-gray-900/40 border border-gray-800 rounded-full focus:outline-none focus:border-purple-500 transition text-white placeholder-gray-500 text-sm"
+              style={{
+                width: '100%',
+                padding: '1rem 1.5rem',
+                backgroundColor: currentMode === 'light' ? '#f3f0ff' : 'rgba(17, 24, 39, 0.4)',
+                border: `1px solid ${currentMode === 'light' ? 'rgba(124,58,237,0.3)' : '#1f2937'}`,
+                borderRadius: '9999px',
+                outline: 'none',
+                color: currentMode === 'light' ? '#000000' : '#ffffff',
+                fontSize: '0.875rem',
+                transition: 'all 0.3s',
+                opacity: loading ? 0.5 : 1,
+                cursor: loading ? 'not-allowed' : 'pointer'
+              }}
             />
           </div>
 
-          <div className="mb-5">
+          <div style={{ marginBottom: '1.25rem' }}>
             <input
               type="text"
               id="specialite"
               name="specialite"
               value={specialiteText}
               onChange={(e) => setSpecialiteText(e.target.value)}
-              className="w-full px-6 py-4 bg-gray-900/40 border border-gray-800 rounded-full focus:outline-none focus:border-purple-500 transition text-white placeholder-gray-500 text-sm"
+              style={{
+                width: '100%',
+                padding: '1rem 1.5rem',
+                backgroundColor: currentMode === 'light' ? '#f3f0ff' : 'rgba(17, 24, 39, 0.4)',
+                border: `1px solid ${currentMode === 'light' ? 'rgba(124,58,237,0.3)' : '#1f2937'}`,
+                borderRadius: '9999px',
+                outline: 'none',
+                color: currentMode === 'light' ? '#000000' : '#ffffff',
+                fontSize: '0.875rem',
+                transition: 'all 0.3s',
+                opacity: loading ? 0.5 : 1,
+                cursor: loading ? 'not-allowed' : 'pointer'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = currentMode === 'light' ? '#7c3aed' : '#a060ff';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = currentMode === 'light' ? 'rgba(124,58,237,0.3)' : '#1f2937';
+              }}
               placeholder="Spécialité (séparées par des virgules, ex: Réalisation, Montage)"
             />
           </div>
@@ -145,22 +269,74 @@ const ActiveCompte = () => {
           <button 
             type="submit" 
             disabled={loading}
-            className="w-full py-4 px-5 bg-gradient-to-r from-[#c084fc] via-[#6366f1] to-[#60a5fa] border-none rounded-full text-white text-sm font-medium tracking-[3px] uppercase cursor-pointer transition-all duration-300 flex items-center justify-center gap-3 shadow-[0_8px_25px_rgba(99,102,241,0.3)] hover:-translate-y-0.5 hover:shadow-[0_12px_35px_rgba(99,102,241,0.4)] active:translate-y-0 group disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{
+              width: '100%',
+              padding: '1rem 1.25rem',
+              background: 'linear-gradient(to right, #c084fc, #6366f1, #60a5fa)',
+              border: 'none',
+              borderRadius: '9999px',
+              color: '#ffffff',
+              fontSize: '0.875rem',
+              fontWeight: '500',
+              letterSpacing: '0.125em',
+              textTransform: 'uppercase',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              transition: 'all 0.3s',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.75rem',
+              boxShadow: '0 8px 25px rgba(99, 102, 241, 0.3)',
+              opacity: loading ? 0.5 : 1
+            }}
+            onMouseEnter={(e) => {
+              if (!loading) {
+                e.target.style.transform = 'translateY(-2px)';
+                e.target.style.boxShadow = '0 12px 35px rgba(99, 102, 241, 0.4)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!loading) {
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = '0 8px 25px rgba(99, 102, 241, 0.3)';
+              }
+            }}
           >
             {loading ? 'ACTIVATION EN COURS...' : 'RÉINITIALISER'}
-            {!loading && <span className="text-lg font-bold transition-transform duration-300 group-hover:translate-x-1">→</span>}
+            {!loading && <span style={{
+              fontSize: '1.125rem',
+              fontWeight: 'bold',
+              transition: 'transform 0.3s',
+              display: 'inline'
+            }}>→</span>}
           </button>
         </form>
 
         {/* Back Link */}
-        <div className="mt-8 text-center space-y-3">
-          <Link to="/login" className="block text-sm text-gray-400 hover:text-purple-400 transition">
+        <div style={{ marginTop: '2rem', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          <Link
+            to="/login"
+            style={{
+              display: 'block',
+              fontSize: '0.875rem',
+              color: currentMode === 'light' ? '#7c3aed' : '#9ca3af',
+              textDecoration: 'none',
+              transition: 'color 0.3s'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.color = currentMode === 'light' ? '#6d28d9' : '#d1d5db';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.color = currentMode === 'light' ? '#7c3aed' : '#9ca3af';
+            }}
+          >
             Retour à la connexion
           </Link>
         </div>
 
       </div>
     </div>
+    </>
   );
 };
 
