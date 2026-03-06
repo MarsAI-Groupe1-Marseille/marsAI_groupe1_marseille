@@ -59,6 +59,10 @@ router.get('/', submissionController.getAllSubmissions);
 // IMPORTANT : Cette route doit être AVANT /:id sinon "genres" sera interprété comme un id
 router.get('/genres/all', submissionController.getAllGenres);
 
+// 3.5 Route GET FILMS SIMILAIRES
+// IMPORTANT : Cette route doit être AVANT /:id sinon "similar" sera interprété comme un id
+router.get('/:id/similar', submissionController.getSimilarSubmissions);
+
 // 4. Route GET ONE (Détail)
 // ":id" est une variable dynamique (ex: 1, 45, 99)
 router.get('/:id', submissionController.getSubmissionById);

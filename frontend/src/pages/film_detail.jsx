@@ -90,6 +90,14 @@ export default function FilmDetail() {
     }
   ];
 
+  // ========== FONCTION UTILITAIRE : SÉLECTIONNER 3 FILMS ALÉATOIRES ==========
+  const getRandomFilms = (films, count = 3) => {
+    if (films.length <= count) return films;
+    
+    const shuffled = [...films].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, count);
+  };
+
   // ========== CHARGEMENT DES DONNÉES ==========
   useEffect(() => {
     const fetchFilmDetails = async () => {
@@ -103,8 +111,15 @@ export default function FilmDetail() {
         setDirector(res.data.Director);
         setCollaborators(res.data.Collaborators || []);
         
-        // TODO: Implémenter l'API pour les films similaires
-        setRelatedFilms(fictionalRelated);
+        // Récupère les films similaires via la nouvelle API
+        try {
+          const similarRes = await axios.get(`/submissions/${id}/similar`);
+          const randomSimilar = getRandomFilms(similarRes.data.similar || [], 3);
+          setRelatedFilms(randomSimilar);
+        } catch (similarErr) {
+          console.warn('Erreur lors du chargement des films similaires:', similarErr);
+          setRelatedFilms([]); // Vide si erreur
+        }
         
         setError(null);
       } catch (err) {
@@ -203,7 +218,7 @@ export default function FilmDetail() {
           </button>
         </div>
         
-        <div className="film-detail-grid">
+        <div className={`film-detail-grid ${relatedFilms.length === 0 ? 'no-sidebar' : ''}`}>
           {/* ========== COLONNE PRINCIPALE ========== */}
           <div className="film-detail-main-content">
             
@@ -394,8 +409,8 @@ export default function FilmDetail() {
           </div>
 
           {/* ========== SIDEBAR ========== */}
-          <aside className="sidebar">
-            {relatedFilms.length > 0 && (
+          {relatedFilms.length > 0 && (
+            <aside className="sidebar">
               <div className="related-films-section">
                 <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <Film className="w-5 h-5" style={{ color: '#ffb3ff' }} /> {t('film_detail_related')}
@@ -405,7 +420,7 @@ export default function FilmDetail() {
                     <div 
                       key={relatedFilm.id}
                       className="related-film-card"
-                      onClick={() => navigate(`/film/${relatedFilm.id}`)}
+                      onClick={() => navigate(`/galerie/${relatedFilm.id}`)}
                     >
                       <div className="related-film-poster">
                         <img src={getImageUrl(relatedFilm.poster_url)} alt={relatedFilm.title_original} />
@@ -418,8 +433,8 @@ export default function FilmDetail() {
                   ))}
                 </div>
               </div>
-            )}
-          </aside>
+            </aside>
+          )}
         </div>
       </main>
 

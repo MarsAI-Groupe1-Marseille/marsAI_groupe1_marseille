@@ -317,3 +317,72 @@ exports.getAllGenres = async (req, res) => {
         res.status(500).json({ message: "Erreur serveur lors de la récupération des genres." });
     }
 };
+
+/**
+ * 5. RÉCUPÉRER LES FILMS SIMILAIRES PAR TAGS
+ * Route pour afficher les films similaires sur la page de détail
+ * Retourne max 10 films (le frontend en choisira 3 aléatoires)
+ */
+exports.getSimilarSubmissions = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        // 1. Récupérer le film actuel pour extraire ses tags
+        const currentSubmission = await Submission.findByPk(id, {
+            attributes: ['id', 'theme_tags', 'approval_status']
+        });
+
+        if (!currentSubmission) {
+            return res.status(404).json({ message: "Film introuvable." });
+        }
+
+        // 2. Extraire et normaliser les tags
+        const currentTags = currentSubmission.theme_tags
+            ? currentSubmission.theme_tags.split(',').map(tag => tag.trim().toLowerCase())
+            : [];
+
+        if (currentTags.length === 0) {
+            return res.status(200).json({ similar: [] });
+        }
+
+        // 3. Chercher tous les films approuvés (sauf celui-ci) par tags similaires
+        const allSubmissions = await Submission.findAll({
+            where: {
+                id: { [Op.ne]: id } // Exclure le film actuel
+                // approval_status: 'approved' // Uniquement approuvés
+            },
+            attributes: ['id', 'title_original', 'title_english', 'poster_url', 'theme_tags'],
+            include: [
+                {
+                    model: Director,
+                    attributes: ['id', 'first_name', 'last_name']
+                }
+            ],
+            raw: false
+        });
+
+        // 4. Calculer un score de similarité pour chaque film
+        const similarFilms = allSubmissions
+            .map(submission => {
+                const submissionTags = submission.theme_tags
+                    ? submission.theme_tags.split(',').map(tag => tag.trim().toLowerCase())
+                    : [];
+
+                // Compter les tags en commun
+                const commonTags = submissionTags.filter(tag => currentTags.includes(tag)).length;
+                
+                return {
+                    ...submission.toJSON ? submission.toJSON() : submission,
+                    similarityScore: commonTags
+                };
+            })
+            .filter(sub => sub.similarityScore > 0) // Garder uniquement ceux avec au moins un tag commun
+            .sort((a, b) => b.similarityScore - a.similarityScore) // Trier par pertinence décroissante
+            .slice(0, 10); // Max 10 films (le frontend en choisira 3 aléatoires)
+
+        res.status(200).json({ similar: similarFilms });
+    } catch (error) {
+        console.error(`Erreur récupération films similaires pour ${id}:`, error);
+        res.status(500).json({ message: "Erreur serveur lors de la récupération des films similaires." });
+    }
+};
