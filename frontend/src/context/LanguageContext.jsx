@@ -709,12 +709,10 @@ export const LanguageProvider = ({ children }) => {
 
         // Dans la section 'fr'
         'jury_modal_accredited': 'ACCRÉDITÉ MARS / JURY',
-        'jury_modal_session': "Session d'Analyse Officielle",
         'jury_modal_expertise': 'Expertise & Vision',
         'jury_modal_bio_placeholder': "Expert(e) reconnu(e) pour sa capacité à identifier les ruptures technologiques et les impacts éthiques de l'IA générative.",
         'jury_modal_criteria_1': "Évaluation des critères d'innovation pure.",
         'jury_modal_criteria_2': "Analyse de la viabilité systémique des projets.",
-        'jury_modal_close': 'Fermer la Fiche'
 
       },
       en: {
@@ -1398,12 +1396,10 @@ export const LanguageProvider = ({ children }) => {
         'jury_page_title_suffix': 'Jury',
         // Dans la section Modal du JuryPage
         'jury_modal_accredited': 'MARS ACCREDITED / JURY',
-        'jury_modal_session': 'Official Analysis Session',
         'jury_modal_expertise': 'Expertise & Vision',
         'jury_modal_bio_placeholder': "Recognized expert for their ability to identify technological breakthroughs and ethical impacts of generative AI.",
         'jury_modal_criteria_1': 'Evaluation of pure innovation criteria.',
         'jury_modal_criteria_2': 'Analysis of systemic project viability.',
-        'jury_modal_close': 'Close Profile'
       }
     };
 
