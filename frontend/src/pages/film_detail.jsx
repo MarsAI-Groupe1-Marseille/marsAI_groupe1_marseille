@@ -3,8 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../config/axiosConfig'; 
 import { useLanguage } from '../context/LanguageContext';
 import { 
-  Share2, Heart, MessageCircle, Play, Info, Globe, Calendar, 
-  Film, Users, Zap, Code2, ChevronLeft, Volume2, Maximize2,
+   MessageCircle, Play, Info, Globe, Calendar, 
+  Film, Users, Zap, Code2, ChevronLeft,
   BarChart3, Clock, User, Mail, MapPin, X
 } from 'lucide-react';
 import './film_detail.css';
@@ -222,13 +222,7 @@ export default function FilmDetail() {
                   style={{ background: 'rgba(255, 0, 150, 0.3)' }}
                 >
                   <Play className="w-8 h-8" style={{ fill: 'white' }} />
-                </button>
-                <button className="film-poster-button">
-                  <Volume2 className="w-8 h-8" style={{ fill: 'white' }} />
-                </button>
-                <button className="film-poster-button">
-                  <Maximize2 className="w-8 h-8" />
-                </button>
+                </button>            
               </div>
 
               {/* Badge IA */}
@@ -249,24 +243,7 @@ export default function FilmDetail() {
                   <p className="director">
                     {t('film_detail_directed_by')} <span className="director-name">{directorName}</span>
                   </p>
-                </div>
-
-                {/* Boutons d'interaction */}
-                <div className="action-buttons">
-                  <button 
-                    onClick={() => setIsLiked(!isLiked)}
-                    className={`action-button ${isLiked ? 'liked' : ''}`}
-                    title={t('film_detail_like')}
-                  >
-                    <Heart className="w-6 h-6" style={{ fill: isLiked ? 'white' : 'none' }} />
-                  </button>
-                  <button 
-                    className="action-button"
-                    title={t('film_detail_share')}
-                  >
-                    <Share2 className="w-6 h-6" />
-                  </button>
-                </div>
+                </div>            
               </div>
 
               {/* Infos rapides */}
