@@ -737,6 +737,15 @@
   gap: 24px;
 }
 
+.film-detail-grid.no-sidebar {
+  grid-template-columns: minmax(0, 960px);
+  justify-content: center;
+}
+
+.film-detail-grid.no-sidebar .film-detail-main-content {
+  grid-column: auto;
+}
+
 @media (max-width: 1024px) {
   .film-detail-grid {
     grid-template-columns: 1fr;
