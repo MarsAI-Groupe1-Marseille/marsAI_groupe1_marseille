@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import axios, { fetchCSRFToken } from '../config/axiosConfig';
+import axios from '../config/axiosConfig';
 import { Search, ChevronRight, ChevronLeft, Check, X, Clock, Globe, Users, LayoutDashboard, Film as FilmIcon, BarChart3, Calendar, Settings, AlertCircle } from "lucide-react";
 import { useLanguage } from '../context/LanguageContext.jsx';
 import {
@@ -156,9 +156,9 @@ function FilmDetailModal({ film, isOpen, onClose, onApprove, onReject, t }) {
 
           {/* Tags */}
           <div className="flex gap-2 flex-wrap">
-            {(film.tags || '').split(',').map(t => t.trim()).filter(Boolean).map((tag, idx) => (
+            {film.tags.split(',').map((tag, idx) => (
               <span key={idx} className="bg-violet-900 text-violet-200 px-3 py-1 rounded-full text-sm font-semibold">
-                {tag}
+                {tag.trim()}
               </span>
             ))}
           </div>
@@ -332,6 +332,7 @@ function RejectFilmModal({ filmId, isOpen, onClose, onConfirm, t }) {
 /* ─────────────────────────── COMPOSANT PRINCIPAL ─────────────── */
 export default function GestionFilms() {
   const { t } = useLanguage();
+  const [currentMode, setCurrentMode] = useState('dark');
   const [films, setFilms]         = useState([]);
   const [loading, setLoading]     = useState(false);
   const [totalPages, setTotalPages] = useState(1);
@@ -349,9 +350,27 @@ export default function GestionFilms() {
     full_name: "Admin Test",
     email: "email@exemple.com",
     job_title: "Directeur",
-    avatar: ""
+    avatar_url: ""
   });
   const toastTimer                = useRef(null);
+
+  // Détecter le mode clair/sombre
+  useEffect(() => {
+    const detectMode = () => {
+      const mode = document.documentElement.getAttribute('data-mode');
+      setCurrentMode(mode || 'dark');
+    };
+
+    detectMode();
+
+    const observer = new MutationObserver(detectMode);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-mode']
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const user = localStorage.getItem('user');
@@ -362,12 +381,19 @@ export default function GestionFilms() {
           full_name: userData.full_name || "Admin Test",
           email: userData.email || "email@exemple.com",
           job_title: userData.job_title || "Directeur",
-          avatar: userData.avatar || ""
+          avatar_url: userData.avatar_url || ""
         });
       } catch (err) {
         console.error("Error parsing user data:", err);
       }
     }
+
+    // Listener pour l'événement personnalisé userAvatarUpdated
+    const handleAvatarUpdated = (e) => {
+      setAdminData(prev => ({ ...prev, avatar_url: e.detail.avatar_url }));
+    };
+    window.addEventListener('userAvatarUpdated', handleAvatarUpdated);
+    return () => window.removeEventListener('userAvatarUpdated', handleAvatarUpdated);
   }, []);
 
   // Debounce pour la recherche
@@ -445,11 +471,6 @@ export default function GestionFilms() {
     }
   };
 
-  // Récupérer le token CSRF au chargement de la page
-  useEffect(() => {
-    fetchCSRFToken().catch(err => console.error('Erreur init CSRF:', err));
-  }, []);
-
   // useEffect pour charger les films au montage et lors des changements de filtres
   useEffect(() => {
     fetchFilms();
@@ -524,7 +545,13 @@ export default function GestionFilms() {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-950 text-white">
+    <div 
+      className="min-h-screen"
+      style={{
+        backgroundColor: currentMode === 'light' ? '#ffffff' : 'rgb(5, 5, 5)',
+        color: currentMode === 'light' ? '#000000' : '#ffffff'
+      }}
+    >
       {/* MAIN */}
       <main className="w-full px-4 sm:px-6 md:px-8 py-8 md:py-12 lg:py-16">
         <div className="max-w-7xl mx-auto">
@@ -535,43 +562,52 @@ export default function GestionFilms() {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-8 mb-8">
               {/* Left side - Title and description */}
               <div className="text-center md:text-left">
-                <span className="text-xs text-violet-400 uppercase tracking-widest font-bold block mb-3">{t('gestion_films_distribution')}</span>
-                <h1 className="flex justify-center md:justify-start items-center gap-3 text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
+                <span 
+                  className="text-xs uppercase tracking-widest font-bold block mb-3"
+                  style={{
+                    color: currentMode === 'light' ? '#7c3aed' : '#a78bfa'
+                  }}
+                >
+                  {t('gestion_films_distribution')}
+                </span>
+                <h1 
+                  className="flex justify-center md:justify-start items-center gap-3 text-3xl sm:text-4xl md:text-5xl font-bold mb-4 leading-tight"
+                  style={{
+                    color: currentMode === 'light' ? '#000000' : '#ffffff'
+                  }}
+                >
                   <FilmIcon size={32} />
                   {t('gestion_films_title')}
                 </h1>
-                <p className="text-sm md:text-base text-neutral-400 leading-relaxed max-w-2xl">
+                <p 
+                  className="text-sm md:text-base leading-relaxed max-w-2xl"
+                  style={{
+                    color: currentMode === 'light' ? '#666666' : '#a3a3a3'
+                  }}
+                >
                   {t('gestion_films_subtitle')}
                 </p>
-              </div>
-
-              {/* Right side - Admin Profile (outside card) */}
-              <div className="flex flex-col items-center md:items-end gap-2">
-                {/* Avatar */}
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center border-2 border-violet-400 shadow-lg">
-                  <span className="text-white font-bold text-2xl">
-                    {adminData.full_name
-                      ? adminData.full_name
-                          .split(' ')
-                          .map(n => n[0])
-                          .join('')
-                          .toUpperCase()
-                      : 'A'}
-                  </span>
-                </div>
-                
-                {/* Name and Email */}
-                <p className="text-sm font-semibold text-white break-words mb-1">{adminData?.full_name}</p>
-                <p className="text-xs text-neutral-400 break-all">{adminData?.email}</p>
               </div>
             </div>
 
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Films by Status - Bar Chart */}
-              <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-8 hover:border-neutral-700 transition flex flex-col">
-                <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
-                  <BarChart3 size={20} className="text-violet-400" />
+              <div 
+                className="rounded-xl p-8 transition flex flex-col"
+                style={{
+                  backgroundColor: currentMode === 'light' ? '#f5f5f5' : '#171717',
+                  borderColor: currentMode === 'light' ? '#e5e5e5' : '#262626',
+                  borderWidth: '1px'
+                }}
+              >
+                <h3 
+                  className="text-lg font-bold mb-6 flex items-center gap-2"
+                  style={{
+                    color: currentMode === 'light' ? '#6d28d9' : '#c084fc'
+                  }}
+                >
+                  <BarChart3 size={20} />
                   {t('gestion_films_status_distribution')}
                 </h3>
                 <div className="flex-1">
@@ -587,11 +623,15 @@ export default function GestionFilms() {
                       ]}
                       margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
                     >
-                      <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                      <XAxis dataKey="category" stroke="#999" fontSize={12} />
-                      <YAxis stroke="#999" fontSize={12} />
+                      <CartesianGrid strokeDasharray="3 3" stroke={currentMode === 'light' ? '#d4d4d4' : '#333'} />
+                      <XAxis dataKey="category" stroke={currentMode === 'light' ? '#666666' : '#999'} fontSize={12} />
+                      <YAxis stroke={currentMode === 'light' ? '#666666' : '#999'} fontSize={12} />
                       <Tooltip 
-                        contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #555' }}
+                        contentStyle={{ 
+                          backgroundColor: currentMode === 'light' ? '#ffffff' : '#1f2937', 
+                          border: `1px solid ${currentMode === 'light' ? '#d4d4d4' : '#555'}`,
+                          color: currentMode === 'light' ? '#000000' : '#ffffff'
+                        }}
                         cursor={{ fill: 'rgba(123, 47, 255, 0.1)' }}
                         labelFormatter={() => t('gestion_films_status')}
                         formatter={(value, name) => {
@@ -619,26 +659,65 @@ export default function GestionFilms() {
                 </div>
                 
                 {/* Stats below chart */}
-                <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-neutral-700">
+                <div 
+                  className="grid grid-cols-3 gap-4 mt-6 pt-6"
+                  style={{
+                    borderTopColor: currentMode === 'light' ? '#d4d4d4' : '#374151',
+                    borderTopWidth: '1px'
+                  }}
+                >
                   <div className="text-center">
-                    <p className="text-xs text-white/60">{t('gestion_films_valid')}</p>
+                    <p 
+                      className="text-xs"
+                      style={{
+                        color: currentMode === 'light' ? '#999999' : '#ffffff99'
+                      }}
+                    >
+                      {t('gestion_films_valid')}
+                    </p>
                     <p className="text-xl font-bold text-[#10b981]">{films.filter(f => f.statut === 'valide').length}</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-xs text-white/60">{t('gestion_films_pending')}</p>
+                    <p 
+                      className="text-xs"
+                      style={{
+                        color: currentMode === 'light' ? '#999999' : '#ffffff99'
+                      }}
+                    >
+                      {t('gestion_films_pending')}
+                    </p>
                     <p className="text-xl font-bold text-[#f59e0b]">{films.filter(f => f.statut === 'attente').length}</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-xs text-white/60">{t('gestion_films_refused')}</p>
+                    <p 
+                      className="text-xs"
+                      style={{
+                        color: currentMode === 'light' ? '#999999' : '#ffffff99'
+                      }}
+                    >
+                      {t('gestion_films_refused')}
+                    </p>
                     <p className="text-xl font-bold text-[#ef4444]">{films.filter(f => f.statut === 'refuse').length}</p>
                   </div>
                 </div>
               </div>
 
               {/* Submission Trend - Line Chart */}
-              <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-8 hover:border-neutral-700 transition flex flex-col">
-                <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
-                  <Calendar size={20} className="text-violet-400" />
+              <div 
+                className="rounded-xl p-8 transition flex flex-col"
+                style={{
+                  backgroundColor: currentMode === 'light' ? '#f5f5f5' : '#171717',
+                  borderColor: currentMode === 'light' ? '#e5e5e5' : '#262626',
+                  borderWidth: '1px'
+                }}
+              >
+                <h3 
+                  className="text-lg font-bold mb-6 flex items-center gap-2"
+                  style={{
+                    color: currentMode === 'light' ? '#6d28d9' : '#c084fc'
+                  }}
+                >
+                  <Calendar size={20} />
                   {t('gestion_films_submission_trend')}
                 </h3>
                 <div className="flex-1">
@@ -662,11 +741,15 @@ export default function GestionFilms() {
                       })()}
                       margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
                     >
-                      <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                      <XAxis dataKey="week" stroke="#999" fontSize={12} />
-                      <YAxis stroke="#999" fontSize={12} />
+                      <CartesianGrid strokeDasharray="3 3" stroke={currentMode === 'light' ? '#d4d4d4' : '#333'} />
+                      <XAxis dataKey="week" stroke={currentMode === 'light' ? '#666666' : '#999'} fontSize={12} />
+                      <YAxis stroke={currentMode === 'light' ? '#666666' : '#999'} fontSize={12} />
                       <Tooltip 
-                        contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #555' }}
+                        contentStyle={{ 
+                          backgroundColor: currentMode === 'light' ? '#ffffff' : '#1f2937', 
+                          border: `1px solid ${currentMode === 'light' ? '#d4d4d4' : '#555'}`,
+                          color: currentMode === 'light' ? '#000000' : '#ffffff'
+                        }}
                         formatter={(value, name) => {
                           const nameMap = {
                             'approved': t('gestion_films_valid'),
@@ -692,17 +775,44 @@ export default function GestionFilms() {
                 </div>
 
                 {/* Stats below chart */}
-                <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-neutral-700">
+                <div 
+                  className="grid grid-cols-3 gap-4 mt-6 pt-6"
+                  style={{
+                    borderTopColor: currentMode === 'light' ? '#d4d4d4' : '#374151',
+                    borderTopWidth: '1px'
+                  }}
+                >
                   <div className="text-center">
-                    <p className="text-xs text-white/60">{t('gestion_films_total_submitted')}</p>
+                    <p 
+                      className="text-xs"
+                      style={{
+                        color: currentMode === 'light' ? '#999999' : '#ffffff99'
+                      }}
+                    >
+                      {t('gestion_films_total_submitted')}
+                    </p>
                     <p className="text-xl font-bold text-[#00d4ff]">{films.length}</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-xs text-white/60">{t('gestion_films_approval_rate')}</p>
+                    <p 
+                      className="text-xs"
+                      style={{
+                        color: currentMode === 'light' ? '#999999' : '#ffffff99'
+                      }}
+                    >
+                      {t('gestion_films_approval_rate')}
+                    </p>
                     <p className="text-xl font-bold text-[#a78bfa]">{Math.round((films.filter(f => f.statut === 'valide').length / films.length) * 100) || 0}%</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-xs text-white/60">{t('gestion_films_rejection_rate')}</p>
+                    <p 
+                      className="text-xs"
+                      style={{
+                        color: currentMode === 'light' ? '#999999' : '#ffffff99'
+                      }}
+                    >
+                      {t('gestion_films_rejection_rate')}
+                    </p>
                     <p className="text-xl font-bold text-[#f87171]">{Math.round((films.filter(f => f.statut === 'refuse').length / films.length) * 100) || 0}%</p>
                   </div>
                 </div>
@@ -711,18 +821,42 @@ export default function GestionFilms() {
           </div>
 
           {/* Content */}
-          <div className="bg-neutral-900 rounded-xl border border-neutral-800 overflow-hidden shadow-lg">
+          <div 
+            className="rounded-xl overflow-hidden shadow-lg"
+            style={{
+              backgroundColor: currentMode === 'light' ? '#f5f5f5' : '#171717',
+              borderColor: currentMode === 'light' ? '#e5e5e5' : '#262626',
+              borderWidth: '1px'
+            }}
+          >
 
           {/* Search & Filter */}
-          <div className="p-3 sm:p-5 border-b border-neutral-800">
+          <div 
+            className="p-3 sm:p-5"
+            style={{
+              borderBottomColor: currentMode === 'light' ? '#d4d4d4' : '#262626',
+              borderBottomWidth: '1px'
+            }}
+          >
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-stretch sm:items-end">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-500" size={16} />
+                <Search 
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2" 
+                  size={16}
+                  style={{
+                    color: currentMode === 'light' ? '#999999' : '#a3a3a3'
+                  }}
+                />
                 <input
                   value={query}
                   onChange={e => setQuery(e.target.value)}
                   placeholder={t('gestion_films_search')}
-                  className="w-full border border-neutral-700 rounded-lg pl-9 pr-4 py-2 bg-neutral-800 text-xs sm:text-sm text-neutral-200 placeholder-neutral-500 focus:border-violet-500 focus:bg-neutral-800 focus:outline-none transition"
+                  className="w-full border rounded-lg pl-9 pr-4 py-2 text-xs sm:text-sm focus:outline-none transition"
+                  style={{
+                    borderColor: currentMode === 'light' ? '#d4d4d4' : '#374151',
+                    backgroundColor: currentMode === 'light' ? '#ffffff' : '#262626',
+                    color: currentMode === 'light' ? '#000000' : '#e5e5e5',
+                  }}
                 />
               </div>
               <div className="flex flex-wrap gap-2">
@@ -731,7 +865,9 @@ export default function GestionFilms() {
                   className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold uppercase tracking-wider transition flex-1 sm:flex-none ${
                     statutFilter === ""
                       ? "bg-violet-600 text-white border border-violet-500"
-                      : "bg-neutral-800 text-neutral-400 border border-neutral-700 hover:text-neutral-300"
+                      : currentMode === 'light'
+                      ? "bg-white text-neutral-600 border border-neutral-300 hover:text-neutral-800"
+                      : "bg-neutral-700 text-neutral-300 border border-neutral-600 hover:text-neutral-200"
                   }`}
                 >
                   {t('gestion_films_all')}
@@ -741,7 +877,9 @@ export default function GestionFilms() {
                   className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold uppercase tracking-wider transition flex-1 sm:flex-none ${
                     statutFilter === "valide"
                       ? "bg-green-700 text-white border border-green-600"
-                      : "bg-neutral-800 text-neutral-400 border border-neutral-700 hover:text-neutral-300"
+                      : currentMode === 'light'
+                      ? "bg-white text-neutral-600 border border-neutral-300 hover:text-neutral-800"
+                      : "bg-neutral-700 text-neutral-300 border border-neutral-600 hover:text-neutral-200"
                   }`}
                 >
                   {t('gestion_films_valid')}
@@ -751,7 +889,9 @@ export default function GestionFilms() {
                   className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold uppercase tracking-wider transition flex-1 sm:flex-none ${
                     statutFilter === "attente"
                       ? "bg-amber-700 text-white border border-amber-600"
-                      : "bg-neutral-800 text-neutral-400 border border-neutral-700 hover:text-neutral-300"
+                      : currentMode === 'light'
+                      ? "bg-white text-neutral-600 border border-neutral-300 hover:text-neutral-800"
+                      : "bg-neutral-700 text-neutral-300 border border-neutral-600 hover:text-neutral-200"
                   }`}
                 >
                   {t('gestion_films_pending')}
@@ -761,7 +901,9 @@ export default function GestionFilms() {
                   className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold uppercase tracking-wider transition flex-1 sm:flex-none ${
                     statutFilter === "refuse"
                       ? "bg-red-700 text-white border border-red-600"
-                      : "bg-neutral-800 text-neutral-400 border border-neutral-700 hover:text-neutral-300"
+                      : currentMode === 'light'
+                      ? "bg-white text-neutral-600 border border-neutral-300 hover:text-neutral-800"
+                      : "bg-neutral-700 text-neutral-300 border border-neutral-600 hover:text-neutral-200"
                   }`}
                 >
                   {t('gestion_films_refused')}
@@ -774,7 +916,14 @@ export default function GestionFilms() {
           <div>
             {loading ? (
               <div className="flex justify-center items-center py-20">
-                <div className="text-xs sm:text-sm text-neutral-400">{t('gestion_films_loading')}</div>
+                <div 
+                  className="text-xs sm:text-sm"
+                  style={{
+                    color: currentMode === 'light' ? '#999999' : '#a3a3a3'
+                  }}
+                >
+                  {t('gestion_films_loading')}
+                </div>
               </div>
             ) : (
               <>
@@ -782,10 +931,22 @@ export default function GestionFilms() {
                 <div className="sm:hidden">
                   <div className="grid grid-cols-1 gap-3">
                     {films.map(f => (
-                      <div key={f.id} className="bg-neutral-800 border border-neutral-700 rounded-lg p-3 hover:bg-neutral-700 transition-colors">
+                      <div 
+                        key={f.id} 
+                        className="rounded-lg p-3 transition-colors border"
+                        style={{
+                          backgroundColor: currentMode === 'light' ? '#ffffff' : '#262626',
+                          borderColor: currentMode === 'light' ? '#d4d4d4' : '#374151'
+                        }}
+                      >
                         <div className="flex gap-3">
                           {/* Affiche */}
-                          <div className="w-12 h-16 rounded overflow-hidden bg-neutral-900 flex-shrink-0 flex items-center justify-center">
+                          <div 
+                            className="w-12 h-16 rounded overflow-hidden flex-shrink-0 flex items-center justify-center"
+                            style={{
+                              backgroundColor: currentMode === 'light' ? '#f5f5f5' : '#171717'
+                            }}
+                          >
                             {f.posterUrl ? (
                               <img 
                                 src={f.posterUrl.startsWith('http') ? f.posterUrl : `${import.meta.env.VITE_API_URL}${f.posterUrl}`}
@@ -797,13 +958,27 @@ export default function GestionFilms() {
                                 }}
                               />
                             ) : (
-                              <div className="text-neutral-600 text-sm">🎬</div>
+                              <div style={{ color: currentMode === 'light' ? '#cccccc' : '#666666' }} className="text-sm">🎬</div>
                             )}
                           </div>
                           {/* Contenu */}
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-bold text-xs text-white truncate">{f.titre}</h3>
-                            <p className="text-xs text-neutral-400">{f.real}</p>
+                            <h3 
+                              className="font-bold text-xs truncate"
+                              style={{
+                                color: currentMode === 'light' ? '#000000' : '#ffffff'
+                              }}
+                            >
+                              {f.titre}
+                            </h3>
+                            <p 
+                              className="text-xs"
+                              style={{
+                                color: currentMode === 'light' ? '#999999' : '#a3a3a3'
+                              }}
+                            >
+                              {f.real}
+                            </p>
                             <div className="mt-2">
                               <Badge statut={f.statut} t={t} />
                             </div>
@@ -828,7 +1003,13 @@ export default function GestionFilms() {
                             </button>
                             <button 
                               onClick={() => { setSelectedFilm(f); setIsModalOpen(true); }}
-                              className="inline-flex items-center justify-center px-2 py-1 rounded border border-neutral-600 bg-neutral-700 text-violet-400 hover:border-violet-500 hover:bg-neutral-600 transition text-xs"
+                              className="inline-flex items-center justify-center px-2 py-1 rounded text-xs transition"
+                              style={{
+                                borderColor: currentMode === 'light' ? '#d4d4d4' : '#374151',
+                                borderWidth: '1px',
+                                backgroundColor: currentMode === 'light' ? '#ffffff' : '#262626',
+                                color: currentMode === 'light' ? '#7c3aed' : '#a78bfa'
+                              }}
                               title="Détails"
                             >
                               <ChevronRight size={14} />
@@ -839,7 +1020,12 @@ export default function GestionFilms() {
                     ))}
                   </div>
                   {films.length === 0 && (
-                    <div className="text-center py-10 text-neutral-400 text-xs">
+                    <div 
+                      className="text-center py-10 text-xs"
+                      style={{
+                        color: currentMode === 'light' ? '#999999' : '#a3a3a3'
+                      }}
+                    >
                       {t('films_no_results')} {query && `${t('films_no_results_search')} « ${query} »`}
                     </div>
                   )}
@@ -849,9 +1035,21 @@ export default function GestionFilms() {
                 <div className="hidden sm:block overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="bg-neutral-800 border-b border-neutral-700">
+                      <tr 
+                        style={{
+                          backgroundColor: currentMode === 'light' ? '#f5f5f5' : '#262626',
+                          borderBottomColor: currentMode === 'light' ? '#d4d4d4' : '#374151',
+                          borderBottomWidth: '1px'
+                        }}
+                      >
                         {[t('gestion_films_column_poster'), t('gestion_films_column_title'), t('gestion_films_column_director'), t('gestion_films_column_status'), t('gestion_films_column_date'), t('gestion_films_column_actions'), ""].map(h => (
-                          <th key={h} className="text-xs font-bold uppercase text-neutral-400 px-4 py-3 text-left tracking-wider whitespace-nowrap">
+                          <th 
+                            key={h} 
+                            className="text-xs font-bold uppercase px-4 py-3 text-left tracking-wider whitespace-nowrap"
+                            style={{
+                              color: currentMode === 'light' ? '#666666' : '#a3a3a3'
+                            }}
+                          >
                             {h}
                           </th>
                         ))}
@@ -860,10 +1058,23 @@ export default function GestionFilms() {
                     <tbody>
                       {films.map(f => {
                         return (
-                          <tr key={f.id} className="border-b border-neutral-800 hover:bg-neutral-800 transition-colors">
+                          <tr 
+                            key={f.id} 
+                            className="transition-colors"
+                            style={{
+                              borderBottomColor: currentMode === 'light' ? '#d4d4d4' : '#262626',
+                              borderBottomWidth: '1px',
+                              backgroundColor: currentMode === 'light' ? '#ffffff' : '#171717'
+                            }}
+                          >
                             {/* Affiche */}
                             <td className="px-4 py-3">
-                              <div className="w-16 h-20 rounded overflow-hidden bg-neutral-800 flex items-center justify-center flex-shrink-0">
+                              <div 
+                                className="w-16 h-20 rounded overflow-hidden flex items-center justify-center flex-shrink-0"
+                                style={{
+                                  backgroundColor: currentMode === 'light' ? '#f5f5f5' : '#262626'
+                                }}
+                              >
                                 {f.posterUrl ? (
                                   <img 
                                     src={
@@ -881,25 +1092,53 @@ export default function GestionFilms() {
                                     }}
                                   />
                                 ) : (
-                                  <div className="text-neutral-600 text-lg">🎬</div>
+                                  <div style={{ color: currentMode === 'light' ? '#cccccc' : '#666666' }} className="text-lg">🎬</div>
                                 )}
                               </div>
                             </td>
 
                             {/* Titre */}
                             <td className="px-4 py-3">
-                              <div className="font-bold text-sm text-white truncate">{f.titre}</div>
-                              <div className="text-xs text-neutral-400">{t('gestion_films_submitted')}</div>
+                              <div 
+                                className="font-bold text-sm truncate"
+                                style={{
+                                  color: currentMode === 'light' ? '#000000' : '#ffffff'
+                                }}
+                              >
+                                {f.titre}
+                              </div>
+                              <div 
+                                className="text-xs"
+                                style={{
+                                  color: currentMode === 'light' ? '#999999' : '#a3a3a3'
+                                }}
+                              >
+                                {t('gestion_films_submitted')}
+                              </div>
                             </td>
 
                             {/* Réalisateur */}
-                            <td className="px-4 py-3 text-neutral-300 font-medium text-sm truncate">{f.real}</td>
+                            <td 
+                              className="px-4 py-3 font-medium text-sm truncate"
+                              style={{
+                                color: currentMode === 'light' ? '#333333' : '#d5d5d5'
+                              }}
+                            >
+                              {f.real}
+                            </td>
 
                             {/* Statut */}
                             <td className="px-4 py-3"><Badge statut={f.statut} t={t} /></td>
 
                             {/* Date */}
-                            <td className="px-4 py-3 text-neutral-400 font-medium text-sm">{f.date}</td>
+                            <td 
+                              className="px-4 py-3 font-medium text-sm"
+                              style={{
+                                color: currentMode === 'light' ? '#666666' : '#a3a3a3'
+                              }}
+                            >
+                              {f.date}
+                            </td>
 
                             {/* Actions */}
                             <td className="px-4 py-3">
@@ -925,7 +1164,13 @@ export default function GestionFilms() {
                             <td className="px-4 py-3">
                               <button 
                                 onClick={() => { setSelectedFilm(f); setIsModalOpen(true); }}
-                                className="inline-flex items-center justify-center w-8 h-8 rounded border border-neutral-700 bg-neutral-800 text-violet-400 hover:border-violet-500 hover:bg-neutral-700 transition"
+                                className="inline-flex items-center justify-center w-8 h-8 rounded transition"
+                                style={{
+                                  borderColor: currentMode === 'light' ? '#d4d4d4' : '#374151',
+                                  borderWidth: '1px',
+                                  backgroundColor: currentMode === 'light' ? '#ffffff' : '#262626',
+                                  color: currentMode === 'light' ? '#7c3aed' : '#a78bfa'
+                                }}
                               >
                                 <ChevronRight size={16} />
                               </button>
@@ -936,7 +1181,13 @@ export default function GestionFilms() {
 
                       {films.length === 0 && !loading && (
                         <tr>
-                          <td colSpan={7} className="px-4 py-10 text-center text-neutral-400 text-sm">
+                          <td 
+                            colSpan={7} 
+                            className="px-4 py-10 text-center text-sm"
+                            style={{
+                              color: currentMode === 'light' ? '#999999' : '#a3a3a3'
+                            }}
+                          >
                             Aucun film trouvé {query && `pour « ${query} »`}
                           </td>
                         </tr>
@@ -949,17 +1200,32 @@ export default function GestionFilms() {
           </div>
 
           {/* Pagination */}
-          <div className="flex flex-col items-center gap-2 sm:gap-3 p-3 sm:p-6 border-t border-neutral-800">
+          <div 
+            className="flex flex-col items-center gap-2 sm:gap-3 p-3 sm:p-6"
+            style={{
+              borderTopColor: currentMode === 'light' ? '#d4d4d4' : '#262626',
+              borderTopWidth: '1px'
+            }}
+          >
             <div className="flex gap-1 sm:gap-2 flex-wrap justify-center">
               {/* Précédent */}
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className={`w-7 h-7 sm:w-8 sm:h-8 rounded border flex items-center justify-center transition ${
-                  page === 1 
-                    ? 'border-neutral-700 bg-neutral-900 text-neutral-600 opacity-50 cursor-not-allowed'
-                    : 'border-neutral-700 bg-neutral-900 text-neutral-400 hover:border-violet-500 hover:text-violet-400'
-                }`}
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded border flex items-center justify-center transition"
+                style={{
+                  borderColor: currentMode === 'light' 
+                    ? (page === 1 ? '#d4d4d4' : '#d4d4d4')
+                    : (page === 1 ? '#374151' : '#374151'),
+                  backgroundColor: currentMode === 'light'
+                    ? (page === 1 ? '#f5f5f5' : '#ffffff')
+                    : (page === 1 ? '#1a1a1a' : '#262626'),
+                  color: currentMode === 'light'
+                    ? (page === 1 ? '#cccccc' : '#7c3aed')
+                    : (page === 1 ? '#555555' : '#a78bfa'),
+                  opacity: page === 1 ? 0.5 : 1,
+                  cursor: page === 1 ? 'not-allowed' : 'pointer'
+                }}
               >
                 <ChevronLeft size={14} />
               </button>
@@ -976,15 +1242,23 @@ export default function GestionFilms() {
                 .map((p, idx, arr) => (
                   <React.Fragment key={p}>
                     {idx > 0 && arr[idx - 1] !== p - 1 && (
-                      <span className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-neutral-500 text-lg">...</span>
+                      <span 
+                        className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-lg"
+                        style={{
+                          color: currentMode === 'light' ? '#cccccc' : '#555555'
+                        }}
+                      >
+                        ...
+                      </span>
                     )}
                     <button
                       onClick={() => setPage(p)}
-                      className={`w-7 h-7 sm:w-8 sm:h-8 rounded border flex items-center justify-center text-xs sm:text-sm font-semibold transition ${
-                        p === page
-                          ? 'border-violet-500 bg-violet-600 text-white'
-                          : 'border-neutral-700 bg-neutral-900 text-neutral-400 hover:border-violet-500 hover:text-violet-400'
-                      }`}
+                      className="w-7 h-7 sm:w-8 sm:h-8 rounded border flex items-center justify-center text-xs sm:text-sm font-semibold transition"
+                      style={{
+                        borderColor: p === page ? '#a78bfa' : (currentMode === 'light' ? '#d4d4d4' : '#374151'),
+                        backgroundColor: p === page ? '#8b5cf6' : (currentMode === 'light' ? '#ffffff' : '#262626'),
+                        color: p === page ? '#ffffff' : (currentMode === 'light' ? '#7c3aed' : '#a78bfa')
+                      }}
                     >
                       {p}
                     </button>
@@ -995,17 +1269,31 @@ export default function GestionFilms() {
               <button
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages || totalPages === 0}
-                className={`w-7 h-7 sm:w-8 sm:h-8 rounded border flex items-center justify-center transition ${
-                  page === totalPages || totalPages === 0
-                    ? 'border-neutral-700 bg-neutral-900 text-neutral-600 opacity-50 cursor-not-allowed'
-                    : 'border-neutral-700 bg-neutral-900 text-neutral-400 hover:border-violet-500 hover:text-violet-400'
-                }`}
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded border flex items-center justify-center transition"
+                style={{
+                  borderColor: currentMode === 'light' 
+                    ? (page === totalPages || totalPages === 0 ? '#d4d4d4' : '#d4d4d4')
+                    : (page === totalPages || totalPages === 0 ? '#374151' : '#374151'),
+                  backgroundColor: currentMode === 'light'
+                    ? (page === totalPages || totalPages === 0 ? '#f5f5f5' : '#ffffff')
+                    : (page === totalPages || totalPages === 0 ? '#1a1a1a' : '#262626'),
+                  color: currentMode === 'light'
+                    ? (page === totalPages || totalPages === 0 ? '#cccccc' : '#7c3aed')
+                    : (page === totalPages || totalPages === 0 ? '#555555' : '#a78bfa'),
+                  opacity: (page === totalPages || totalPages === 0) ? 0.5 : 1,
+                  cursor: (page === totalPages || totalPages === 0) ? 'not-allowed' : 'pointer'
+                }}
               >
                 <ChevronRight size={14} />
               </button>
             </div>
 
-            <div className="text-xs text-neutral-400 font-semibold uppercase tracking-wider text-center">
+            <div 
+              className="text-xs font-semibold uppercase tracking-wider text-center"
+              style={{
+                color: currentMode === 'light' ? '#666666' : '#a3a3a3'
+              }}
+            >
               Page {page}/{totalPages || 1} — {totalFilms} film{totalFilms > 1 ? "s" : ""}
             </div>
           </div>

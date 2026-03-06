@@ -34,12 +34,15 @@ export default function AdminDashboard() {
     total_progress: 0
   });
   const [loading, setLoading] = useState(false);
+  const [currentMode, setCurrentMode] = useState('dark');
 
   useEffect(() => {
     const verifyAdmin = async () => {
       try {
+        const token = localStorage.getItem('token');
         const userStr = localStorage.getItem('user');
         
+        console.log('Token:', token);
         console.log('User:', userStr);
         
         // Si pas de user, on considère qu'il y a un user test/hardcodé
@@ -85,18 +88,59 @@ export default function AdminDashboard() {
     };
     
     fetchJuryStats();
+
+    // Listener pour l'événement personnalisé userAvatarUpdated
+    const handleAvatarUpdated = (e) => {
+      setAdminUser(prev => ({ ...prev, avatar_url: e.detail.avatar_url }));
+    };
+    window.addEventListener('userAvatarUpdated', handleAvatarUpdated);
+    return () => window.removeEventListener('userAvatarUpdated', handleAvatarUpdated);
   }, []);
+
+  // Mode detection
+  useEffect(() => {
+    const updateMode = () => {
+      const mode = document.documentElement.getAttribute('data-mode') || 'dark';
+      setCurrentMode(mode);
+    };
+
+    updateMode();
+    const observer = new MutationObserver(updateMode);
+    observer.observe(document.documentElement, { attributes: true });
+    return () => observer.disconnect();
+  }, []);
+
+  // Loading state colors
+  const loadingBg = currentMode === 'light' ? '#ffffff' : '#0a0a0a';
+  const loadingColor = currentMode === 'light' ? '#7c3aed' : '#a78bfa';
 
   if (loading) {
     return (
-      <div className="min-h-screen flex justify-center items-center bg-neutral-950 text-violet-400 text-2xl font-bold">
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: loadingBg,
+        color: loadingColor,
+        fontSize: '24px',
+        fontWeight: 'bold'
+      }}>
         {t('jury_dist_loading')}
       </div>
     );
   }
 
+  // Main container colors
+  const mainBg = currentMode === 'light' ? '#ffffff' : 'linear-gradient(to bottom right, rgb(5, 5, 5), rgb(23, 23, 23), rgb(5, 5, 5))';
+  const mainColor = currentMode === 'light' ? '#000000' : '#ffffff';
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-950 text-white">
+    <div style={{
+      minHeight: '100vh',
+      background: mainBg,
+      color: mainColor
+    }}>
       {/* MAIN */}
       <main className="w-full px-4 sm:px-6 md:px-8 py-8 md:py-12 lg:py-16">
         <div className="max-w-7xl mx-auto">
@@ -107,44 +151,67 @@ export default function AdminDashboard() {
             <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-8">
               {/* Left side - Title and description */}
               <div>
-                <span className="text-xs text-violet-400 uppercase tracking-widest font-bold block mb-3">{t('jury_dist_admin_management')}</span>
-                <h1 className="flex justify-start items-center gap-3 text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
+                <span style={{
+                  fontSize: '12px',
+                  color: currentMode === 'light' ? '#7c3aed' : '#a78bfa',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                  fontWeight: 'bold',
+                  display: 'block',
+                  marginBottom: '12px'
+                }}>
+                  {t('jury_dist_admin_management')}
+                </span>
+                <h1 style={{
+                  display: 'flex',
+                  justifyContent: 'flex-start',
+                  alignItems: 'center',
+                  gap: '12px',
+                  fontSize: 'clamp(28px, 5vw, 48px)',
+                  fontWeight: 'bold',
+                  color: currentMode === 'light' ? '#000000' : '#ffffff',
+                  marginBottom: '16px',
+                  lineHeight: '1.2'
+                }}>
                   <Users size={32} />
                   {t('jury_dist_title')}
                 </h1>
-                <p className="text-sm md:text-base text-neutral-400 leading-relaxed max-w-2xl">{t('jury_dist_description')}</p>
-              </div>
-
-              {/* Right side - Admin Profile (no card) */}
-              <div className="flex flex-col items-center text-center">
-                {/* Avatar */}
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center border-2 border-violet-400 shadow-lg mb-4">
-                  <span className="text-white font-bold text-2xl">
-                    {adminUser?.full_name
-                      ? adminUser.full_name
-                          .split(' ')
-                          .map(n => n[0])
-                          .join('')
-                          .toUpperCase()
-                      : 'A'}
-                  </span>
-                </div>
-                
-                {/* Name and Email */}
-                <p className="text-sm font-semibold text-white break-words mb-1">{adminUser?.full_name}</p>
-                <p className="text-xs text-neutral-400 break-all">{adminUser?.email}</p>
+                <p style={{
+                  fontSize: '14px',
+                  color: currentMode === 'light' ? '#666666' : '#a3a3a3',
+                  lineHeight: '1.6',
+                  maxWidth: '500px'
+                }}>
+                  {t('jury_dist_description')}
+                </p>
               </div>
             </div>
 
             {/* Charts only */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
               {/* Votes Distribution - Bar Chart */}
-              <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-8 hover:border-neutral-700 transition flex flex-col">
-                <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
-                  <BarChart3 size={20} className="text-violet-400" />
+              <div style={{
+                backgroundColor: currentMode === 'light' ? '#f5f5f5' : '#171717',
+                border: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+                borderRadius: '12px',
+                padding: '32px',
+                transition: 'all 0.3s',
+                display: 'flex',
+                flexDirection: 'column'
+              }}>
+                <h3 style={{
+                  fontSize: '18px',
+                  fontWeight: 'bold',
+                  color: currentMode === 'light' ? '#000000' : '#ffffff',
+                  marginBottom: '24px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  <BarChart3 size={20} style={{color: currentMode === 'light' ? '#7c3aed' : '#a78bfa'}} />
                   {t('jury_dist_vote_distribution')}
                 </h3>
-                <div className="flex-1">
+                <div style={{flex: 1}}>
                   <ResponsiveContainer width="100%" height={250}>
                       <BarChart
                         data={[
@@ -157,11 +224,25 @@ export default function AdminDashboard() {
                         ]}
                         margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
                       >
-                        <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                        <XAxis dataKey="category" stroke="#999" fontSize={12} />
-                        <YAxis stroke="#999" fontSize={12} />
+                        <CartesianGrid 
+                          strokeDasharray="3 3" 
+                          stroke={currentMode === 'light' ? '#e5e5e5' : '#333'} 
+                        />
+                        <XAxis 
+                          dataKey="category" 
+                          stroke={currentMode === 'light' ? '#666666' : '#999'} 
+                          fontSize={12} 
+                        />
+                        <YAxis 
+                          stroke={currentMode === 'light' ? '#666666' : '#999'} 
+                          fontSize={12} 
+                        />
                         <Tooltip 
-                          contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #555' }}
+                          contentStyle={{ 
+                            backgroundColor: currentMode === 'light' ? '#ffffff' : '#1f2937',
+                            border: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#555'}`,
+                            color: currentMode === 'light' ? '#000000' : '#ffffff'
+                          }}
                           cursor={{ fill: 'rgba(123, 47, 255, 0.1)' }}
                           labelFormatter={() => t('jury_dist_votes_category')}
                           formatter={(value, name) => [
@@ -169,9 +250,12 @@ export default function AdminDashboard() {
                             name === 'Like' ? t('jury_dist_like') : name === 'Discuss' ? t('jury_dist_discuss') : t('jury_dist_dislike')
                           ]}
                         />
-                        <Legend wrapperStyle={{ fontSize: '12px' }} formatter={(value) => 
-                          value === 'Like' ? t('jury_dist_like') : value === 'Discuss' ? t('jury_dist_discuss') : value === 'Dislike' ? t('jury_dist_dislike') : value
-                        } />
+                        <Legend 
+                          wrapperStyle={{ fontSize: '12px', color: currentMode === 'light' ? '#000000' : '#ffffff' }} 
+                          formatter={(value) => 
+                            value === 'Like' ? t('jury_dist_like') : value === 'Discuss' ? t('jury_dist_discuss') : value === 'Dislike' ? t('jury_dist_dislike') : value
+                          } 
+                        />
                         <Bar dataKey="Like" fill="#00ff00" />
                         <Bar dataKey="Discuss" fill="#ffa500" />
                         <Bar dataKey="Dislike" fill="#ff6b6b" />
@@ -180,29 +264,80 @@ export default function AdminDashboard() {
                 </div>
                 
                 {/* Stats below chart */}
-                <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-neutral-700">
-                  <div className="text-center">
-                    <p className="text-xs text-white/60">{t('jury_dist_like')}</p>
-                    <p className="text-xl font-bold text-[#00ff00]">{juryStats.films_liked}</p>
+                <div className="grid grid-cols-3 gap-4 mt-6 pt-6" style={{
+                  borderTop: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`
+                }}>
+                  <div style={{textAlign: 'center'}}>
+                    <p style={{
+                      fontSize: '12px',
+                      color: currentMode === 'light' ? '#666666' : 'rgba(255,255,255,0.6)'
+                    }}>
+                      {t('jury_dist_like')}
+                    </p>
+                    <p style={{
+                      fontSize: '20px',
+                      fontWeight: 'bold',
+                      color: '#00ff00'
+                    }}>
+                      {juryStats.films_liked}
+                    </p>
                   </div>
-                  <div className="text-center">
-                    <p className="text-xs text-white/60">{t('jury_dist_discuss')}</p>
-                    <p className="text-xl font-bold text-[#ffa500]">{juryStats.films_discuss}</p>
+                  <div style={{textAlign: 'center'}}>
+                    <p style={{
+                      fontSize: '12px',
+                      color: currentMode === 'light' ? '#666666' : 'rgba(255,255,255,0.6)'
+                    }}>
+                      {t('jury_dist_discuss')}
+                    </p>
+                    <p style={{
+                      fontSize: '20px',
+                      fontWeight: 'bold',
+                      color: '#ffa500'
+                    }}>
+                      {juryStats.films_discuss}
+                    </p>
                   </div>
-                  <div className="text-center">
-                    <p className="text-xs text-white/60">{t('jury_dist_dislike')}</p>
-                    <p className="text-xl font-bold text-[#ff6b6b]">{juryStats.films_disliked}</p>
+                  <div style={{textAlign: 'center'}}>
+                    <p style={{
+                      fontSize: '12px',
+                      color: currentMode === 'light' ? '#666666' : 'rgba(255,255,255,0.6)'
+                    }}>
+                      {t('jury_dist_dislike')}
+                    </p>
+                    <p style={{
+                      fontSize: '20px',
+                      fontWeight: 'bold',
+                      color: '#ff6b6b'
+                    }}>
+                      {juryStats.films_disliked}
+                    </p>
                   </div>
                 </div>
               </div>
 
               {/* Progress & Members - Pie Chart */}
-              <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-8 hover:border-neutral-700 transition flex flex-col">
-                <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
-                  <TrendingUp size={20} className="text-violet-400" />
+              <div style={{
+                backgroundColor: currentMode === 'light' ? '#f5f5f5' : '#171717',
+                border: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+                borderRadius: '12px',
+                padding: '32px',
+                transition: 'all 0.3s',
+                display: 'flex',
+                flexDirection: 'column'
+              }}>
+                <h3 style={{
+                  fontSize: '18px',
+                  fontWeight: 'bold',
+                  color: currentMode === 'light' ? '#000000' : '#ffffff',
+                  marginBottom: '24px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  <TrendingUp size={20} style={{color: currentMode === 'light' ? '#7c3aed' : '#a78bfa'}} />
                   {t('jury_dist_global_progress')}
                 </h3>
-                <div className="flex-1 flex flex-col items-center justify-center">
+                <div style={{flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'}}>
                   <ResponsiveContainer width="100%" height={300}>
                     <PieChart>
                       <Pie
@@ -230,12 +365,13 @@ export default function AdminDashboard() {
                             return (
                               <div 
                                 style={{ 
-                                  backgroundColor: color, 
+                                  backgroundColor: currentMode === 'light' ? '#ffffff' : color, 
                                   border: `2px solid ${color}`,
                                   borderRadius: '6px',
-                                  padding: '8px 12px'
+                                  padding: '8px 12px',
+                                  color: currentMode === 'light' ? '#000000' : '#ffffff',
+                                  fontWeight: 'bold'
                                 }}
-                                className="text-white font-semibold"
                               >
                                 {data.name}: {data.value}%
                               </div>
@@ -247,6 +383,7 @@ export default function AdminDashboard() {
                       <Legend 
                         verticalAlign="bottom" 
                         height={30}
+                        wrapperStyle={{color: currentMode === 'light' ? '#000000' : '#ffffff'}}
                         formatter={(value) => value}
                       />
                     </PieChart>
@@ -254,14 +391,38 @@ export default function AdminDashboard() {
                 </div>
                 
                 {/* Stats below chart */}
-                <div className="grid grid-cols-2 gap-4 mt-6 pt-6 border-t border-neutral-700">
-                  <div className="text-center">
-                    <p className="text-xs text-white/60">{t('jury_dist_progress')}</p>
-                    <p className="text-xl font-bold text-[#a78bfa]">{juryStats.total_progress}%</p>
+                <div className="grid grid-cols-2 gap-4 mt-6 pt-6" style={{
+                  borderTop: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`
+                }}>
+                  <div style={{textAlign: 'center'}}>
+                    <p style={{
+                      fontSize: '12px',
+                      color: currentMode === 'light' ? '#666666' : 'rgba(255,255,255,0.6)'
+                    }}>
+                      {t('jury_dist_progress')}
+                    </p>
+                    <p style={{
+                      fontSize: '20px',
+                      fontWeight: 'bold',
+                      color: '#a78bfa'
+                    }}>
+                      {juryStats.total_progress}%
+                    </p>
                   </div>
-                  <div className="text-center">
-                    <p className="text-xs text-white/60">{t('jury_dist_active_jurors')}</p>
-                    <p className="text-xl font-bold text-[#00d4ff]">{juryStats.jury_count}</p>
+                  <div style={{textAlign: 'center'}}>
+                    <p style={{
+                      fontSize: '12px',
+                      color: currentMode === 'light' ? '#666666' : 'rgba(255,255,255,0.6)'
+                    }}>
+                      {t('jury_dist_active_jurors')}
+                    </p>
+                    <p style={{
+                      fontSize: '20px',
+                      fontWeight: 'bold',
+                      color: '#00d4ff'
+                    }}>
+                      {juryStats.jury_count}
+                    </p>
                   </div>
                 </div>
               </div>

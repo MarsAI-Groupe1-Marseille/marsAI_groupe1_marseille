@@ -36,36 +36,83 @@ const defaultCategories = [
 ];
 // Composant réutilisable pour afficher un KPI.
 // Props : { label, value } données dynamiques envoyées depuis le parent.
-function Card({ label, value }) {
+function Card({ label, value, currentMode }) {
     return (
-        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 hover:bg-neutral-800 transition">
-            <p className="text-sm text-neutral-400">{label}</p>
-            <p className="text-3xl font-bold mt-2 text-white">{value}</p>
+        <div 
+            style={{
+                backgroundColor: currentMode === 'light' ? '#f5f5f5' : '#171717',
+                borderColor: currentMode === 'light' ? '#e5e5e5' : '#262626',
+                border: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+                borderRadius: '12px',
+                padding: '24px',
+                boxShadow: 'none',
+                minHeight: '120px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between'
+            }}
+        >
+            <p 
+                style={{
+                    fontSize: '14px',
+                    color: currentMode === 'light' ? '#666666' : '#a3a3a3',
+                    margin: '0 0 8px 0',
+                    fontWeight: '500'
+                }}
+            >
+                {label}
+            </p>
+            <p 
+                style={{
+                    fontSize: '32px',
+                    fontWeight: 'bold',
+                    color: currentMode === 'light' ? '#000000' : '#ffffff',
+                    margin: '0'
+                }}
+            >
+                {value}
+            </p>
         </div>
     );
 }
-// Le composant React ActionCard reçoit des "props" : title, buttonText, onClick, icon, disabled :
-function ActionCard({ title, buttonText, onClick, icon, disabled = false }) {
+// Le composant React ActionCard reçoit des "props" : title, buttonText, onClick :
+function ActionCard({ title, buttonText, onClick, icon, currentMode }) {
     return (
-        <div className={`bg-neutral-900 border border-neutral-800 rounded-2xl p-6 flex flex-col justify-between transition ${
-            disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-neutral-800'
-        }`}>
+        <div 
+            style={{
+                backgroundColor: currentMode === 'light' ? '#f5f5f5' : '#171717',
+                borderColor: currentMode === 'light' ? '#e5e5e5' : '#262626',
+                border: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+                borderRadius: '16px',
+                padding: '24px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                transition: 'all 0.3s',
+                boxShadow: 'none',
+            }}
+        >
             <div className="flex items-center gap-4 mb-6">
-                <div className={disabled ? "text-neutral-500" : "text-violet-500"}>
+                <div style={{ color: currentMode === 'light' ? '#7c3aed' : '#a855f7' }}>
                     {icon}
                 </div>
-                <h3 className={`text-lg font-semibold ${
-                    disabled ? 'text-neutral-500' : 'text-violet-400'
-                }`}>
+                <h3 
+                    className="text-lg font-semibold"
+                    style={{
+                        color: currentMode === 'light' ? '#6d28d9' : '#c084fc'
+                    }}
+                >
                     {title}
                 </h3>
             </div>
             <button
             // onClick={onClick} → quand on cliques sur le bouton, la fonction passée en prop est exécutée :
-                onClick={disabled ? undefined : onClick}
-                disabled={disabled}
-                className="bg-violet-500 hover:bg-violet-600 text-white font-semibold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-violet-500"
-                title={disabled ? "Action non autorisée pour les modérateurs" : ""}
+                onClick={onClick}
+                className="font-semibold py-2 px-4 rounded"
+                style={{
+                    backgroundColor: currentMode === 'light' ? '#7c3aed' : '#8b5cf6',
+                    color: '#ffffff'
+                }}
             >
                 {buttonText}
             </button>
@@ -75,9 +122,7 @@ function ActionCard({ title, buttonText, onClick, icon, disabled = false }) {
 
 const Dashboard = () => {
     const { t } = useLanguage();
-    const userStr = localStorage.getItem('user');
-    const currentUser = userStr ? JSON.parse(userStr) : null;
-    const isModerator = currentUser?.role === "moderator";
+    const [currentMode, setCurrentMode] = useState('dark');
     const [adminUser, setAdminUser] = useState({
         full_name: "Admin Test",
         email: "email@exemple.com",
@@ -95,6 +140,24 @@ const Dashboard = () => {
     const [categoriesLoading, setCategoriesLoading] = useState(true);
     const [chartData, setChartData] = useState(defaultChartData);
     const [chartDataLoading, setChartDataLoading] = useState(true);
+
+    // Détecter le mode clair/sombre
+    useEffect(() => {
+        const detectMode = () => {
+            const mode = document.documentElement.getAttribute('data-mode');
+            setCurrentMode(mode || 'dark');
+        };
+
+        detectMode();
+
+        const observer = new MutationObserver(detectMode);
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['data-mode']
+        });
+
+        return () => observer.disconnect();
+    }, []);
 
     // Récupérer les statistiques du dashboard
     useEffect(() => {
@@ -163,6 +226,7 @@ const Dashboard = () => {
     useEffect(() => {
         const verifyAdmin = async () => {
             try {
+                const token = localStorage.getItem('token');
                 const userStr = localStorage.getItem('user');
                 
                 if (!userStr) {
@@ -189,14 +253,26 @@ const Dashboard = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex justify-center items-center bg-neutral-950 text-violet-400 text-2xl font-bold">
+            <div 
+                className="min-h-screen flex justify-center items-center text-2xl font-bold"
+                style={{
+                    backgroundColor: '#ffffff',
+                    color: '#7c3aed'
+                }}
+            >
                 {t('jury_dist_loading')}
             </div>
         );
     }
     
     return (
-        <div className="min-h-screen bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-950 text-white">
+        <div 
+            className="min-h-screen"
+            style={{
+                backgroundColor: currentMode === 'light' ? '#ffffff' : 'rgb(5, 5, 5)',
+                color: currentMode === 'light' ? '#000000' : '#ffffff'
+            }}
+        >
             {/* MAIN */}
             <main className="w-full px-4 sm:px-6 md:px-8 py-8 md:py-12 lg:py-16">
                 <div className="max-w-7xl mx-auto">
@@ -207,34 +283,31 @@ const Dashboard = () => {
                         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-8 mb-8">
                             {/* Left side - Title and description */}
                             <div className="text-center md:text-left">
-                                <span className="text-xs text-violet-400 uppercase tracking-widest font-bold block mb-3">{t('admin_space')}</span>
-                                <h1 className="flex justify-center md:justify-start items-center gap-3 text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
+                                <span 
+                                    className="text-xs uppercase tracking-widest font-bold block mb-3"
+                                    style={{
+                                        color: currentMode === 'light' ? '#7c3aed' : '#a78bfa'
+                                    }}
+                                >
+                                    {t('admin_space')}
+                                </span>
+                                <h1 
+                                    className="flex justify-center md:justify-start items-center gap-3 text-3xl sm:text-4xl md:text-5xl font-bold mb-4 leading-tight"
+                                    style={{
+                                        color: currentMode === 'light' ? '#000000' : '#ffffff'
+                                    }}
+                                >
                                     <LayoutDashboard size={32} />
                                     {t('admin_dashboard_title')}
                                 </h1>
-                                <p className="text-sm md:text-base text-neutral-400 leading-relaxed max-w-2xl">
+                                <p 
+                                    className="text-sm md:text-base leading-relaxed max-w-2xl"
+                                    style={{
+                                        color: currentMode === 'light' ? '#666666' : '#a3a3a3'
+                                    }}
+                                >
                                     {t('admin_dashboard_subtitle')}
                                 </p>
-                            </div>
-
-                            {/* Right side - Admin Profile (outside card) */}
-                            <div className="flex flex-col items-center md:items-end gap-2">
-                                {/* Avatar */}
-                                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center border-2 border-violet-400 shadow-lg">
-                                    <span className="text-white font-bold text-2xl">
-                                        {adminUser?.full_name
-                                            ? adminUser.full_name
-                                                .split(' ')
-                                                .map(n => n[0])
-                                                .join('')
-                                                .toUpperCase()
-                                            : 'A'}
-                                    </span>
-                                </div>
-                                
-                                {/* Name and Email */}
-                                <p className="text-sm font-semibold text-white break-words mb-1">{adminUser?.full_name}</p>
-                                <p className="text-xs text-neutral-400 break-all">{adminUser?.email}</p>
                             </div>
                         </div>
                     </div>
@@ -242,20 +315,42 @@ const Dashboard = () => {
                     {/* Content */}
                     {/* Affiche 4 cartes KPI avec le composant Card */}
                     <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-                        <Card label={t('dashboard_submissions')} value={statsLoading ? '-' : dashboardStats.totalSubmissions} />
-                        <Card label={t('dashboard_statistics_approved')} value={statsLoading ? '-' : dashboardStats.approved} />
-                        <Card label={t('dashboard_statistics_rejected')} value={statsLoading ? '-' : dashboardStats.rejected} />
-                        <Card label={t('dashboard_statistics_pending')} value={statsLoading ? '-' : dashboardStats.pending} />
+                        <Card label={t('dashboard_submissions')} value={statsLoading ? '-' : dashboardStats.totalSubmissions} currentMode={currentMode} />
+                        <Card label={t('dashboard_statistics_approved')} value={statsLoading ? '-' : dashboardStats.approved} currentMode={currentMode} />
+                        <Card label={t('dashboard_statistics_rejected')} value={statsLoading ? '-' : dashboardStats.rejected} currentMode={currentMode} />
+                        <Card label={t('dashboard_statistics_pending')} value={statsLoading ? '-' : dashboardStats.pending} currentMode={currentMode} />
                     </section>
 
                     <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
                         {/* Graphique moderne -> Évolution des soumissions des films*/}
-                        <div className="lg:col-span-2 bg-neutral-900 rounded-2xl p-6 border border-neutral-800">
-                            <h2 className="flex justify-center items-center gap-2 text-lg font-semibold text-violet-400 mb-1">
+                        <div 
+                            style={{
+                                gridColumn: 'span 2',
+                                backgroundColor: currentMode === 'light' ? '#f5f5f5' : '#171717',
+                                borderColor: currentMode === 'light' ? '#e5e5e5' : '#262626',
+                                border: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+                                borderRadius: '16px',
+                                padding: '24px',
+                                boxShadow: 'none',
+                            }}
+                        >
+                            <h2 
+                                className="flex justify-center items-center gap-2 text-lg font-semibold mb-1"
+                                style={{
+                                    color: currentMode === 'light' ? '#6d28d9' : '#c084fc'
+                                }}
+                            >
                                 <TrendingUp size={20} />
                                 {t('dashboard_evolution_title')}
                             </h2>
-                            <p className="text-sm text-neutral-400 mb-6">{t('dashboard_evolution_subtitle')}</p>
+                            <p 
+                                className="text-sm mb-6"
+                                style={{
+                                    color: currentMode === 'light' ? '#666666' : '#a3a3a3'
+                                }}
+                            >
+                                {t('dashboard_evolution_subtitle')}
+                            </p>
                             <ResponsiveContainer width="100%" height={250}>
                                 <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                                     <defs>
@@ -268,24 +363,28 @@ const Dashboard = () => {
                                             <stop offset="95%" stopColor="#06b6d4" stopOpacity={0}/>
                                         </linearGradient>
                                     </defs>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
+                                    <CartesianGrid 
+                                        strokeDasharray="3 3" 
+                                        stroke={currentMode === 'light' ? '#d4d4d4' : '#374151'} 
+                                        opacity={0.3} 
+                                    />
                                     <XAxis 
                                         dataKey="mois" 
-                                        stroke="#9ca3af"
+                                        stroke={currentMode === 'light' ? '#666666' : '#9ca3af'}
                                         style={{ fontSize: '12px' }}
                                     />
                                     <YAxis 
-                                        stroke="#9ca3af"
+                                        stroke={currentMode === 'light' ? '#666666' : '#9ca3af'}
                                         style={{ fontSize: '12px' }}
                                     />
                                     <Tooltip
                                         contentStyle={{
-                                            backgroundColor: '#1f2937',
-                                            border: '1px solid #374151',
+                                            backgroundColor: currentMode === 'light' ? '#ffffff' : '#1f2937',
+                                            border: `1px solid ${currentMode === 'light' ? '#d4d4d4' : '#374151'}`,
                                             borderRadius: '8px',
-                                            color: '#fff'
+                                            color: currentMode === 'light' ? '#000000' : '#fff'
                                         }}
-                                        labelStyle={{ color: '#a78bfa' }}
+                                        labelStyle={{ color: currentMode === 'light' ? '#7c3aed' : '#a78bfa' }}
                                     />
                                     <Area 
                                         type="monotone" 
@@ -310,19 +409,43 @@ const Dashboard = () => {
                         </div>
 
                         {/* Répartition des catégories */}
-                        <div className="bg-neutral-900 rounded-2xl p-6 border border-neutral-800">
-                            <h2 className="flex justify-center items-center gap-2 text-lg font-semibold text-violet-400 mb-4">
+                        <div 
+                            style={{
+                                backgroundColor: currentMode === 'light' ? '#f5f5f5' : '#171717',
+                                borderColor: currentMode === 'light' ? '#e5e5e5' : '#262626',
+                                border: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+                                borderRadius: '16px',
+                                padding: '24px',
+                                boxShadow: 'none',
+                            }}
+                        >
+                            <h2 
+                                className="flex justify-center items-center gap-2 text-lg font-semibold mb-4"
+                                style={{
+                                    color: currentMode === 'light' ? '#6d28d9' : '#c084fc'
+                                }}
+                            >
                                 <Layers size={20} />
                                 {t('dashboard_categories_title')}
                             </h2>                   
                             <div className="space-y-4">
                                 {categories.map((cat) => (
                                     <div key={cat.name}>
-                                        <div className="flex justify-between text-sm text-neutral-400 mb-1">
+                                        <div 
+                                            className="flex justify-between text-sm mb-1"
+                                            style={{
+                                                color: currentMode === 'light' ? '#666666' : '#a3a3a3'
+                                            }}
+                                        >
                                             <span>{cat.name}</span>
                                             <span>{cat.percent}%</span>
                                         </div>
-                                        <div className="h-2 bg-neutral-800 rounded-full overflow-hidden">
+                                        <div 
+                                            className="h-2 rounded-full overflow-hidden"
+                                            style={{
+                                                backgroundColor: currentMode === 'light' ? '#d1d5db' : '#262626'
+                                            }}
+                                        >
                                             <div className="h-full bg-violet-500" style={{ width: `${cat.percent}%` }}/>
                                         </div>
                                     </div>
@@ -337,26 +460,17 @@ const Dashboard = () => {
                                 title={t('dashboard_users_management')}
                                 buttonText={t('dashboard_users_button')}
                                 icon={<Users size={28} />}
+                                currentMode={currentMode}
                             />
                         </Link>
-                        {isModerator ? (
-                            <div className="block">
-                                <ActionCard
-                                    title={t('dashboard_finalists_selection')}
-                                    buttonText={t('dashboard_finalists_button')}
-                                    icon={<Film size={28} />}
-                                    disabled={true}
-                                />
-                            </div>
-                        ) : (
-                            <Link to="/selectfinaliste" className="block">
-                                <ActionCard
-                                    title={t('dashboard_finalists_selection')}
-                                    buttonText={t('dashboard_finalists_button')}
-                                    icon={<Film size={28} />}
-                                />
-                            </Link>
-                        )}
+                        <Link to="/selectfinaliste" className="block">
+                            <ActionCard
+                                title={t('dashboard_finalists_selection')}
+                                buttonText={t('dashboard_finalists_button')}
+                                icon={<Film size={28} />}
+                                currentMode={currentMode}
+                            />
+                        </Link>
                     </section>
                 </div>
             </main>

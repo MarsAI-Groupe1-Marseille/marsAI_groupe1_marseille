@@ -36,7 +36,7 @@ const Galerie = () => {
   const navigate = useNavigate()
   
   // Hook pour les traductions
-  const { t } = useLanguage()
+  const { t, lang } = useLanguage()
 
   // Refs pour les animations
   const headerRef = useRef(null)
@@ -76,8 +76,13 @@ const Galerie = () => {
   const [selectedGenre, setSelectedGenre] = useState('Tous')
   
   // Langue pour le filtre (fr = titre original, en = titre anglais)
-  // setLanguage: Fonction pour changer la langue
+  // Synchronisé avec la langue globale de l'app
   const [language, setLanguage] = useState('fr')
+
+  // ========== EFFET: Synchroniser language avec lang du contexte ==========
+  useEffect(() => {
+    setLanguage(lang)
+  }, [lang])
   
   // Pagination
   const [currentPage, setCurrentPage] = useState(1)
@@ -426,7 +431,7 @@ const Galerie = () => {
                 {/* INFORMATIONS DU FILM (Titre, Synopsis, Durée) */}
                 <div className="film-info">
                   {/* TITRE DU FILM */}
-                  <h3 className="film-title">{film.title_original}</h3>
+                  <h3 className="film-title">{language === 'en' ? (film.title_english || film.title_original) : film.title_original}</h3>
                   
                   {/* RÉALISATEUR */}
                   {film.Director && (
@@ -438,7 +443,7 @@ const Galerie = () => {
                   {/* SYNOPSIS (Extrait limité à 80 caractères) */}
                   <p className="film-synopsis">
                     {/* Ternaire (? :): Si synopsis existe, affiche 80 premiers caractères + "..." */}
-                    {film.synopsis_original ? film.synopsis_original.substring(0, 80) + '...' : t('gallery_no_synopsis')}
+                    {language === 'en' ? (film.synopsis_english ? film.synopsis_english.substring(0, 80) + '...' : t('gallery_no_synopsis')) : (film.synopsis_original ? film.synopsis_original.substring(0, 80) + '...' : t('gallery_no_synopsis'))}
                   </p>
                   
                   {/* DURÉE DU FILM */}

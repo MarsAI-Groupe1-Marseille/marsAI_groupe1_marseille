@@ -21,6 +21,11 @@ export default function JuryAssignment() {
   const { t } = useLanguage();
   const { user } = useAuth();
   // ========================================================================
+  // ÉTAT: Mode clair/sombre
+  // ========================================================================
+  const [currentMode, setCurrentMode] = useState('dark');
+
+  // ========================================================================
   // ÉTATS: Données provenant de la base
   // ========================================================================
   const [playlists, setPlaylists] = useState([]);
@@ -119,6 +124,20 @@ export default function JuryAssignment() {
     setCurrentPageJurorsAvailable(0);
     setCurrentPageJurorsAssigned(0);
   }, [currentPlaylistId, playlists, allFilms, allJurors]);
+
+  // ========================================================================
+  // EFFET: Détection du mode clair/sombre
+  // ========================================================================
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setCurrentMode(document.documentElement.getAttribute('data-mode') || 'dark');
+    });
+    
+    observer.observe(document.documentElement, { attributes: true });
+    setCurrentMode(document.documentElement.getAttribute('data-mode') || 'dark');
+    
+    return () => observer.disconnect();
+  }, []);
 
   // ========================================================================
   // FONCTION: paginate() - Utilitaire pour calculer les items paginés
@@ -246,7 +265,12 @@ export default function JuryAssignment() {
   const currentPlaylist = playlists.find(pl => pl.id === currentPlaylistId);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0a0e27] via-[#1a1f3a] to-[#0f1628]">
+    <div style={{
+      minHeight: '100vh',
+      background: currentMode === 'light' 
+        ? '#ffffff' 
+        : 'linear-gradient(to bottom right, #0a0e27, #1a1f3a, #0f1628)'
+    }}>
       <main className="w-full px-4 sm:px-6 md:px-8 py-8 md:py-12 lg:py-16">
         <div className="max-w-7xl mx-auto">
 
@@ -255,65 +279,119 @@ export default function JuryAssignment() {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-8">
               {/* Left side - Title and description */}
               <div className="text-center md:text-left">
-                <span className="text-xs text-violet-400 uppercase tracking-widest font-bold block mb-3">{t('admin_space')}</span>
-                <h1 className="flex justify-center md:justify-start items-center gap-3 text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
+                <span style={{
+                  fontSize: '0.75rem',
+                  color: currentMode === 'light' ? '#7c3aed' : '#a78bfa',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                  fontWeight: 'bold',
+                  display: 'block',
+                  marginBottom: '0.75rem'
+                }}>
+                  {t('admin_space')}
+                </span>
+                <h1 style={{
+                  display: 'flex',
+                  justifyContent: currentMode === 'light' ? 'center' : 'flex-start',
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                  fontSize: 'clamp(1.875rem, 8vw, 3rem)',
+                  fontWeight: 'bold',
+                  color: currentMode === 'light' ? '#000000' : '#ffffff',
+                  marginBottom: '1rem',
+                  lineHeight: '1.25'
+                }}>
                   <Users size={32} />
                   {t('jury_assignment_title')}
                 </h1>
-                <p className="text-sm md:text-base text-neutral-400 leading-relaxed max-w-2xl">
+                <p style={{
+                  fontSize: '0.875rem',
+                  color: currentMode === 'light' ? '#666666' : '#a3a3a3',
+                  lineHeight: '1.5',
+                  maxWidth: '32rem'
+                }}>
                   {t('jury_assignment_desc')}
                 </p>
               </div>
-
-              {/* Right side - Admin Profile (outside card) */}
-              <div className="flex flex-col items-center md:items-end gap-2">
-                {/* Avatar */}
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center border-2 border-violet-400 shadow-lg">
-                  <span className="text-white font-bold text-2xl">
-                    {user?.full_name
-                      ? user.full_name
-                          .split(' ')
-                          .map(n => n[0])
-                          .join('')
-                          .toUpperCase()
-                      : 'A'}
-                  </span>
-                </div>
-                {/* Admin Info */}
-                <div className="text-center md:text-right">
-                  <p className="text-base font-semibold text-white">{user?.full_name}</p>
-                  <p className="text-xs text-neutral-400">{user?.email}</p>
-                </div>
-              </div>
             </div>
           </div>
+
           {/* ============================================================
               SECTION 0: LISTE DES PLAYLISTS
               ============================================================ */}
           <section className="mb-8">
-            <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
-              <div className="bg-gradient-to-r from-violet-600 to-violet-800 px-8 py-4">
-                <h2 className="text-lg font-bold text-white">{t('jury_assignment_playlists')}</h2>
+            <div style={{
+              backgroundColor: currentMode === 'light' ? '#ffffff' : '#171717',
+              border: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+              borderRadius: '0.75rem',
+              overflow: 'hidden'
+            }}>
+              <div style={{
+                background: currentMode === 'light'
+                  ? 'linear-gradient(to right, #7c3aed, #6d28d9)'
+                  : 'linear-gradient(to right, #7c3aed, #6d28d9)',
+                padding: '2rem',
+                paddingY: '1rem'
+              }}>
+                <h2 style={{
+                  fontSize: '1.125rem',
+                  fontWeight: 'bold',
+                  color: '#ffffff'
+                }}>
+                  {t('jury_assignment_playlists')}
+                </h2>
               </div>
-              <div className="p-8">
+              <div style={{ padding: '2rem' }}>
                 {isLoading ? (
-                  <div className="text-neutral-400">{t('jury_assignment_loading')}</div>
+                  <div style={{
+                    color: currentMode === 'light' ? '#666666' : '#a3a3a3'
+                  }}>
+                    {t('jury_assignment_loading')}
+                  </div>
                 ) : playlists.length === 0 ? (
-                  <div className="text-neutral-500">{t('jury_assignment_no_playlists')}</div>
+                  <div style={{
+                    color: currentMode === 'light' ? '#999999' : '#737373'
+                  }}>
+                    {t('jury_assignment_no_playlists')}
+                  </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+                    gap: '1rem'
+                  }}>
                     {paginate(playlists, currentPagePlaylists, playlistsPerPage).map((playlist) => (
                       <button
                         key={playlist.id}
                         onClick={() => setCurrentPlaylistId(playlist.id)}
-                        className="text-left border rounded-lg p-4 transition"
                         style={{
-                          borderColor: playlist.id === currentPlaylistId ? "rgba(139,92,246,0.8)" : "rgba(255,255,255,0.08)",
-                          background: playlist.id === currentPlaylistId ? "rgba(139,92,246,0.1)" : "rgba(255,255,255,0.03)"
+                          textAlign: 'left',
+                          border: `1px solid ${playlist.id === currentPlaylistId 
+                            ? (currentMode === 'light' ? '#7c3aed' : 'rgba(139,92,246,0.8)') 
+                            : (currentMode === 'light' ? '#e5e5e5' : 'rgba(255,255,255,0.08)')}`,
+                          borderRadius: '0.5rem',
+                          padding: '1rem',
+                          transition: 'all 0.3s ease',
+                          backgroundColor: playlist.id === currentPlaylistId 
+                            ? (currentMode === 'light' ? 'rgba(124,58,237,0.1)' : 'rgba(139,92,246,0.1)')
+                            : (currentMode === 'light' ? '#f5f5f5' : 'rgba(255,255,255,0.03)'),
+                          cursor: 'pointer'
                         }}
                       >
-                        <div className="text-white font-semibold truncate">{playlist.name}</div>
-                        <div className="text-xs text-neutral-400 mt-1">
+                        <div style={{
+                          color: currentMode === 'light' ? '#000000' : '#ffffff',
+                          fontWeight: '600',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap'
+                        }}>
+                          {playlist.name}
+                        </div>
+                        <div style={{
+                          fontSize: '0.75rem',
+                          color: currentMode === 'light' ? '#666666' : '#a3a3a3',
+                          marginTop: '0.25rem'
+                        }}>
                           {playlist.films?.length || 0} films · {playlist.jury?.length || 0} jurys
                         </div>
                       </button>
@@ -322,25 +400,51 @@ export default function JuryAssignment() {
                 )}
 
                 {playlists.length > playlistsPerPage && (
-                  <div className="mt-6 flex items-center justify-between">
+                  <div style={{
+                    marginTop: '1.5rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                  }}>
                     <button
                       onClick={() => setCurrentPagePlaylists(Math.max(0, currentPagePlaylists - 1))}
                       disabled={currentPagePlaylists === 0}
-                      className="p-2 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition"
+                      style={{
+                        padding: '0.5rem',
+                        borderRadius: '0.375rem',
+                        backgroundColor: currentMode === 'light' ? '#f5f5f5' : 'transparent',
+                        border: currentMode === 'light' ? '1px solid #e5e5e5' : 'none',
+                        color: currentMode === 'light' ? '#666666' : '#a3a3a3',
+                        cursor: currentPagePlaylists === 0 ? 'not-allowed' : 'pointer',
+                        opacity: currentPagePlaylists === 0 ? 0.5 : 1,
+                        transition: 'all 0.2s ease'
+                      }}
                     >
                       <ChevronLeft size={18} />
                     </button>
-                  <span className="text-neutral-400 text-sm">
-                    Page {currentPagePlaylists + 1} / {getTotalPages(playlists, playlistsPerPage)}
-                  </span>
-                  <button
-                    onClick={() => setCurrentPagePlaylists(Math.min(getTotalPages(playlists, playlistsPerPage) - 1, currentPagePlaylists + 1))}
-                    disabled={currentPagePlaylists >= getTotalPages(playlists, playlistsPerPage) - 1}
-                    className="p-2 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition"
-                  >
-                    <ChevronRight size={18} />
-                  </button>
-                </div>
+                    <span style={{
+                      color: currentMode === 'light' ? '#666666' : '#a3a3a3',
+                      fontSize: '0.875rem'
+                    }}>
+                      Page {currentPagePlaylists + 1} / {getTotalPages(playlists, playlistsPerPage)}
+                    </span>
+                    <button
+                      onClick={() => setCurrentPagePlaylists(Math.min(getTotalPages(playlists, playlistsPerPage) - 1, currentPagePlaylists + 1))}
+                      disabled={currentPagePlaylists >= getTotalPages(playlists, playlistsPerPage) - 1}
+                      style={{
+                        padding: '0.5rem',
+                        borderRadius: '0.375rem',
+                        backgroundColor: currentMode === 'light' ? '#f5f5f5' : 'transparent',
+                        border: currentMode === 'light' ? '1px solid #e5e5e5' : 'none',
+                        color: currentMode === 'light' ? '#666666' : '#a3a3a3',
+                        cursor: currentPagePlaylists >= getTotalPages(playlists, playlistsPerPage) - 1 ? 'not-allowed' : 'pointer',
+                        opacity: currentPagePlaylists >= getTotalPages(playlists, playlistsPerPage) - 1 ? 0.5 : 1,
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      <ChevronRight size={18} />
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
@@ -353,24 +457,56 @@ export default function JuryAssignment() {
         */}
         <section className="mb-8">
           {/* Card principal avec header dégradé */}
-          <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
-            {/* Header avec fond dégradé violet (from-violet-600 to-violet-800) */}
-            <div className="bg-gradient-to-r from-violet-600 to-violet-800 px-8 py-4">
+          <div style={{
+            backgroundColor: currentMode === 'light' ? '#ffffff' : '#171717',
+            border: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+            borderRadius: '0.75rem',
+            overflow: 'hidden'
+          }}>
+            {/* Header avec fond dégradé violet */}
+            <div style={{
+              background: currentMode === 'light'
+                ? 'linear-gradient(to right, #7c3aed, #6d28d9)'
+                : 'linear-gradient(to right, #7c3aed, #6d28d9)',
+              padding: '2rem',
+              paddingY: '1rem'
+            }}>
               {/* Titre blanc de la section */}
-              <h2 className="text-lg font-bold text-white">{t('jury_assignment_section_films')}</h2>
+              <h2 style={{
+                fontSize: '1.125rem',
+                fontWeight: 'bold',
+                color: '#ffffff'
+              }}>
+                {t('jury_assignment_section_films')}
+              </h2>
             </div>
             {/* Grille 2 colonnes (1 colonne sur petit écran, 2 sur large) */}
-            <div className="p-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div style={{
+              padding: '2rem',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+              gap: '2rem'
+            }}>
               {/* ============================================================
                   COLONNE GAUCHE: FILMS DISPONIBLES
                   ============================================================ */}
               <div>
                 {/* Titre avec le nombre de films disponibles */}
-                <h3 className="text-md font-semibold text-white mb-4">
+                <h3 style={{
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  color: currentMode === 'light' ? '#000000' : '#ffffff',
+                  marginBottom: '1rem'
+                }}>
                   {t('jury_assignment_films_available')} ({films.length})
                 </h3>
                 {/* Conteneur liste: bordure grise, fond semi-transparent, bord inférieur entre items */}
-                <div className="border border-neutral-800 rounded-lg bg-neutral-800/50 divide-y divide-neutral-700 overflow-hidden">
+                <div style={{
+                  border: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+                  borderRadius: '0.5rem',
+                  backgroundColor: currentMode === 'light' ? '#f5f5f5' : 'rgba(255,255,255,0.03)',
+                  overflow: 'hidden'
+                }}>
                   {/* SI des films sont disponibles, afficher chacun */}
                   {films.length > 0 ? (
                     // .map() = boucle sur chaque film du tableau paginé
@@ -378,19 +514,70 @@ export default function JuryAssignment() {
                       // Key = identifiant unique pour React (id du film)
                       <div
                         key={film.id}
-                        className="flex items-center justify-between px-4 py-3 hover:bg-neutral-700 transition cursor-pointer group"
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          paddingX: '1rem',
+                          paddingY: '0.75rem',
+                          backgroundColor: currentMode === 'light' ? '#ffffff' : undefined,
+                          borderBottom: currentMode === 'light' ? `1px solid #e5e5e5` : `1px solid rgba(255,255,255,0.05)`,
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          ':hover': {
+                            backgroundColor: currentMode === 'light' ? '#f5f5f5' : 'rgba(255,255,255,0.05)'
+                          }
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = currentMode === 'light' ? '#f5f5f5' : 'rgba(255,255,255,0.05)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = currentMode === 'light' ? '#ffffff' : 'transparent';
+                        }}
                       >
                         {/* Texte: titre + durée */}
-                        <div className="flex-1">
+                        <div style={{ flex: 1 }}>
                           {/* Titre du film en gras */}
-                          <div className="font-medium text-neutral-100">{film.title}</div>
+                          <div style={{
+                            fontWeight: '500',
+                            color: currentMode === 'light' ? '#000000' : '#f5f5f5'
+                          }}>
+                            {film.title}
+                          </div>
                           {/* Durée en petit texte gris */}
-                          <div className="text-xs text-neutral-500 mt-1">{film.duration}</div>
+                          <div style={{
+                            fontSize: '0.75rem',
+                            color: currentMode === 'light' ? '#999999' : '#737373',
+                            marginTop: '0.25rem'
+                          }}>
+                            {film.duration}
+                          </div>
                         </div>
                         {/* Bouton "+ " pour ajouter le film */}
                         <button
                           onClick={() => handleAddFilm(film)}
-                          className="ml-4 p-2 hover:bg-violet-600 rounded text-neutral-400 hover:text-white transition"
+                          style={{
+                            marginLeft: '1rem',
+                            padding: '0.5rem',
+                            backgroundColor: 'transparent',
+                            border: 'none',
+                            borderRadius: '0.375rem',
+                            color: currentMode === 'light' ? '#666666' : '#a3a3a3',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            ':hover': {
+                              backgroundColor: '#7c3aed',
+                              color: '#ffffff'
+                            }
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#7c3aed';
+                            e.currentTarget.style.color = '#ffffff';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                            e.currentTarget.style.color = currentMode === 'light' ? '#666666' : '#a3a3a3';
+                          }}
                         >
                           {/* Icône "+" de lucide-react (18px) */}
                           <Plus size={18} />
@@ -399,28 +586,59 @@ export default function JuryAssignment() {
                     ))
                   ) : (
                     // SI aucun film disponible, afficher message vide
-                    <div className="px-4 py-6 text-center text-neutral-500">
+                    <div style={{
+                      paddingX: '1rem',
+                      paddingY: '1.5rem',
+                      textAlign: 'center',
+                      color: currentMode === 'light' ? '#999999' : '#737373'
+                    }}>
                       {t('jury_assignment_all_films_selected')}
                     </div>
                   )}
                 </div>
                 {/* PAGINATION pour Films Disponibles */}
                 {films.length > itemsPerPage && (
-                  <div className="mt-4 flex items-center justify-between">
+                  <div style={{
+                    marginTop: '1rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                  }}>
                     <button
                       onClick={() => setCurrentPageFilmsAvailable(Math.max(0, currentPageFilmsAvailable - 1))}
                       disabled={currentPageFilmsAvailable === 0}
-                      className="p-2 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition"
+                      style={{
+                        padding: '0.5rem',
+                        borderRadius: '0.375rem',
+                        backgroundColor: currentMode === 'light' ? '#f5f5f5' : 'transparent',
+                        border: currentMode === 'light' ? '1px solid #e5e5e5' : 'none',
+                        color: currentMode === 'light' ? '#666666' : '#a3a3a3',
+                        cursor: currentPageFilmsAvailable === 0 ? 'not-allowed' : 'pointer',
+                        opacity: currentPageFilmsAvailable === 0 ? 0.5 : 1,
+                        transition: 'all 0.2s ease'
+                      }}
                     >
                       <ChevronLeft size={18} />
                     </button>
-                    <span className="text-neutral-400 text-sm">
+                    <span style={{
+                      color: currentMode === 'light' ? '#666666' : '#a3a3a3',
+                      fontSize: '0.875rem'
+                    }}>
                       Page {currentPageFilmsAvailable + 1} / {getTotalPages(films)}
                     </span>
                     <button
                       onClick={() => setCurrentPageFilmsAvailable(Math.min(getTotalPages(films) - 1, currentPageFilmsAvailable + 1))}
                       disabled={currentPageFilmsAvailable >= getTotalPages(films) - 1}
-                      className="p-2 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition"
+                      style={{
+                        padding: '0.5rem',
+                        borderRadius: '0.375rem',
+                        backgroundColor: currentMode === 'light' ? '#f5f5f5' : 'transparent',
+                        border: currentMode === 'light' ? '1px solid #e5e5e5' : 'none',
+                        color: currentMode === 'light' ? '#666666' : '#a3a3a3',
+                        cursor: currentPageFilmsAvailable >= getTotalPages(films) - 1 ? 'not-allowed' : 'pointer',
+                        opacity: currentPageFilmsAvailable >= getTotalPages(films) - 1 ? 0.5 : 1,
+                        transition: 'all 0.2s ease'
+                      }}
                     >
                       <ChevronRight size={18} />
                     </button>
@@ -433,28 +651,82 @@ export default function JuryAssignment() {
                   ============================================================ */}
               <div>
                 {/* Titre avec nombre de films sélectionnés */}
-                <h3 className="text-md font-semibold text-white mb-4">
+                <h3 style={{
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  color: currentMode === 'light' ? '#000000' : '#ffffff',
+                  marginBottom: '1rem'
+                }}>
                   {t('jury_assignment_films_selected')} ({selectedFilms.length})
                 </h3>
                 {/* Conteneur liste: même style que la colonne gauche */}
-                <div className="border border-neutral-800 rounded-lg bg-neutral-800/50 divide-y divide-neutral-700 overflow-hidden">
+                <div style={{
+                  border: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+                  borderRadius: '0.5rem',
+                  backgroundColor: currentMode === 'light' ? '#f5f5f5' : 'rgba(255,255,255,0.03)',
+                  overflow: 'hidden'
+                }}>
                   {/* SI des films sont sélectionnés, afficher chacun */}
                   {selectedFilms.length > 0 ? (
                     // .map() = boucle sur chaque film sélectionné paginé
                     paginate(selectedFilms, currentPageFilmsSelected).map((film) => (
                       <div
                         key={film.id}
-                        className="flex items-center justify-between px-4 py-3 hover:bg-neutral-700 transition group"
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          paddingX: '1rem',
+                          paddingY: '0.75rem',
+                          backgroundColor: currentMode === 'light' ? '#ffffff' : undefined,
+                          borderBottom: currentMode === 'light' ? `1px solid #e5e5e5` : `1px solid rgba(255,255,255,0.05)`,
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = currentMode === 'light' ? '#f5f5f5' : 'rgba(255,255,255,0.05)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = currentMode === 'light' ? '#ffffff' : 'transparent';
+                        }}
                       >
                         {/* Texte: titre + durée (même que colonne gauche) */}
-                        <div className="flex-1">
-                          <div className="font-medium text-neutral-100">{film.title}</div>
-                          <div className="text-xs text-neutral-500 mt-1">{film.duration}</div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{
+                            fontWeight: '500',
+                            color: currentMode === 'light' ? '#000000' : '#f5f5f5'
+                          }}>
+                            {film.title}
+                          </div>
+                          <div style={{
+                            fontSize: '0.75rem',
+                            color: currentMode === 'light' ? '#999999' : '#737373',
+                            marginTop: '0.25rem'
+                          }}>
+                            {film.duration}
+                          </div>
                         </div>
                         {/* Bouton "X" (Trash icon) pour retirer le film */}
                         <button
                           onClick={() => handleRemoveFilm(film.id)}
-                          className="ml-4 p-2 hover:bg-red-900/30 rounded text-neutral-400 hover:text-red-400 transition"
+                          style={{
+                            marginLeft: '1rem',
+                            padding: '0.5rem',
+                            backgroundColor: 'transparent',
+                            border: 'none',
+                            borderRadius: '0.375rem',
+                            color: currentMode === 'light' ? '#666666' : '#a3a3a3',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = 'rgba(220,38,38,0.2)';
+                            e.currentTarget.style.color = '#dc2626';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                            e.currentTarget.style.color = currentMode === 'light' ? '#666666' : '#a3a3a3';
+                          }}
                         >
                           {/* Icône "Trash" de lucide-react (18px) = symbole suppression */}
                           <Trash2 size={18} />
@@ -463,27 +735,58 @@ export default function JuryAssignment() {
                     ))
                   ) : (
                     // SI aucun film sélectionné, afficher message vide
-                    <div className="px-4 py-6 text-center text-neutral-500">
+                    <div style={{
+                      paddingX: '1rem',
+                      paddingY: '1.5rem',
+                      textAlign: 'center',
+                      color: currentMode === 'light' ? '#999999' : '#737373'
+                    }}>
                       {t('jury_assignment_no_films')}
                     </div>
                   )}
                 </div>
                 {/* PAGINATION pour Films Sélectionnés - TOUJOURS VISIBLE */}
-                <div className="mt-4 flex items-center justify-between">
+                <div style={{
+                  marginTop: '1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
+                }}>
                   <button
                     onClick={() => setCurrentPageFilmsSelected(Math.max(0, currentPageFilmsSelected - 1))}
                     disabled={currentPageFilmsSelected === 0}
-                    className="p-2 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition"
+                    style={{
+                      padding: '0.5rem',
+                      borderRadius: '0.375rem',
+                      backgroundColor: currentMode === 'light' ? '#f5f5f5' : 'transparent',
+                      border: currentMode === 'light' ? '1px solid #e5e5e5' : 'none',
+                      color: currentMode === 'light' ? '#666666' : '#a3a3a3',
+                      cursor: currentPageFilmsSelected === 0 ? 'not-allowed' : 'pointer',
+                      opacity: currentPageFilmsSelected === 0 ? 0.5 : 1,
+                      transition: 'all 0.2s ease'
+                    }}
                   >
                     <ChevronLeft size={18} />
                   </button>
-                  <span className="text-neutral-400 text-sm">
+                  <span style={{
+                    color: currentMode === 'light' ? '#666666' : '#a3a3a3',
+                    fontSize: '0.875rem'
+                  }}>
                     Page {currentPageFilmsSelected + 1} / {getTotalPages(selectedFilms)}
                   </span>
                   <button
                     onClick={() => setCurrentPageFilmsSelected(Math.min(getTotalPages(selectedFilms) - 1, currentPageFilmsSelected + 1))}
                     disabled={currentPageFilmsSelected >= getTotalPages(selectedFilms) - 1}
-                    className="p-2 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition"
+                    style={{
+                      padding: '0.5rem',
+                      borderRadius: '0.375rem',
+                      backgroundColor: currentMode === 'light' ? '#f5f5f5' : 'transparent',
+                      border: currentMode === 'light' ? '1px solid #e5e5e5' : 'none',
+                      color: currentMode === 'light' ? '#666666' : '#a3a3a3',
+                      cursor: currentPageFilmsSelected >= getTotalPages(selectedFilms) - 1 ? 'not-allowed' : 'pointer',
+                      opacity: currentPageFilmsSelected >= getTotalPages(selectedFilms) - 1 ? 0.5 : 1,
+                      transition: 'all 0.2s ease'
+                    }}
                   >
                     <ChevronRight size={18} />
                   </button>
@@ -500,50 +803,141 @@ export default function JuryAssignment() {
         */}
         <section>
           {/* Card principal avec header dégradé (même style que Section 1) */}
-          <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
+          <div style={{
+            backgroundColor: currentMode === 'light' ? '#ffffff' : '#171717',
+            border: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+            borderRadius: '0.75rem',
+            overflow: 'hidden'
+          }}>
             {/* Header dégradé violet */}
-            <div className="bg-gradient-to-r from-violet-600 to-violet-800 px-8 py-4">
-              <h2 className="text-lg font-bold text-white">{t('jury_assignment_section_jurors')}</h2>
+            <div style={{
+              background: currentMode === 'light'
+                ? 'linear-gradient(to right, #7c3aed, #6d28d9)'
+                : 'linear-gradient(to right, #7c3aed, #6d28d9)',
+              padding: '2rem',
+              paddingY: '1rem'
+            }}>
+              <h2 style={{
+                fontSize: '1.125rem',
+                fontWeight: 'bold',
+                color: '#ffffff'
+              }}>
+                {t('jury_assignment_section_jurors')}
+              </h2>
             </div>
             {/* Grille 2 colonnes (responsive: 1 mobile, 2 desktop) */}
-            <div className="p-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div style={{
+              padding: '2rem',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+              gap: '2rem'
+            }}>
               {/* ============================================================
                   COLONNE GAUCHE: JURÉS DISPONIBLES
                   ============================================================ */}
               <div>
                 {/* Titre avec compteur */}
-                <h3 className="text-md font-semibold text-white mb-4">
+                <h3 style={{
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  color: currentMode === 'light' ? '#000000' : '#ffffff',
+                  marginBottom: '1rem'
+                }}>
                   {t('jury_assignment_jurors_available')} ({jurors.length})
                 </h3>
                 {/* Conteneur liste */}
-                <div className="border border-neutral-800 rounded-lg bg-neutral-800/50 divide-y divide-neutral-700 overflow-hidden">
+                <div style={{
+                  border: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+                  borderRadius: '0.5rem',
+                  backgroundColor: currentMode === 'light' ? '#f5f5f5' : 'rgba(255,255,255,0.03)',
+                  overflow: 'hidden'
+                }}>
                   {/* SI des jurés disponibles existent */}
                   {jurors.length > 0 ? (
                     // Boucle sur chaque juré non assigné paginé
                     paginate(jurors, currentPageJurorsAvailable).map((juror) => (
                       <div
                         key={juror.id}
-                        className="flex items-center justify-between px-4 py-3 hover:bg-neutral-700 transition group"
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          paddingX: '1rem',
+                          paddingY: '0.75rem',
+                          backgroundColor: currentMode === 'light' ? '#ffffff' : undefined,
+                          borderBottom: currentMode === 'light' ? `1px solid #e5e5e5` : `1px solid rgba(255,255,255,0.05)`,
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = currentMode === 'light' ? '#f5f5f5' : 'rgba(255,255,255,0.05)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = currentMode === 'light' ? '#ffffff' : 'transparent';
+                        }}
                       >
                         {/* Flex container pour avatar + infos */}
-                        <div className="flex items-center gap-3 flex-1">
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.75rem',
+                          flex: 1
+                        }}>
                           {/* Avatar circulaire: dégradé violet avec initiale du nom */}
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-violet-700 flex items-center justify-center text-white font-semibold text-sm">
+                          <div style={{
+                            width: '2.5rem',
+                            height: '2.5rem',
+                            borderRadius: '50%',
+                            background: 'linear-gradient(to bottom right, #a855f7, #6d28d9)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#ffffff',
+                            fontWeight: '600',
+                            fontSize: '0.875rem'
+                          }}>
                             {/* Prendre la 1ère lettre du nom (juror.name[0]) */}
                             {juror.name[0]}
                           </div>
                           {/* Infos texte: nom + rôle */}
                           <div>
                             {/* Nom du juré en blanc */}
-                            <div className="font-medium text-neutral-100">{juror.name}</div>
+                            <div style={{
+                              fontWeight: '500',
+                              color: currentMode === 'light' ? '#000000' : '#f5f5f5'
+                            }}>
+                              {juror.name}
+                            </div>
                             {/* Rôle/fonction en gris clair */}
-                            <div className="text-xs text-neutral-500">{juror.role}</div>
+                            <div style={{
+                              fontSize: '0.75rem',
+                              color: currentMode === 'light' ? '#999999' : '#737373'
+                            }}>
+                              {juror.role}
+                            </div>
                           </div>
                         </div>
                         {/* Bouton "+" pour assigner le juré */}
                         <button
                           onClick={() => handleAddJuror(juror)}
-                          className="ml-4 p-2 hover:bg-violet-600 rounded text-neutral-400 hover:text-white transition"
+                          style={{
+                            marginLeft: '1rem',
+                            padding: '0.5rem',
+                            backgroundColor: 'transparent',
+                            border: 'none',
+                            borderRadius: '0.375rem',
+                            color: currentMode === 'light' ? '#666666' : '#a3a3a3',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#7c3aed';
+                            e.currentTarget.style.color = '#ffffff';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                            e.currentTarget.style.color = currentMode === 'light' ? '#666666' : '#a3a3a3';
+                          }}
                         >
                           {/* Icône "+" */}
                           <Plus size={18} />
@@ -552,28 +946,59 @@ export default function JuryAssignment() {
                     ))
                   ) : (
                     // Message si tous les jurés sont déjà assignés
-                    <div className="px-4 py-6 text-center text-neutral-500">
+                    <div style={{
+                      paddingX: '1rem',
+                      paddingY: '1.5rem',
+                      textAlign: 'center',
+                      color: currentMode === 'light' ? '#999999' : '#737373'
+                    }}>
                       {t('jury_assignment_all_jurors_assigned')}
                     </div>
                   )}
                 </div>
                 {/* PAGINATION pour Jurés Disponibles */}
                 {jurors.length > itemsPerPage && (
-                  <div className="mt-4 flex items-center justify-between">
+                  <div style={{
+                    marginTop: '1rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                  }}>
                     <button
                       onClick={() => setCurrentPageJurorsAvailable(Math.max(0, currentPageJurorsAvailable - 1))}
                       disabled={currentPageJurorsAvailable === 0}
-                      className="p-2 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition"
+                      style={{
+                        padding: '0.5rem',
+                        borderRadius: '0.375rem',
+                        backgroundColor: currentMode === 'light' ? '#f5f5f5' : 'transparent',
+                        border: currentMode === 'light' ? '1px solid #e5e5e5' : 'none',
+                        color: currentMode === 'light' ? '#666666' : '#a3a3a3',
+                        cursor: currentPageJurorsAvailable === 0 ? 'not-allowed' : 'pointer',
+                        opacity: currentPageJurorsAvailable === 0 ? 0.5 : 1,
+                        transition: 'all 0.2s ease'
+                      }}
                     >
                       <ChevronLeft size={18} />
                     </button>
-                    <span className="text-neutral-400 text-sm">
+                    <span style={{
+                      color: currentMode === 'light' ? '#666666' : '#a3a3a3',
+                      fontSize: '0.875rem'
+                    }}>
                       Page {currentPageJurorsAvailable + 1} / {getTotalPages(jurors)}
                     </span>
                     <button
                       onClick={() => setCurrentPageJurorsAvailable(Math.min(getTotalPages(jurors) - 1, currentPageJurorsAvailable + 1))}
                       disabled={currentPageJurorsAvailable >= getTotalPages(jurors) - 1}
-                      className="p-2 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition"
+                      style={{
+                        padding: '0.5rem',
+                        borderRadius: '0.375rem',
+                        backgroundColor: currentMode === 'light' ? '#f5f5f5' : 'transparent',
+                        border: currentMode === 'light' ? '1px solid #e5e5e5' : 'none',
+                        color: currentMode === 'light' ? '#666666' : '#a3a3a3',
+                        cursor: currentPageJurorsAvailable >= getTotalPages(jurors) - 1 ? 'not-allowed' : 'pointer',
+                        opacity: currentPageJurorsAvailable >= getTotalPages(jurors) - 1 ? 0.5 : 1,
+                        transition: 'all 0.2s ease'
+                      }}
                     >
                       <ChevronRight size={18} />
                     </button>
@@ -586,36 +1011,105 @@ export default function JuryAssignment() {
                   ============================================================ */}
               <div>
                 {/* Titre avec compteur */}
-                <h3 className="text-md font-semibold text-white mb-4">
+                <h3 style={{
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  color: currentMode === 'light' ? '#000000' : '#ffffff',
+                  marginBottom: '1rem'
+                }}>
                   {t('jury_assignment_jurors_assigned')} ({assignedJurors.length})
                 </h3>
                 {/* Conteneur liste */}
-                <div className="border border-neutral-800 rounded-lg bg-neutral-800/50 divide-y divide-neutral-700 overflow-hidden">
+                <div style={{
+                  border: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+                  borderRadius: '0.5rem',
+                  backgroundColor: currentMode === 'light' ? '#f5f5f5' : 'rgba(255,255,255,0.03)',
+                  overflow: 'hidden'
+                }}>
                   {/* SI des jurés assignés existent */}
                   {assignedJurors.length > 0 ? (
                     // Boucle sur chaque juré assigné paginé
                     paginate(assignedJurors, currentPageJurorsAssigned).map((juror) => (
                       <div
                         key={juror.id}
-                        className="flex items-center justify-between px-4 py-3 hover:bg-neutral-700 transition group"
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          paddingX: '1rem',
+                          paddingY: '0.75rem',
+                          backgroundColor: currentMode === 'light' ? '#ffffff' : undefined,
+                          borderBottom: currentMode === 'light' ? `1px solid #e5e5e5` : `1px solid rgba(255,255,255,0.05)`,
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = currentMode === 'light' ? '#f5f5f5' : 'rgba(255,255,255,0.05)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = currentMode === 'light' ? '#ffffff' : 'transparent';
+                        }}
                       >
                         {/* Flex container pour avatar + infos (même que colonne gauche) */}
-                        <div className="flex items-center gap-3 flex-1">
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.75rem',
+                          flex: 1
+                        }}>
                           {/* Avatar circulaire: dégradé VERT (au lieu de violet) pour montrer qu'il est assigné */}
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center text-white font-semibold text-sm">
+                          <div style={{
+                            width: '2.5rem',
+                            height: '2.5rem',
+                            borderRadius: '50%',
+                            background: 'linear-gradient(to bottom right, #10b981, #047857)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#ffffff',
+                            fontWeight: '600',
+                            fontSize: '0.875rem'
+                          }}>
                             {/* Initiale du nom */}
                             {juror.name[0]}
                           </div>
                           {/* Infos: nom + rôle assigné */}
                           <div>
-                            <div className="font-medium text-neutral-100">{juror.name}</div>
-                            <div className="text-xs text-neutral-500">{juror.role}</div>
+                            <div style={{
+                              fontWeight: '500',
+                              color: currentMode === 'light' ? '#000000' : '#f5f5f5'
+                            }}>
+                              {juror.name}
+                            </div>
+                            <div style={{
+                              fontSize: '0.75rem',
+                              color: currentMode === 'light' ? '#999999' : '#737373'
+                            }}>
+                              {juror.role}
+                            </div>
                           </div>
                         </div>
                         {/* Bouton "X" pour désassigner le juré */}
                         <button
                           onClick={() => handleRemoveJuror(juror.id)}
-                          className="ml-4 p-2 hover:bg-red-900/30 rounded text-neutral-400 hover:text-red-400 transition"
+                          style={{
+                            marginLeft: '1rem',
+                            padding: '0.5rem',
+                            backgroundColor: 'transparent',
+                            border: 'none',
+                            borderRadius: '0.375rem',
+                            color: currentMode === 'light' ? '#666666' : '#a3a3a3',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = 'rgba(220,38,38,0.2)';
+                            e.currentTarget.style.color = '#dc2626';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                            e.currentTarget.style.color = currentMode === 'light' ? '#666666' : '#a3a3a3';
+                          }}
                         >
                           {/* Icône "Trash" = supprimer l'assignation */}
                           <Trash2 size={18} />
@@ -624,27 +1118,58 @@ export default function JuryAssignment() {
                     ))
                   ) : (
                     // Message si aucun juré assigné
-                    <div className="px-4 py-6 text-center text-neutral-500">
+                    <div style={{
+                      paddingX: '1rem',
+                      paddingY: '1.5rem',
+                      textAlign: 'center',
+                      color: currentMode === 'light' ? '#999999' : '#737373'
+                    }}>
                       {t('jury_assignment_no_jurors')}
                     </div>
                   )}
                 </div>
                 {/* PAGINATION pour Jurés Assignés - TOUJOURS VISIBLE */}
-                <div className="mt-4 flex items-center justify-between">
+                <div style={{
+                  marginTop: '1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
+                }}>
                   <button
                     onClick={() => setCurrentPageJurorsAssigned(Math.max(0, currentPageJurorsAssigned - 1))}
                     disabled={currentPageJurorsAssigned === 0}
-                    className="p-2 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition"
+                    style={{
+                      padding: '0.5rem',
+                      borderRadius: '0.375rem',
+                      backgroundColor: currentMode === 'light' ? '#f5f5f5' : 'transparent',
+                      border: currentMode === 'light' ? '1px solid #e5e5e5' : 'none',
+                      color: currentMode === 'light' ? '#666666' : '#a3a3a3',
+                      cursor: currentPageJurorsAssigned === 0 ? 'not-allowed' : 'pointer',
+                      opacity: currentPageJurorsAssigned === 0 ? 0.5 : 1,
+                      transition: 'all 0.2s ease'
+                    }}
                   >
                     <ChevronLeft size={18} />
                   </button>
-                  <span className="text-neutral-400 text-sm">
+                  <span style={{
+                    color: currentMode === 'light' ? '#666666' : '#a3a3a3',
+                    fontSize: '0.875rem'
+                  }}>
                     Page {currentPageJurorsAssigned + 1} / {getTotalPages(assignedJurors)}
                   </span>
                   <button
                     onClick={() => setCurrentPageJurorsAssigned(Math.min(getTotalPages(assignedJurors) - 1, currentPageJurorsAssigned + 1))}
                     disabled={currentPageJurorsAssigned >= getTotalPages(assignedJurors) - 1}
-                    className="p-2 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition"
+                    style={{
+                      padding: '0.5rem',
+                      borderRadius: '0.375rem',
+                      backgroundColor: currentMode === 'light' ? '#f5f5f5' : 'transparent',
+                      border: currentMode === 'light' ? '1px solid #e5e5e5' : 'none',
+                      color: currentMode === 'light' ? '#666666' : '#a3a3a3',
+                      cursor: currentPageJurorsAssigned >= getTotalPages(assignedJurors) - 1 ? 'not-allowed' : 'pointer',
+                      opacity: currentPageJurorsAssigned >= getTotalPages(assignedJurors) - 1 ? 0.5 : 1,
+                      transition: 'all 0.2s ease'
+                    }}
                   >
                     <ChevronRight size={18} />
                   </button>
