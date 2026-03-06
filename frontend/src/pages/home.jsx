@@ -711,45 +711,38 @@ const Home = () => {
                 {(homeConfig?.categories?.enabled !== false) && (
                 <section ref={categoriesRef} id="categories" className="py-16 sm:py-20 md:py-24 max-w-full px-4 sm:px-0">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6">
-                        <div className="flex items-center justify-between gap-3 sm:gap-4 mb-8 sm:mb-12">
-                            <div className="flex items-center gap-3 sm:gap-4">
-                                <h2 className="text-2xl sm:text-3xl font-bold text-white uppercase tracking-wider whitespace-nowrap">{t('categories')}</h2>
-                                <div className="h-px bg-white/20 flex-grow"></div>
-                            </div>
-                            {/* Navigation buttons */}
-                            <div className="flex gap-2">
-                                <button 
-                                    onClick={prevCategory}
-                                    className="p-2 hover:bg-white/10 rounded-lg transition text-orange-500 hover:text-orange-400"
-                                >
-                                    <ChevronLeft size={24} />
-                                </button>
-                                <button 
-                                    onClick={nextCategory}
-                                    className="p-2 hover:bg-white/10 rounded-lg transition text-orange-500 hover:text-orange-400"
-                                >
-                                    <ChevronRight size={24} />
-                                </button>
-                            </div>
+                        <div className="flex items-center gap-3 sm:gap-4 mb-8 sm:mb-12">
+                            <h2 className="text-2xl sm:text-3xl font-bold text-white uppercase tracking-wider whitespace-nowrap">{t('categories')}</h2>
+                            <div className="h-px bg-white/20 flex-grow"></div>
                         </div>
                     </div>
                     
-                    {/* Carousel des catégories */}
+                    {/* Carousel des catégories avec flèches left/right */}
                     <div className="w-full overflow-hidden">
-                        <div 
-                            ref={categoriesGridRef}
-                            className="max-w-7xl mx-auto px-4 sm:px-6 grid gap-4 sm:gap-6 transition-opacity duration-300"
-                            style={{
-                                gridTemplateColumns: `repeat(${itemsPerPage}, minmax(0, 1fr))`,
-                            }}
-                        >
+                        <div className="max-w-7xl mx-auto flex items-center gap-2 sm:gap-4 px-4 sm:px-6">
+                            {/* Left Arrow */}
+                            <button 
+                                onClick={prevCategory}
+                                className="flex-shrink-0 p-2 hover:bg-white/10 rounded-lg transition text-orange-500 hover:text-orange-400"
+                            >
+                                <ChevronLeft size={24} />
+                            </button>
+                            
+                            {/* Carousel Grid */}
+                            <div 
+                                ref={categoriesGridRef}
+                                className="flex-grow grid gap-4 sm:gap-6 transition-opacity duration-300"
+                                style={{
+                                    gridTemplateColumns: `repeat(${itemsPerPage}, minmax(0, 1fr))`,
+                                }}
+                            >
                             {visibleCategories.map((cat, index) => (
                                 <div 
                                     key={`${carouselIndex}-${index}`}
                                     onClick={() => setSelectedCategory(categories.indexOf(cat))}
                                     className="category-card group relative overflow-hidden rounded-xl sm:rounded-2xl bg-transparent border border-white/5 hover:border-orange-500/50 transition-all duration-300 cursor-pointer hover:shadow-lg hover:shadow-orange-500/30 w-full h-[360px] sm:h-[410px]"
                                 >
-                                    <div className="h-36 sm:h-44 lg:h-52 bg-cover bg-center overflow-hidden flex-shrink-0" style={{ backgroundImage: `url(${cat.image})` }}>
+                                    <div className="h-52 sm:h-64 lg:h-80 bg-cover bg-center overflow-hidden flex-shrink-0" style={{ backgroundImage: `url(${cat.image})` }}>
                                         <div className="w-full h-full bg-black/40 group-hover:bg-black/20 transition-all duration-300"></div>
                                     </div>
                                     <div className="p-3 sm:p-4 flex-grow flex flex-col justify-between gap-2">
@@ -759,12 +752,18 @@ const Home = () => {
                                             </h3>
                                             <p className="text-slate-400 text-[11px] sm:text-xs line-clamp-1 leading-tight">{lang === 'fr' ? cat.desc_fr : cat.desc_en}</p>
                                         </div>
-                                        <button className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-1.5 px-2 rounded text-[10px] sm:text-xs w-full flex-shrink-0">
-                                            {lang === 'fr' ? 'Voir plus' : 'See more'}
-                                        </button>
                                     </div>
                                 </div>
                             ))}
+                            </div>
+                            
+                            {/* Right Arrow */}
+                            <button 
+                                onClick={nextCategory}
+                                className="flex-shrink-0 p-2 hover:bg-white/10 rounded-lg transition text-orange-500 hover:text-orange-400"
+                            >
+                                <ChevronRight size={24} />
+                            </button>
                         </div>
                     </div>
                 </section>
