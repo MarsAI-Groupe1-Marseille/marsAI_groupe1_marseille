@@ -7,6 +7,26 @@ import {
 import axios from "../config/axiosConfig";
 import { useLanguage } from "../context/LanguageContext";
 
+/* ─── HELPER: CONSTRUIRE L'URL COMPLÈTE DE L'IMAGE ─── */
+function getImageUrl(posterUrl) {
+  if (!posterUrl) return null;
+  
+  // Si l'URL est déjà complète (S3, etc.), la retourner telle quelle
+  if (posterUrl.startsWith('https://')) {
+    return posterUrl;
+  }
+  
+  // Sinon, construire l'URL complète avec la base URL du backend
+  const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  // Retirer le /api si présent
+  const baseUrl = apiBaseUrl.replace(/\/api$/, '');
+  
+  // S'assurer que posterUrl commence par /
+  const path = posterUrl.startsWith('/') ? posterUrl : `/${posterUrl}`;
+  
+  return `${baseUrl}${path}`;
+}
+
 /* ─── GÉNÉRATEUR DE COULEURS D'AVATAR ─── */
 function getInitialColors(initials) {
   const colorMap = {
@@ -578,7 +598,7 @@ export default function SelectFinaliste() {
                 <div className="px-3 py-3 border-b border-neutral-800/60 flex items-center">
                   <div className="w-10 h-14 rounded-lg overflow-hidden bg-neutral-800 flex-shrink-0">
                     {f.posterUrl ? (
-                      <img src={f.posterUrl} alt={f.titre} className="w-full h-full object-cover" onError={e => { e.target.style.display = 'none'; }} />
+                      <img src={getImageUrl(f.posterUrl)} alt={f.titre} className="w-full h-full object-cover" onError={e => { e.target.style.display = 'none'; }} />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-neutral-600"><Film size={16} /></div>
                     )}
@@ -711,7 +731,7 @@ export default function SelectFinaliste() {
                 <div className="flex gap-3">
                   <div className="w-12 h-16 rounded-lg overflow-hidden bg-neutral-800 flex-shrink-0">
                     {f.posterUrl ? (
-                      <img src={f.posterUrl} alt={f.titre} className="w-full h-full object-cover" />
+                      <img src={getImageUrl(f.posterUrl)} alt={f.titre} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-neutral-600"><Film size={16} /></div>
                     )}
