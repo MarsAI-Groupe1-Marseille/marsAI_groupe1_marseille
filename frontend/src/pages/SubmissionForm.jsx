@@ -1,9 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useLanguage } from '../context/LanguageContext';
+import StarryBackground from '../components/StarryBackground.jsx';
 
 const SubmissionForm = () => {
   const { t } = useLanguage();
+  const [currentMode, setCurrentMode] = useState('dark');
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      const mode = document.documentElement.getAttribute('data-mode');
+      setCurrentMode(mode || 'dark');
+    });
+
+    const mode = document.documentElement.getAttribute('data-mode');
+    setCurrentMode(mode || 'dark');
+
+    observer.observe(document.documentElement, { attributes: true });
+
+    return () => observer.disconnect();
+  }, []);
   const [formData, setFormData] = useState({
     director_civility: 'M',
     director_firstname: '',
@@ -201,97 +217,365 @@ const SubmissionForm = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0a1628] via-[#1a0b2e] to-[#16001e] relative overflow-hidden font-sans">
-      <div className="max-w-5xl mx-auto px-4 py-12 relative z-10">
-        <div className="text-center mb-12">
-          <h1 className="text-5xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent tracking-tight">{t('submission_form_title')}</h1>
-          <p className="text-purple-300 text-lg font-light tracking-wider italic">{t('submission_form_subtitle')}</p>
-        </div>
+    <>
+      <StarryBackground />
+      <style>
+        {`
+          input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: ${currentMode === 'light' ? 'invert(0)' : 'invert(1)'};
+            cursor: pointer;
+          }
+        `}
+      </style>
+      <div style={{
+        minHeight: '100vh',
+        backgroundColor: currentMode === 'light' ? '#ffffff' : '#0a0a12',
+        position: 'relative',
+        overflow: 'hidden',
+        fontFamily: "'Space Grotesk', 'rajdhani', sans-serif"
+      }}>
+        <div style={{
+          maxWidth: '64rem',
+          margin: '0 auto',
+          paddingLeft: '1rem',
+          paddingRight: '1rem',
+          paddingTop: '3rem',
+          paddingBottom: '3rem',
+          position: 'relative',
+          zIndex: 10
+        }}>
+          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+            <h1 style={{
+              fontSize: currentMode === 'light' ? '2.25rem' : '3rem',
+              fontWeight: 'bold',
+              marginBottom: '1rem',
+              color: currentMode === 'light' ? '#000000' : '#ffffff',
+              letterSpacing: '1px'
+            }}>
+              {t('submission_form_title')}
+            </h1>
+            <p style={{
+              color: currentMode === 'light' ? '#7c3aed' : '#e9d5ff',
+              fontSize: '1.125rem',
+              fontWeight: '300',
+              letterSpacing: '2px',
+              fontStyle: 'italic'
+            }}>
+              {t('submission_form_subtitle')}
+            </p>
+          </div>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           
           {/* SECTION 1 : RÉALISATEUR */}
-          <section className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-8 border border-purple-500/20 shadow-2xl">
-            <h2 className="text-2xl font-bold text-purple-300 mb-6 border-b border-purple-500/30 pb-4">{t('submission_director_section')}</h2>
+          <section style={{
+            backgroundColor: currentMode === 'light' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(71, 38, 82, 0.5)',
+            backdropFilter: 'blur(12px)',
+            borderRadius: '1.5rem',
+            padding: '2rem',
+            border: `1px solid ${currentMode === 'light' ? 'rgba(124, 58, 237, 0.2)' : 'rgba(160, 33, 255, 0.2)'}`,
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
+          }}>
+            <h2 style={{
+              fontSize: '1.5rem',
+              fontWeight: 'bold',
+              color: currentMode === 'light' ? '#7c3aed' : '#e9d5ff',
+              marginBottom: '1.5rem',
+              borderBottom: `1px solid ${currentMode === 'light' ? 'rgba(124, 58, 237, 0.2)' : 'rgba(160, 33, 255, 0.2)'}`,
+              paddingBottom: '1rem'
+            }}>{t('submission_director_section')}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="md:col-span-2">
-                <label className="block text-sm text-purple-200 mb-2">{t('submission_civility')}</label>
-                <select name="director_civility" onChange={handleChange} className="w-full bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400">
+                <label style={{ fontSize: '0.875rem', color: currentMode === 'light' ? '#7c3aed' : '#e9d5ff' }}>{t('submission_civility')}</label>
+                <select name="director_civility" onChange={handleChange} style={{
+                  width: '100%',
+                  backgroundColor: currentMode === 'light' ? '#f3f0ff' : 'rgba(71, 38, 82, 0.5)',
+                  border: `1px solid ${currentMode === 'light' ? 'rgba(124, 58, 237, 0.2)' : 'rgba(160, 33, 255, 0.2)'}`,
+                  borderRadius: '0.5rem',
+                  padding: '0.75rem 1rem',
+                  color: currentMode === 'light' ? '#000000' : '#ffffff'
+                }}>
                   <option value="M">{t('submission_civility_mr')}</option>
                   <option value="F">{t('submission_civility_ms')}</option>
                   <option value="Iel">{t('submission_civility_nb')}</option>
                 </select>
               </div>
-              <input type="text" name="director_firstname" placeholder={t('submission_firstname')} onChange={handleChange} required className="w-full bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
-              <input type="text" name="director_lastname" placeholder={t('submission_lastname')} onChange={handleChange} required className="w-full bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
-              <input type="email" name="director_email" placeholder={t('submission_email')} onChange={handleChange} required className="w-full bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
-              <input type="tel" name="director_mobile" placeholder={t('submission_mobile')} onChange={handleChange} required className="w-full bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
-              <input type="date" name="director_birth_date" onChange={handleChange} className="w-full bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" title={t('submission_birth_date')} />
-              <input type="text" name="director_job_title" placeholder={t('submission_job_title')} onChange={handleChange} className="w-full bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
+              <input type="text" name="director_firstname" placeholder={t('submission_firstname')} onChange={handleChange} required style={{
+                width: '100%',
+                backgroundColor: currentMode === 'light' ? '#f3f0ff' : 'rgba(71, 38, 82, 0.5)',
+                border: `1px solid ${currentMode === 'light' ? 'rgba(124, 58, 237, 0.2)' : 'rgba(160, 33, 255, 0.2)'}`,
+                borderRadius: '0.5rem',
+                padding: '0.75rem 1rem',
+                color: currentMode === 'light' ? '#000000' : '#ffffff'
+              }} />
+              <input type="text" name="director_lastname" placeholder={t('submission_lastname')} onChange={handleChange} required style={{
+                width: '100%',
+                backgroundColor: currentMode === 'light' ? '#f3f0ff' : 'rgba(71, 38, 82, 0.5)',
+                border: `1px solid ${currentMode === 'light' ? 'rgba(124, 58, 237, 0.2)' : 'rgba(160, 33, 255, 0.2)'}`,
+                borderRadius: '0.5rem',
+                padding: '0.75rem 1rem',
+                color: currentMode === 'light' ? '#000000' : '#ffffff'
+              }} />
+              <input type="email" name="director_email" placeholder={t('submission_email')} onChange={handleChange} required style={{
+                width: '100%',
+                backgroundColor: currentMode === 'light' ? '#f3f0ff' : 'rgba(71, 38, 82, 0.5)',
+                border: `1px solid ${currentMode === 'light' ? 'rgba(124, 58, 237, 0.2)' : 'rgba(160, 33, 255, 0.2)'}`,
+                borderRadius: '0.5rem',
+                padding: '0.75rem 1rem',
+                color: currentMode === 'light' ? '#000000' : '#ffffff'
+              }} />
+              <input type="tel" name="director_mobile" placeholder={t('submission_mobile')} onChange={handleChange} required style={{
+                width: '100%',
+                backgroundColor: currentMode === 'light' ? '#f3f0ff' : 'rgba(71, 38, 82, 0.5)',
+                border: `1px solid ${currentMode === 'light' ? 'rgba(124, 58, 237, 0.2)' : 'rgba(160, 33, 255, 0.2)'}`,
+                borderRadius: '0.5rem',
+                padding: '0.75rem 1rem',
+                color: currentMode === 'light' ? '#000000' : '#ffffff'
+              }} />
+              <input type="date" name="director_birth_date" onChange={handleChange} style={{
+                width: '100%',
+                backgroundColor: currentMode === 'light' ? '#f3f0ff' : 'rgba(71, 38, 82, 0.5)',
+                border: `1px solid ${currentMode === 'light' ? 'rgba(124, 58, 237, 0.2)' : 'rgba(160, 33, 255, 0.2)'}`,
+                borderRadius: '0.5rem',
+                padding: '0.75rem 1rem',
+                color: currentMode === 'light' ? '#000000' : '#ffffff'
+              }} title={t('submission_birth_date')} />
+              <input type="text" name="director_job_title" placeholder={t('submission_job_title')} onChange={handleChange} style={{
+                width: '100%',
+                backgroundColor: currentMode === 'light' ? '#f3f0ff' : 'rgba(71, 38, 82, 0.5)',
+                border: `1px solid ${currentMode === 'light' ? 'rgba(124, 58, 237, 0.2)' : 'rgba(160, 33, 255, 0.2)'}`,
+                borderRadius: '0.5rem',
+                padding: '0.75rem 1rem',
+                color: currentMode === 'light' ? '#000000' : '#ffffff'
+              }} />
               
               <div className="md:col-span-2 space-y-4">
-                <input type="text" name="director_address" placeholder={t('submission_address')} onChange={handleChange} className="w-full bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
+                <input type="text" name="director_address" placeholder={t('submission_address')} onChange={handleChange} style={{
+                  width: '100%',
+                  backgroundColor: currentMode === 'light' ? '#f3f0ff' : 'rgba(71, 38, 82, 0.5)',
+                  border: `1px solid ${currentMode === 'light' ? 'rgba(124, 58, 237, 0.2)' : 'rgba(160, 33, 255, 0.2)'}`,
+                  borderRadius: '0.5rem',
+                  padding: '0.75rem 1rem',
+                  color: currentMode === 'light' ? '#000000' : '#ffffff'
+                }} />
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <input type="text" name="director_zip_code" placeholder={t('submission_zip_code')} onChange={handleChange} className="bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
-                  <input type="text" name="director_city" placeholder={t('submission_city')} onChange={handleChange} className="bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
-                  <input type="text" name="director_country" placeholder={t('submission_country')} onChange={handleChange} className="bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
+                  <input type="text" name="director_zip_code" placeholder={t('submission_zip_code')} onChange={handleChange} style={{
+                    backgroundColor: currentMode === 'light' ? '#f3f0ff' : 'rgba(71, 38, 82, 0.5)',
+                    border: `1px solid ${currentMode === 'light' ? 'rgba(124, 58, 237, 0.2)' : 'rgba(160, 33, 255, 0.2)'}`,
+                    borderRadius: '0.5rem',
+                    padding: '0.75rem 1rem',
+                    color: currentMode === 'light' ? '#000000' : '#ffffff'
+                  }} />
+                  <input type="text" name="director_city" placeholder={t('submission_city')} onChange={handleChange} style={{
+                    backgroundColor: currentMode === 'light' ? '#f3f0ff' : 'rgba(71, 38, 82, 0.5)',
+                    border: `1px solid ${currentMode === 'light' ? 'rgba(124, 58, 237, 0.2)' : 'rgba(160, 33, 255, 0.2)'}`,
+                    borderRadius: '0.5rem',
+                    padding: '0.75rem 1rem',
+                    color: currentMode === 'light' ? '#000000' : '#ffffff'
+                  }} />
+                  <input type="text" name="director_country" placeholder={t('submission_country')} onChange={handleChange} style={{
+                    backgroundColor: currentMode === 'light' ? '#f3f0ff' : 'rgba(71, 38, 82, 0.5)',
+                    border: `1px solid ${currentMode === 'light' ? 'rgba(124, 58, 237, 0.2)' : 'rgba(160, 33, 255, 0.2)'}`,
+                    borderRadius: '0.5rem',
+                    padding: '0.75rem 1rem',
+                    color: currentMode === 'light' ? '#000000' : '#ffffff'
+                  }} />
                 </div>
               </div>
 
               <div className="md:col-span-2 flex items-center">
-                <input type="checkbox" name="director_newsletter" onChange={handleChange} className="h-5 w-5 text-purple-500 bg-slate-900/50 border-purple-500/30" />
-                <label className="ml-3 text-sm text-purple-100">{t('submission_newsletter')}</label>
+                <input type="checkbox" name="director_newsletter" onChange={handleChange} style={{
+                  accentColor: currentMode === 'light' ? '#7c3aed' : '#7b2fff'
+                }} />
+                <label style={{ marginLeft: '0.75rem', fontSize: '0.875rem', color: currentMode === 'light' ? '#7c3aed' : '#e9d5ff' }}>{t('submission_newsletter')}</label>
               </div>
 
               <div className="md:col-span-2">
-                <h3 className="text-lg font-semibold text-purple-200 mb-3">{t('submission_social_links_section')}</h3>
+                <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: currentMode === 'light' ? '#7c3aed' : '#e9d5ff' }}>{t('submission_social_links_section')}</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <input type="url" name="website" placeholder={t('submission_social_website')} value={socialLinks.website} onChange={handleSocialLinkChange} className="bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
-                  <input type="url" name="instagram" placeholder={t('submission_social_instagram')} value={socialLinks.instagram} onChange={handleSocialLinkChange} className="bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
-                  <input type="url" name="linkedin" placeholder={t('submission_social_linkedin')} value={socialLinks.linkedin} onChange={handleSocialLinkChange} className="bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
-                  <input type="url" name="youtube" placeholder={t('submission_social_youtube')} value={socialLinks.youtube} onChange={handleSocialLinkChange} className="bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
-                  <input type="url" name="vimeo" placeholder={t('submission_social_vimeo')} value={socialLinks.vimeo} onChange={handleSocialLinkChange} className="bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
-                  <input type="url" name="tiktok" placeholder={t('submission_social_tiktok')} value={socialLinks.tiktok} onChange={handleSocialLinkChange} className="bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
-                  <input type="url" name="x" placeholder={t('submission_social_x')} value={socialLinks.x} onChange={handleSocialLinkChange} className="md:col-span-2 bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400" />
+                  <input type="url" name="website" placeholder={t('submission_social_website')} value={socialLinks.website} onChange={handleSocialLinkChange} style={{
+                    backgroundColor: currentMode === 'light' ? '#f3f0ff' : 'rgba(71, 38, 82, 0.5)',
+                    border: `1px solid ${currentMode === 'light' ? 'rgba(124, 58, 237, 0.2)' : 'rgba(160, 33, 255, 0.2)'}`,
+                    borderRadius: '0.5rem',
+                    padding: '0.75rem 1rem',
+                    color: currentMode === 'light' ? '#000000' : '#ffffff'
+                  }} />
+                  <input type="url" name="instagram" placeholder={t('submission_social_instagram')} value={socialLinks.instagram} onChange={handleSocialLinkChange} style={{
+                    backgroundColor: currentMode === 'light' ? '#f3f0ff' : 'rgba(71, 38, 82, 0.5)',
+                    border: `1px solid ${currentMode === 'light' ? 'rgba(124, 58, 237, 0.2)' : 'rgba(160, 33, 255, 0.2)'}`,
+                    borderRadius: '0.5rem',
+                    padding: '0.75rem 1rem',
+                    color: currentMode === 'light' ? '#000000' : '#ffffff'
+                  }} />
+                  <input type="url" name="linkedin" placeholder={t('submission_social_linkedin')} value={socialLinks.linkedin} onChange={handleSocialLinkChange} style={{
+                    backgroundColor: currentMode === 'light' ? '#f3f0ff' : 'rgba(71, 38, 82, 0.5)',
+                    border: `1px solid ${currentMode === 'light' ? 'rgba(124, 58, 237, 0.2)' : 'rgba(160, 33, 255, 0.2)'}`,
+                    borderRadius: '0.5rem',
+                    padding: '0.75rem 1rem',
+                    color: currentMode === 'light' ? '#000000' : '#ffffff'
+                  }} />
+                  <input type="url" name="youtube" placeholder={t('submission_social_youtube')} value={socialLinks.youtube} onChange={handleSocialLinkChange} style={{
+                    backgroundColor: currentMode === 'light' ? '#f3f0ff' : 'rgba(71, 38, 82, 0.5)',
+                    border: `1px solid ${currentMode === 'light' ? 'rgba(124, 58, 237, 0.2)' : 'rgba(160, 33, 255, 0.2)'}`,
+                    borderRadius: '0.5rem',
+                    padding: '0.75rem 1rem',
+                    color: currentMode === 'light' ? '#000000' : '#ffffff'
+                  }} />
+                  <input type="url" name="vimeo" placeholder={t('submission_social_vimeo')} value={socialLinks.vimeo} onChange={handleSocialLinkChange} style={{
+                    backgroundColor: currentMode === 'light' ? '#f3f0ff' : 'rgba(71, 38, 82, 0.5)',
+                    border: `1px solid ${currentMode === 'light' ? 'rgba(124, 58, 237, 0.2)' : 'rgba(160, 33, 255, 0.2)'}`,
+                    borderRadius: '0.5rem',
+                    padding: '0.75rem 1rem',
+                    color: currentMode === 'light' ? '#000000' : '#ffffff'
+                  }} />
+                  <input type="url" name="tiktok" placeholder={t('submission_social_tiktok')} value={socialLinks.tiktok} onChange={handleSocialLinkChange} style={{
+                    backgroundColor: currentMode === 'light' ? '#f3f0ff' : 'rgba(71, 38, 82, 0.5)',
+                    border: `1px solid ${currentMode === 'light' ? 'rgba(124, 58, 237, 0.2)' : 'rgba(160, 33, 255, 0.2)'}`,
+                    borderRadius: '0.5rem',
+                    padding: '0.75rem 1rem',
+                    color: currentMode === 'light' ? '#000000' : '#ffffff'
+                  }} />
+                  <input type="url" name="x" placeholder={t('submission_social_x')} value={socialLinks.x} onChange={handleSocialLinkChange} className="md:col-span-2" style={{
+                    backgroundColor: currentMode === 'light' ? '#f3f0ff' : 'rgba(71, 38, 82, 0.5)',
+                    border: `1px solid ${currentMode === 'light' ? 'rgba(124, 58, 237, 0.2)' : 'rgba(160, 33, 255, 0.2)'}`,
+                    borderRadius: '0.5rem',
+                    padding: '0.75rem 1rem',
+                    color: currentMode === 'light' ? '#000000' : '#ffffff'
+                  }} />
                 </div>
               </div>
             </div>
           </section>
 
           {/* SECTION 2 : FILM */}
-          <section className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-8 border border-violet-500/20 shadow-2xl">
-            <h2 className="text-2xl font-bold text-violet-300 mb-6 border-b border-violet-500/30 pb-4">{t('submission_film_section')}</h2>
+          <section style={{
+            backgroundColor: currentMode === 'light' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(71, 38, 82, 0.5)',
+            backdropFilter: 'blur(12px)',
+            borderRadius: '1.5rem',
+            padding: '2rem',
+            border: `1px solid ${currentMode === 'light' ? 'rgba(100, 116, 139, 0.2)' : 'rgba(167, 34, 255, 0.2)'}`,
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
+          }}>
+            <h2 style={{
+              fontSize: '1.5rem',
+              fontWeight: 'bold',
+              color: currentMode === 'light' ? '#7c3aed' : '#d8b4fe',
+              marginBottom: '1.5rem',
+              borderBottom: `1px solid ${currentMode === 'light' ? 'rgba(100, 116, 139, 0.2)' : 'rgba(167, 34, 255, 0.2)'}`,
+              paddingBottom: '1rem'
+            }}>{t('submission_film_section')}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <input type="text" name="title_original" placeholder={t('submission_title_original')} required onChange={handleChange} className="w-full bg-slate-900/50 border border-violet-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-violet-400" />
-              <input type="text" name="title_english" placeholder={t('submission_title_english')} onChange={handleChange} className="w-full bg-slate-900/50 border border-violet-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-violet-400" />
-              <textarea name="synopsis_original" placeholder={t('submission_synopsis_original')} rows="3" onChange={handleChange} className="md:col-span-2 w-full bg-slate-900/50 border border-violet-500/30 rounded-lg px-4 py-3 text-white resize-none focus:outline-none focus:border-violet-400"></textarea>
-              <textarea name="synopsis_english" placeholder={t('submission_synopsis_english')} rows="3" onChange={handleChange} className="md:col-span-2 w-full bg-slate-900/50 border border-violet-500/30 rounded-lg px-4 py-3 text-white resize-none focus:outline-none focus:border-violet-400"></textarea>
+              <input type="text" name="title_original" placeholder={t('submission_title_original')} required onChange={handleChange} style={{
+                width: '100%',
+                backgroundColor: currentMode === 'light' ? '#f3f0ff' : 'rgba(71, 38, 82, 0.5)',
+                border: `1px solid ${currentMode === 'light' ? 'rgba(100, 116, 139, 0.2)' : 'rgba(167, 34, 255, 0.2)'}`,
+                borderRadius: '0.5rem',
+                padding: '0.75rem 1rem',
+                color: currentMode === 'light' ? '#000000' : '#ffffff'
+              }} />
+              <input type="text" name="title_english" placeholder={t('submission_title_english')} onChange={handleChange} style={{
+                width: '100%',
+                backgroundColor: currentMode === 'light' ? '#f3f0ff' : 'rgba(71, 38, 82, 0.5)',
+                border: `1px solid ${currentMode === 'light' ? 'rgba(100, 116, 139, 0.2)' : 'rgba(167, 34, 255, 0.2)'}`,
+                borderRadius: '0.5rem',
+                padding: '0.75rem 1rem',
+                color: currentMode === 'light' ? '#000000' : '#ffffff'
+              }} />
+              <textarea name="synopsis_original" placeholder={t('submission_synopsis_original')} rows="3" onChange={handleChange} className="md:col-span-2" style={{
+                width: '100%',
+                backgroundColor: currentMode === 'light' ? '#f3f0ff' : 'rgba(71, 38, 82, 0.5)',
+                border: `1px solid ${currentMode === 'light' ? 'rgba(100, 116, 139, 0.2)' : 'rgba(167, 34, 255, 0.2)'}`,
+                borderRadius: '0.5rem',
+                padding: '0.75rem 1rem',
+                color: currentMode === 'light' ? '#000000' : '#ffffff',
+                resize: 'none'
+              }}></textarea>
+              <textarea name="synopsis_english" placeholder={t('submission_synopsis_english')} rows="3" onChange={handleChange} className="md:col-span-2" style={{
+                width: '100%',
+                backgroundColor: currentMode === 'light' ? '#f3f0ff' : 'rgba(71, 38, 82, 0.5)',
+                border: `1px solid ${currentMode === 'light' ? 'rgba(100, 116, 139, 0.2)' : 'rgba(167, 34, 255, 0.2)'}`,
+                borderRadius: '0.5rem',
+                padding: '0.75rem 1rem',
+                color: currentMode === 'light' ? '#000000' : '#ffffff',
+                resize: 'none'
+              }}></textarea>
               
-              <input type="number" name="duration_seconds" placeholder={t('submission_duration')} onChange={handleChange} className="bg-slate-900/50 border border-violet-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-violet-400" />
-              <input type="text" name="language_main" placeholder={t('submission_language')} onChange={handleChange} className="bg-slate-900/50 border border-violet-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-violet-400" />
+              <input type="number" name="duration_seconds" placeholder={t('submission_duration')} onChange={handleChange} style={{
+                backgroundColor: currentMode === 'light' ? '#f3f0ff' : 'rgba(71, 38, 82, 0.5)',
+                border: `1px solid ${currentMode === 'light' ? 'rgba(100, 116, 139, 0.2)' : 'rgba(167, 34, 255, 0.2)'}`,
+                borderRadius: '0.5rem',
+                padding: '0.75rem 1rem',
+                color: currentMode === 'light' ? '#000000' : '#ffffff'
+              }} />
+              <input type="text" name="language_main" placeholder={t('submission_language')} onChange={handleChange} style={{
+                backgroundColor: currentMode === 'light' ? '#f3f0ff' : 'rgba(71, 38, 82, 0.5)',
+                border: `1px solid ${currentMode === 'light' ? 'rgba(100, 116, 139, 0.2)' : 'rgba(167, 34, 255, 0.2)'}`,
+                borderRadius: '0.5rem',
+                padding: '0.75rem 1rem',
+                color: currentMode === 'light' ? '#000000' : '#ffffff'
+              }} />
               
-              {/* INPUT THEME AVEC PLACEHOLDER EXPLICITE */}
               <input 
                 type="text" 
                 name="theme_tags" 
                 placeholder={t('submission_themes')} 
                 onChange={handleChange} 
-                className="bg-slate-900/50 border border-violet-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-violet-400" 
+                style={{
+                  backgroundColor: currentMode === 'light' ? '#f3f0ff' : 'rgba(71, 38, 82, 0.5)',
+                  border: `1px solid ${currentMode === 'light' ? 'rgba(100, 116, 139, 0.2)' : 'rgba(167, 34, 255, 0.2)'}`,
+                  borderRadius: '0.5rem',
+                  padding: '0.75rem 1rem',
+                  color: currentMode === 'light' ? '#000000' : '#ffffff'
+                }} 
               />
 
-              <select name="ai_classification" onChange={handleChange} className="bg-slate-900/50 border border-violet-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-violet-400">
+              <select name="ai_classification" onChange={handleChange} style={{
+                backgroundColor: currentMode === 'light' ? '#f3f0ff' : 'rgba(71, 38, 82, 0.5)',
+                border: `1px solid ${currentMode === 'light' ? 'rgba(100, 116, 139, 0.2)' : 'rgba(167, 34, 255, 0.2)'}`,
+                borderRadius: '0.5rem',
+                padding: '0.75rem 1rem',
+                color: currentMode === 'light' ? '#000000' : '#ffffff'
+              }}>
                 <option value="Hybrid">{t('submission_ai_hybrid')}</option>
                 <option value="100% IA">{t('submission_ai_100percent')}</option>
               </select>
-              <textarea name="ai_tools" placeholder={t('submission_ai_tools')} onChange={handleChange} className="md:col-span-2 bg-slate-900/50 border border-violet-500/30 rounded-lg px-4 py-3 text-white resize-none focus:outline-none focus:border-violet-400"></textarea>
-              <textarea name="ai_methodology" placeholder={t('submission_ai_methodology')} onChange={handleChange} className="md:col-span-2 bg-slate-900/50 border border-violet-500/30 rounded-lg px-4 py-3 text-white resize-none focus:outline-none focus:border-violet-400"></textarea>
+              <textarea name="ai_tools" placeholder={t('submission_ai_tools')} onChange={handleChange} className="md:col-span-2" style={{
+                backgroundColor: currentMode === 'light' ? '#f3f0ff' : 'rgba(71, 38, 82, 0.5)',
+                border: `1px solid ${currentMode === 'light' ? 'rgba(100, 116, 139, 0.2)' : 'rgba(167, 34, 255, 0.2)'}`,
+                borderRadius: '0.5rem',
+                padding: '0.75rem 1rem',
+                color: currentMode === 'light' ? '#000000' : '#ffffff',
+                resize: 'none'
+              }}></textarea>
+              <textarea name="ai_methodology" placeholder={t('submission_ai_methodology')} onChange={handleChange} className="md:col-span-2" style={{
+                backgroundColor: currentMode === 'light' ? '#f3f0ff' : 'rgba(71, 38, 82, 0.5)',
+                border: `1px solid ${currentMode === 'light' ? 'rgba(100, 116, 139, 0.2)' : 'rgba(167, 34, 255, 0.2)'}`,
+                borderRadius: '0.5rem',
+                padding: '0.75rem 1rem',
+                color: currentMode === 'light' ? '#000000' : '#ffffff',
+                resize: 'none'
+              }}></textarea>
             </div>
           </section>
 
           {/* SECTION 3 : FICHIERS (HARMONISÉS) */}
-          <section className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-8 border border-fuchsia-500/20 shadow-2xl">
-            <h2 className="text-2xl font-bold text-fuchsia-300 mb-6 border-b border-fuchsia-500/30 pb-4">{t('submission_media_section')}</h2>
-            <div className="space-y-6">
+          <section style={{
+            backgroundColor: currentMode === 'light' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(71, 38, 82, 0.5)',
+            backdropFilter: 'blur(12px)',
+            borderRadius: '1.5rem',
+            padding: '2rem',
+            border: `1px solid ${currentMode === 'light' ? 'rgba(217, 70, 239, 0.2)' : 'rgba(217, 70, 239, 0.2)'}`,
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
+          }}>
+            <h2 style={{
+              fontSize: '1.5rem',
+              fontWeight: 'bold',
+              color: currentMode === 'light' ? '#d946ef' : '#f0abfc',
+              marginBottom: '1.5rem',
+              borderBottom: `1px solid ${currentMode === 'light' ? 'rgba(217, 70, 239, 0.2)' : 'rgba(217, 70, 239, 0.2)'}`,
+              paddingBottom: '1rem'
+            }}>{t('submission_media_section')}</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               {[
                 { label: t('submission_video_file'), name: 'video_file', accept: 'video/*', required: true },
                 { label: t('submission_poster_file'), name: 'poster_file', accept: 'image/*', required: true },
@@ -299,15 +583,23 @@ const SubmissionForm = () => {
                 { label: t('submission_gallery_files'), name: 'gallery_files', accept: 'image/*', required: false, multiple: true }
               ].map((input) => (
                 <div key={input.name}>
-                  <label className="block text-sm text-fuchsia-200 mb-2">{input.label}</label>
+                  <label style={{ display: 'block', fontSize: '0.875rem', color: currentMode === 'light' ? '#d946ef' : '#f0abfc', marginBottom: '0.5rem' }}>{input.label}</label>
                   <input 
                     type="file" 
                     name={input.name} 
                     accept={input.accept} 
                     multiple={input.multiple}
                     onChange={handleFileChange} 
-                    required={input.required} 
-                    className="w-full bg-slate-900/50 border-2 border-dashed border-fuchsia-500/30 rounded-lg px-4 py-6 text-white file:mr-4 file:py-2 file:px-6 file:rounded-full file:bg-gradient-to-r file:from-fuchsia-500 file:to-pink-500 file:text-white file:border-0 cursor-pointer hover:border-fuchsia-400/50 transition-all"
+                    required={input.required}
+                    style={{
+                      width: '100%',
+                      backgroundColor: currentMode === 'light' ? '#f3f0ff' : 'rgba(71, 38, 82, 0.5)',
+                      border: `2px dashed ${currentMode === 'light' ? 'rgba(217, 70, 239, 0.3)' : 'rgba(217, 70, 239, 0.3)'}`,
+                      borderRadius: '0.5rem',
+                      padding: '1.5rem 1rem',
+                      color: currentMode === 'light' ? '#000000' : '#ffffff',
+                      cursor: 'pointer'
+                    }}
                   />
                 </div>
               ))}
@@ -315,20 +607,86 @@ const SubmissionForm = () => {
           </section>
 
           {/* SECTION 4 : COLLABORATEURS */}
-          <section className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-8 border border-purple-500/20 shadow-2xl">
-            <div className="flex items-center justify-between mb-6 pb-4 border-b border-purple-500/30">
-              <h2 className="text-2xl font-bold text-purple-300">{t('submission_collaborators_section')}</h2>
-              <button type="button" onClick={addCollaborator} className="px-5 py-2 rounded-full bg-gradient-to-r from-purple-500 to-violet-500 text-white text-sm font-semibold hover:scale-105 transition-transform">{t('submission_add_collaborator')}</button>
+          <section style={{
+            backgroundColor: currentMode === 'light' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(71, 38, 82, 0.5)',
+            backdropFilter: 'blur(12px)',
+            borderRadius: '1.5rem',
+            padding: '2rem',
+            border: `1px solid ${currentMode === 'light' ? 'rgba(124, 58, 237, 0.2)' : 'rgba(160, 33, 255, 0.2)'}`,
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: `1px solid ${currentMode === 'light' ? 'rgba(124, 58, 237, 0.2)' : 'rgba(160, 33, 255, 0.2)'}` }}>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: currentMode === 'light' ? '#7c3aed' : '#e9d5ff' }}>{t('submission_collaborators_section')}</h2>
+              <button type="button" onClick={addCollaborator} style={{
+                padding: '0.625rem 1.25rem',
+                borderRadius: '9999px',
+                background: 'linear-gradient(to right, #a855f7, #7c3aed)',
+                color: '#ffffff',
+                fontSize: '0.875rem',
+                fontWeight: '600',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'transform 0.2s'
+              }}>{t('submission_add_collaborator')}</button>
             </div>
-            <div className="space-y-4">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {collaborators.map((collab, index) => (
-                <div key={index} className="relative bg-slate-900/30 border border-purple-500/20 rounded-xl p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <input type="text" name="first_name" placeholder={t('submission_collab_firstname')} value={collab.first_name} onChange={(e) => handleCollaboratorChange(index, e)} className="bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-purple-400" />
-                  <input type="text" name="last_name" placeholder={t('submission_collab_lastname')} value={collab.last_name} onChange={(e) => handleCollaboratorChange(index, e)} className="bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-purple-400" />
-                  <input type="text" name="role" placeholder={t('submission_collab_role')} value={collab.role} onChange={(e) => handleCollaboratorChange(index, e)} className="bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-purple-400" />
-                  <input type="email" name="email" placeholder={t('submission_collab_email')} value={collab.email} onChange={(e) => handleCollaboratorChange(index, e)} className="bg-slate-900/50 border border-purple-500/30 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-purple-400" />
+                <div key={index} style={{
+                  position: 'relative',
+                  backgroundColor: currentMode === 'light' ? 'rgba(243, 240, 255, 0.5)' : 'rgba(71, 38, 82, 0.3)',
+                  border: `1px solid ${currentMode === 'light' ? 'rgba(124, 58, 237, 0.2)' : 'rgba(160, 33, 255, 0.2)'}`,
+                  borderRadius: '0.75rem',
+                  padding: '1.25rem',
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '1rem',
+                  '@media (min-width: 768px)': { gridTemplateColumns: '1fr 1fr 1fr 1fr' }
+                }} className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <input type="text" name="first_name" placeholder={t('submission_collab_firstname')} value={collab.first_name} onChange={(e) => handleCollaboratorChange(index, e)} style={{
+                    backgroundColor: currentMode === 'light' ? '#f3f0ff' : 'rgba(71, 38, 82, 0.5)',
+                    border: `1px solid ${currentMode === 'light' ? 'rgba(124, 58, 237, 0.2)' : 'rgba(160, 33, 255, 0.2)'}`,
+                    borderRadius: '0.5rem',
+                    padding: '0.5rem 1rem',
+                    color: currentMode === 'light' ? '#000000' : '#ffffff'
+                  }} />
+                  <input type="text" name="last_name" placeholder={t('submission_collab_lastname')} value={collab.last_name} onChange={(e) => handleCollaboratorChange(index, e)} style={{
+                    backgroundColor: currentMode === 'light' ? '#f3f0ff' : 'rgba(71, 38, 82, 0.5)',
+                    border: `1px solid ${currentMode === 'light' ? 'rgba(124, 58, 237, 0.2)' : 'rgba(160, 33, 255, 0.2)'}`,
+                    borderRadius: '0.5rem',
+                    padding: '0.5rem 1rem',
+                    color: currentMode === 'light' ? '#000000' : '#ffffff'
+                  }} />
+                  <input type="text" name="role" placeholder={t('submission_collab_role')} value={collab.role} onChange={(e) => handleCollaboratorChange(index, e)} style={{
+                    backgroundColor: currentMode === 'light' ? '#f3f0ff' : 'rgba(71, 38, 82, 0.5)',
+                    border: `1px solid ${currentMode === 'light' ? 'rgba(124, 58, 237, 0.2)' : 'rgba(160, 33, 255, 0.2)'}`,
+                    borderRadius: '0.5rem',
+                    padding: '0.5rem 1rem',
+                    color: currentMode === 'light' ? '#000000' : '#ffffff'
+                  }} />
+                  <input type="email" name="email" placeholder={t('submission_collab_email')} value={collab.email} onChange={(e) => handleCollaboratorChange(index, e)} style={{
+                    backgroundColor: currentMode === 'light' ? '#f3f0ff' : 'rgba(71, 38, 82, 0.5)',
+                    border: `1px solid ${currentMode === 'light' ? 'rgba(124, 58, 237, 0.2)' : 'rgba(160, 33, 255, 0.2)'}`,
+                    borderRadius: '0.5rem',
+                    padding: '0.5rem 1rem',
+                    color: currentMode === 'light' ? '#000000' : '#ffffff'
+                  }} />
                   {index > 0 && (
-                    <button type="button" onClick={() => removeCollaborator(index)} className="absolute -right-2 -top-2 bg-pink-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">✕</button>
+                    <button type="button" onClick={() => removeCollaborator(index)} style={{
+                      position: 'absolute',
+                      right: '-0.5rem',
+                      top: '-0.5rem',
+                      backgroundColor: '#ec4899',
+                      color: '#ffffff',
+                      borderRadius: '50%',
+                      width: '1.5rem',
+                      height: '1.5rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '0.75rem',
+                      border: 'none',
+                      cursor: 'pointer'
+                    }}>✕</button>
                   )}
                 </div>
               ))}
@@ -336,28 +694,48 @@ const SubmissionForm = () => {
           </section>
 
           {/* ACTIONS & SUBMIT */}
-          <div className="pt-6">
+          <div style={{ paddingTop: '1.5rem' }}>
             {statusMessage && (
-              <div className={`p-4 mb-6 rounded-xl border-2 ${statusMessage.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-300' : 'bg-red-500/10 border-red-500/50 text-red-300'}`}>
+              <div style={{
+                padding: '1rem',
+                marginBottom: '1.5rem',
+                borderRadius: '0.75rem',
+                border: '2px solid',
+                ...(statusMessage.type === 'success' ? {
+                  backgroundColor: currentMode === 'light' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.1)',
+                  borderColor: 'rgba(16, 185, 129, 0.5)',
+                  color: currentMode === 'light' ? '#059669' : '#6ee7b7'
+                } : {
+                  backgroundColor: currentMode === 'light' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                  borderColor: 'rgba(239, 68, 68, 0.5)',
+                  color: currentMode === 'light' ? '#dc2626' : '#fca5a5'
+                })
+              }}>
                 {statusMessage.text}
               </div>
             )}
 
             {/* AFFICHAGE DES ERREURS DE VALIDATION */}
             {validationErrors.length > 0 && (
-              <div className="mb-6 p-5 rounded-xl border-2 bg-red-500/10 border-red-500/50">
-                <h3 className="text-red-300 font-bold mb-3 flex items-center gap-2">
+              <div style={{
+                marginBottom: '1.5rem',
+                padding: '1.25rem',
+                borderRadius: '0.75rem',
+                border: '2px solid rgba(239, 68, 68, 0.5)',
+                backgroundColor: currentMode === 'light' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.1)'
+              }}>
+                <h3 style={{ color: currentMode === 'light' ? '#dc2626' : '#fca5a5', fontWeight: 'bold', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                   </svg>
                   Erreurs de validation
                 </h3>
-                <ul className="space-y-2">
+                <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                   {validationErrors.map((error, index) => (
-                    <li key={index} className="text-red-200 text-sm flex items-start gap-2">
-                      <span className="text-red-400 font-bold">•</span>
+                    <li key={index} style={{ color: currentMode === 'light' ? '#b91c1c' : '#fca5a5', fontSize: '0.875rem', display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                      <span style={{ color: currentMode === 'light' ? '#dc2626' : '#fca5a5', fontWeight: 'bold' }}>•</span>
                       <span>
-                        <span className="font-semibold text-red-300">{error.field}:</span> {error.message}
+                        <span style={{ fontWeight: '600', color: currentMode === 'light' ? '#dc2626' : '#fca5a5' }}>{error.field}:</span> {error.message}
                       </span>
                     </li>
                   ))}
@@ -365,9 +743,23 @@ const SubmissionForm = () => {
               </div>
             )}
 
-            <button type="submit" disabled={isLoading} className={`w-full relative overflow-hidden py-5 rounded-xl text-white font-bold text-lg transition-transform hover:scale-[1.01] ${isLoading ? 'bg-slate-700' : 'bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 shadow-2xl shadow-purple-500/40'}`}>
-              {isLoading && <div className="absolute inset-0 bg-white/20 transition-all" style={{ width: `${uploadProgress}%` }}></div>}
-              <span className="relative z-10 flex items-center justify-center gap-3">
+            <button type="submit" disabled={isLoading} style={{
+              width: '100%',
+              position: 'relative',
+              overflow: 'hidden',
+              padding: '1.25rem',
+              borderRadius: '0.75rem',
+              color: '#ffffff',
+              fontWeight: 'bold',
+              fontSize: '1.125rem',
+              transition: 'transform 0.2s',
+              border: 'none',
+              cursor: isLoading ? 'wait' : 'pointer',
+              background: isLoading ? '#404040' : 'linear-gradient(to right, #06b6d4, #a855f7, #ec4899)',
+              boxShadow: isLoading ? 'none' : '0 20px 25px -5px rgba(168, 85, 247, 0.4)'
+            }}>
+              {isLoading && <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(255, 255, 255, 0.2)', transition: 'all 0.3s', width: `${uploadProgress}%` }}></div>}
+              <span style={{ position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem' }}>
                 {isLoading ? (
                   <>
                     <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
@@ -378,8 +770,9 @@ const SubmissionForm = () => {
             </button>
           </div>
         </form>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

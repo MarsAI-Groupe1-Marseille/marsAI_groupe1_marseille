@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "../config/axiosConfig";
 import { useLanguage } from "../context/LanguageContext.jsx";
+import StarryBackground from "../components/StarryBackground.jsx";
 import {
   ChevronLeft,
   ChevronRight,
@@ -130,33 +131,54 @@ const VOTE_OPTIONS = [
 ];
 
 // ─── Stars ────────────────────────────────────────────────────────────────────
-const Stars = () => (
-  <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" aria-hidden="true">
-    {Array.from({ length: 60 }).map((_, i) => (
-      <span
-        key={i}
-        className="absolute w-px h-px rounded-full bg-white animate-pulse"
-        style={{
-          left: `${Math.random() * 100}%`,
-          top: `${Math.random() * 100}%`,
-          opacity: Math.random() * 0.6 + 0.2,
-          animationDuration: `${2 + Math.random() * 4}s`,
-          animationDelay: `${Math.random() * 4}s`,
-        }}
-      />
-    ))}
-  </div>
-);
+// Using StarryBackground component imported from components
 
 // ─── InfoCard ─────────────────────────────────────────────────────────────────
-const InfoCard = ({ icon: Icon, iconColor, label, children, className = "" }) => (
-  <div className={`group bg-[rgba(15,12,30,0.85)] border border-[rgba(123,47,255,0.25)] rounded-xl p-5 backdrop-blur-sm transition-all duration-300 hover:border-[rgba(123,47,255,0.45)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.4)] ${className}`}>
-    <div className="flex items-start gap-3">
-      <div className="w-10 h-10 flex-shrink-0 rounded-[10px] bg-[rgba(123,47,255,0.2)] border border-[rgba(123,47,255,0.3)] flex items-center justify-center transition-all duration-300 group-hover:bg-[rgba(123,47,255,0.35)] group-hover:border-[rgba(123,47,255,0.6)]">
+const InfoCard = ({ icon: Icon, iconColor, label, children, className = "", mode = 'dark' }) => (
+  <div style={{
+    backgroundColor: mode === 'light' ? 'rgba(255, 255, 255, 0.95)' : 'rgba(15,12,30,0.85)',
+    border: mode === 'light' ? '1px solid rgba(124, 58, 237, 0.2)' : '1px solid rgba(123,47,255,0.25)',
+    borderRadius: '0.75rem',
+    padding: '1.25rem',
+    backdropFilter: 'blur(4px)',
+    transition: 'all 0.3s',
+    cursor: 'pointer'
+  }}
+  onMouseEnter={(e) => {
+    e.currentTarget.style.borderColor = mode === 'light' ? 'rgba(124, 58, 237, 0.4)' : 'rgba(123,47,255,0.45)';
+    e.currentTarget.style.boxShadow = mode === 'light' 
+      ? '0 8px 32px rgba(124, 58, 237, 0.1)' 
+      : '0 8px 32px rgba(0,0,0,0.4)';
+  }}
+  onMouseLeave={(e) => {
+    e.currentTarget.style.borderColor = mode === 'light' ? 'rgba(124, 58, 237, 0.2)' : 'rgba(123,47,255,0.25)';
+    e.currentTarget.style.boxShadow = 'none';
+  }}>
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+      <div style={{
+        width: '2.5rem',
+        height: '2.5rem',
+        flexShrink: 0,
+        borderRadius: '10px',
+        backgroundColor: mode === 'light' ? 'rgba(124, 58, 237, 0.1)' : 'rgba(123,47,255,0.2)',
+        border: mode === 'light' ? '1px solid rgba(124, 58, 237, 0.2)' : '1px solid rgba(123,47,255,0.3)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        transition: 'all 0.3s'
+      }}>
         <Icon size={16} color={iconColor} />
       </div>
-      <div className="min-w-0 flex-1">
-        <p className="font-orbitron text-[10px] font-bold tracking-[3px] uppercase text-[#9b8ec4] mb-1.5">
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <p style={{
+          fontFamily: 'orbitron',
+          fontSize: '10px',
+          fontWeight: 'bold',
+          letterSpacing: '3px',
+          textTransform: 'uppercase',
+          color: mode === 'light' ? '#7c3aed' : '#9b8ec4',
+          marginBottom: '0.375rem'
+        }}>
           {label}
         </p>
         {children}
@@ -168,7 +190,7 @@ const InfoCard = ({ icon: Icon, iconColor, label, children, className = "" }) =>
 // ─── SynopsisTranslateBtn ─────────────────────────────────────────────────────
 // FIX: logique corrigée — "fr" = synopsis_original (français), "en" = synopsis_french (anglais)
 // Le bouton affiche la langue VERS laquelle on peut basculer, avec indicateur de langue active.
-const SynopsisTranslateBtn = ({ lang, onToggle, hasTranslation }) => {
+const SynopsisTranslateBtn = ({ lang, onToggle, hasTranslation, mode = 'dark' }) => {
   if (!hasTranslation) return null;
 
   const isFr = lang === "fr";
@@ -177,31 +199,82 @@ const SynopsisTranslateBtn = ({ lang, onToggle, hasTranslation }) => {
     <button
       onClick={onToggle}
       aria-label={isFr ? "Voir le synopsis en anglais" : "Voir le synopsis en français"}
-      className="group relative inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border transition-all duration-300 overflow-hidden
-        border-[rgba(0,229,255,0.35)] text-[#80d8ff]
-        hover:border-[rgba(0,229,255,0.7)] hover:text-[#c0eeff]
-        hover:shadow-[0_0_18px_rgba(0,229,255,0.25),inset_0_0_12px_rgba(0,229,255,0.06)]
-        focus:outline-none focus:ring-2 focus:ring-[rgba(0,229,255,0.4)]"
+      style={{
+        position: 'relative',
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '0.5rem',
+        paddingX: '0.875rem',
+        paddingY: '0.375rem',
+        borderRadius: '9999px',
+        border: mode === 'light' ? '1px solid rgba(124, 58, 237, 0.35)' : '1px solid rgba(0,229,255,0.35)',
+        backgroundColor: mode === 'light' ? 'rgba(124, 58, 237, 0.08)' : 'transparent',
+        color: mode === 'light' ? '#7c3aed' : '#80d8ff',
+        cursor: 'pointer',
+        transition: 'all 0.3s',
+        outline: 'none',
+        overflow: 'hidden',
+        fontFamily: "'Space Grotesk', 'rajdhani', sans-serif",
+        letterSpacing: '0.8px'
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = mode === 'light' ? 'rgba(124, 58, 237, 0.7)' : 'rgba(0,229,255,0.7)';
+        e.currentTarget.style.color = mode === 'light' ? '#6d28d9' : '#c0eeff';
+        e.currentTarget.style.boxShadow = mode === 'light'
+          ? '0 0 18px rgba(124, 58, 237, 0.25), inset 0 0 12px rgba(124, 58, 237, 0.06)'
+          : '0 0 18px rgba(0,229,255,0.25), inset 0 0 12px rgba(0,229,255,0.06)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = mode === 'light' ? 'rgba(124, 58, 237, 0.35)' : 'rgba(0,229,255,0.35)';
+        e.currentTarget.style.color = mode === 'light' ? '#7c3aed' : '#80d8ff';
+        e.currentTarget.style.boxShadow = 'none';
+      }}
     >
       {/* Shimmer sweep on hover */}
-      <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-500 pointer-events-none" />
+      <span style={{
+        position: 'absolute',
+        inset: 0,
+        backgroundImage: 'linear-gradient(to right, transparent, rgba(255,255,255,0.06), transparent)',
+        transform: 'translateX(-100%)',
+        transition: 'transform 0.5s',
+        pointerEvents: 'none'
+      }} />
 
       {/* Globe icon — tourne légèrement au hover */}
       <Globe
         size={12}
-        className="flex-shrink-0 transition-transform duration-500 group-hover:rotate-[20deg]"
+        style={{ flexShrink: 0, transition: 'transform 0.5s' }}
+        onMouseEnter={(e) => e.currentTarget.style.transform = 'rotate(20deg)'}
+        onMouseLeave={(e) => e.currentTarget.style.transform = 'rotate(0deg)'}
       />
 
       {/* Langue active (badge pill) */}
-      <span className="font-orbitron text-[9px] font-bold tracking-[2px] uppercase opacity-50">
+      <span style={{
+        fontFamily: 'orbitron',
+        fontSize: '9px',
+        fontWeight: 'bold',
+        letterSpacing: '2px',
+        textTransform: 'uppercase',
+        opacity: 0.5
+      }}>
         {isFr ? "EN" : "FR"}
       </span>
 
       {/* Séparateur */}
-      <span className="text-[rgba(0,229,255,0.3)] text-[10px] select-none">→</span>
+      <span style={{
+        color: mode === 'light' ? 'rgba(124, 58, 237, 0.3)' : 'rgba(0,229,255,0.3)',
+        fontSize: '10px',
+        userSelect: 'none'
+      }}>→</span>
 
       {/* Langue cible */}
-      <span className="font-orbitron text-[9px] font-bold tracking-[2px] uppercase">
+      <span style={{
+        fontFamily: 'orbitron',
+        fontSize: '9px',
+        fontWeight: 'bold',
+        letterSpacing: '2px',
+        textTransform: 'uppercase'
+      }}>
         {isFr ? "FR" : "EN"}
       </span>
     </button>
@@ -213,6 +286,19 @@ export default function NotationJury() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { t } = useLanguage();
+
+  const [currentMode, setCurrentMode] = useState('dark');
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      const mode = document.documentElement.getAttribute('data-mode') || 'dark';
+      setCurrentMode(mode);
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-mode'] });
+    const initialMode = document.documentElement.getAttribute('data-mode') || 'dark';
+    setCurrentMode(initialMode);
+    return () => observer.disconnect();
+  }, []);
 
   const [film, setFilm]               = useState(null);
   const [loading, setLoading]         = useState(true);
@@ -372,12 +458,35 @@ export default function NotationJury() {
   // ── Loading ──
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0a12] flex items-center justify-center font-rajdhani"
-        style={{ backgroundImage: "radial-gradient(ellipse 80% 50% at 50% -10%, rgba(123,47,255,0.3) 0%, transparent 60%)" }}>
-        <Stars />
-        <div className="text-center relative z-10">
-          <div className="w-14 h-14 border-[3px] border-[rgba(123,47,255,0.2)] border-t-[#7b2fff] rounded-full animate-spin mx-auto mb-5" />
-          <p className="font-orbitron text-[11px] tracking-[4px] uppercase text-[#9b8ec4]">
+      <div style={{
+        minHeight: '100vh',
+        backgroundColor: currentMode === 'light' ? '#ffffff' : '#0a0a12',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontFamily: "'Space Grotesk', 'rajdhani', sans-serif",
+        backgroundImage: currentMode === 'light' 
+          ? 'radial-gradient(ellipse 80% 50% at 50% -10%, rgba(124, 58, 237, 0.15) 0%, transparent 60%)'
+          : 'radial-gradient(ellipse 80% 50% at 50% -10%, rgba(123,47,255,0.3) 0%, transparent 60%)'
+      }}>
+        <div style={{ textAlign: 'center', position: 'relative', zIndex: 10 }}>
+          <div style={{
+            width: '3.5rem',
+            height: '3.5rem',
+            border: `3px solid ${currentMode === 'light' ? 'rgba(124, 58, 237, 0.2)' : 'rgba(123,47,255,0.2)'}`,
+            borderTop: currentMode === 'light' ? '3px solid #7c3aed' : '3px solid #7b2fff',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            marginX: 'auto',
+            marginBottom: '1.25rem'
+          }} />
+          <p style={{
+            fontFamily: 'orbitron',
+            fontSize: '11px',
+            letterSpacing: '4px',
+            textTransform: 'uppercase',
+            color: currentMode === 'light' ? '#7c3aed' : '#9b8ec4'
+          }}>
             {t('notation_loading')}
           </p>
         </div>
@@ -388,12 +497,51 @@ export default function NotationJury() {
   // ── Error ──
   if (error || !film) {
     return (
-      <div className="min-h-screen bg-[#0a0a12] flex items-center justify-center font-rajdhani">
-        <Stars />
-        <div className="text-center relative z-10">
-          <p className="text-[#ff8090] text-lg mb-6">{error || "Film introuvable"}</p>
+      <div style={{
+        minHeight: '100vh',
+        backgroundColor: currentMode === 'light' ? '#ffffff' : '#0a0a12',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontFamily: "'Space Grotesk', 'rajdhani', sans-serif"
+      }}>
+        <div style={{ textAlign: 'center', position: 'relative', zIndex: 10 }}>
+          <p style={{ color: '#ff8090', fontSize: '1.125rem', marginBottom: '1.5rem' }}
+            >
+            {error || "Film introuvable"}
+          </p>
           <button onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[rgba(123,47,255,0.15)] border border-[rgba(123,47,255,0.25)] rounded-full font-rajdhani text-sm font-semibold tracking-[1px] uppercase text-[#9b8ec4] cursor-pointer transition-all duration-300 hover:border-[#7b2fff] hover:text-[#f0eaff] hover:bg-[rgba(123,47,255,0.25)] hover:shadow-[0_0_20px_rgba(123,47,255,0.3)]">
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.625rem 1.25rem',
+              backgroundColor: currentMode === 'light' ? 'rgba(124, 58, 237, 0.1)' : 'rgba(123,47,255,0.15)',
+              border: currentMode === 'light' ? '1px solid rgba(124, 58, 237, 0.3)' : '1px solid rgba(123,47,255,0.25)',
+              borderRadius: '9999px',
+              fontFamily: "'Space Grotesk', 'rajdhani', sans-serif",
+              fontSize: '0.875rem',
+              fontWeight: 600,
+              letterSpacing: '1.2px',
+              textTransform: 'uppercase',
+              color: currentMode === 'light' ? '#7c3aed' : '#9b8ec4',
+              cursor: 'pointer',
+              transition: 'all 0.3s',
+              outline: 'none'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.borderColor = currentMode === 'light' ? '#7c3aed' : '#7b2fff';
+              e.target.style.color = currentMode === 'light' ? '#6d28d9' : '#f0eaff';
+              e.target.style.backgroundColor = currentMode === 'light' ? 'rgba(124, 58, 237, 0.25)' : 'rgba(123,47,255,0.25)';
+              e.target.style.boxShadow = currentMode === 'light' ? '0 0 20px rgba(124, 58, 237, 0.3)' : '0 0 20px rgba(123,47,255,0.3)';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.borderColor = currentMode === 'light' ? 'rgba(124, 58, 237, 0.3)' : 'rgba(123,47,255,0.25)';
+              e.target.style.color = currentMode === 'light' ? '#7c3aed' : '#9b8ec4';
+              e.target.style.backgroundColor = currentMode === 'light' ? 'rgba(124, 58, 237, 0.1)' : 'rgba(123,47,255,0.15)';
+              e.target.style.boxShadow = 'none';
+            }}
+          >
             {t('notation_back')}
           </button>
         </div>
@@ -435,60 +583,170 @@ export default function NotationJury() {
   const hasTranslation = Boolean(film.synopsis_english || film.synopsis_french);
 
   return (
-    <div
-      className="min-h-screen bg-[#0a0a12] text-[#f0eaff] font-rajdhani"
-      style={{
-        backgroundImage: `
-          radial-gradient(ellipse 80% 50% at 50% -10%, rgba(123,47,255,0.3) 0%, transparent 60%),
-          radial-gradient(ellipse 40% 30% at 90% 90%, rgba(224,64,251,0.15) 0%, transparent 50%),
-          repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(123,47,255,0.03) 60px, rgba(123,47,255,0.03) 61px),
-          repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(123,47,255,0.03) 60px, rgba(123,47,255,0.03) 61px)
-        `,
-      }}
-    >
-      <Stars />
-
-      <div className="relative z-10 max-w-[1200px] mx-auto px-4 sm:px-6 py-10">
+    <>
+      <StarryBackground />
+      <div style={{
+        minHeight: '100vh',
+        backgroundColor: currentMode === 'light' ? '#ffffff' : '#0a0a12',
+        color: currentMode === 'light' ? '#000000' : '#f0eaff',
+        fontFamily: "'Space Grotesk', 'rajdhani', sans-serif",
+      backgroundImage: currentMode === 'light'
+        ? 'radial-gradient(ellipse 80% 50% at 50% -10%, rgba(124, 58, 237, 0.15) 0%, transparent 60%), radial-gradient(ellipse 40% 30% at 90% 90%, rgba(124, 58, 237, 0.08) 0%, transparent 50%), repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(124, 58, 237, 0.02) 60px, rgba(124, 58, 237, 0.02) 61px), repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(124, 58, 237, 0.02) 60px, rgba(124, 58, 237, 0.02) 61px)'
+        : 'radial-gradient(ellipse 80% 50% at 50% -10%, rgba(123,47,255,0.3) 0%, transparent 60%), radial-gradient(ellipse 40% 30% at 90% 90%, rgba(224,64,251,0.15) 0%, transparent 50%), repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(123,47,255,0.03) 60px, rgba(123,47,255,0.03) 61px), repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(123,47,255,0.03) 60px, rgba(123,47,255,0.03) 61px)'
+    }}>
+      <div style={{ position: 'relative', zIndex: 10, maxWidth: '1200px', marginX: 'auto', paddingX: '1rem', paddingY: '2.5rem' }}>
 
         {/* ── Back button ── */}
         <button
           onClick={() => navigate(-1)}
-          className="group inline-flex items-center gap-2 mb-8 px-5 py-2.5 bg-[rgba(123,47,255,0.15)] border border-[rgba(123,47,255,0.25)] rounded-full font-rajdhani text-sm font-semibold tracking-[1px] uppercase text-[#9b8ec4] cursor-pointer transition-all duration-300 hover:border-[#7b2fff] hover:text-[#f0eaff] hover:bg-[rgba(123,47,255,0.25)] hover:shadow-[0_0_20px_rgba(123,47,255,0.3)]"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            marginBottom: '2rem',
+            paddingX: '1.25rem',
+            paddingY: '0.625rem',
+            backgroundColor: currentMode === 'light' ? 'rgba(124, 58, 237, 0.1)' : 'rgba(123,47,255,0.15)',
+            border: currentMode === 'light' ? '1px solid rgba(124, 58, 237, 0.25)' : '1px solid rgba(123,47,255,0.25)',
+            borderRadius: '9999px',
+            fontFamily: "'Space Grotesk', 'rajdhani', sans-serif",
+            fontSize: '0.875rem',
+            fontWeight: 600,
+            letterSpacing: '1.2px',
+            textTransform: 'uppercase',
+            color: currentMode === 'light' ? '#7c3aed' : '#9b8ec4',
+            cursor: 'pointer',
+            transition: 'all 0.3s',
+            outline: 'none'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = currentMode === 'light' ? '#7c3aed' : '#7b2fff';
+            e.currentTarget.style.color = currentMode === 'light' ? '#6d28d9' : '#f0eaff';
+            e.currentTarget.style.backgroundColor = currentMode === 'light' ? 'rgba(124, 58, 237, 0.25)' : 'rgba(123,47,255,0.25)';
+            e.currentTarget.style.boxShadow = currentMode === 'light' ? '0 0 20px rgba(124, 58, 237, 0.3)' : '0 0 20px rgba(123,47,255,0.3)';
+            e.currentTarget.querySelector('svg').style.transform = 'translateX(-4px)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = currentMode === 'light' ? 'rgba(124, 58, 237, 0.25)' : 'rgba(123,47,255,0.25)';
+            e.currentTarget.style.color = currentMode === 'light' ? '#7c3aed' : '#9b8ec4';
+            e.currentTarget.style.backgroundColor = currentMode === 'light' ? 'rgba(124, 58, 237, 0.1)' : 'rgba(123,47,255,0.15)';
+            e.currentTarget.style.boxShadow = 'none';
+            e.currentTarget.querySelector('svg').style.transform = 'translateX(0)';
+          }}
         >
-          <ChevronLeft size={16} className="transition-transform duration-300 group-hover:-translate-x-1" />
+          <ChevronLeft size={16} style={{ transition: 'transform 0.3s' }} />
           {t('notation_back_selection')}
         </button>
 
         {/* ── Main 2-col grid ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-8 mb-10">
+        <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '2rem', marginBottom: '2.5rem' }}>
 
           {/* ── LEFT: poster + themes ── */}
-          <div className="flex flex-col gap-4">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
 
             {/* Poster */}
             <div
               onClick={() => embedUrl && setShowVideoModal(true)}
-              className={`relative group rounded-2xl overflow-hidden shadow-[0_0_0_1px_rgba(123,47,255,0.3),0_20px_60px_rgba(0,0,0,0.7),0_0_80px_rgba(123,47,255,0.2)] transition-shadow duration-500 hover:shadow-[0_0_0_1px_rgba(123,47,255,0.6),0_20px_80px_rgba(0,0,0,0.8),0_0_120px_rgba(123,47,255,0.4)] ${embedUrl ? "cursor-pointer" : ""}`}
+              style={{
+                position: 'relative',
+                borderRadius: '1rem',
+                overflow: 'hidden',
+                cursor: embedUrl ? 'pointer' : 'default',
+                boxShadow: currentMode === 'light'
+                  ? '0 0 0 1px rgba(124, 58, 237, 0.3), 0 20px 60px rgba(124, 58, 237, 0.1), 0 0 80px rgba(124, 58, 237, 0.1)'
+                  : '0 0 0 1px rgba(123,47,255,0.3), 0 20px 60px rgba(0,0,0,0.7), 0 0 80px rgba(123,47,255,0.2)',
+                transition: 'all 0.5s'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.boxShadow = currentMode === 'light'
+                  ? '0 0 0 1px rgba(124, 58, 237, 0.6), 0 20px 80px rgba(124, 58, 237, 0.2), 0 0 120px rgba(124, 58, 237, 0.2)'
+                  : '0 0 0 1px rgba(123,47,255,0.6), 0 20px 80px rgba(0,0,0,0.8), 0 0 120px rgba(123,47,255,0.4)';
+                e.currentTarget.querySelector('img').style.transform = 'scale(1.04)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow = currentMode === 'light'
+                  ? '0 0 0 1px rgba(124, 58, 237, 0.3), 0 20px 60px rgba(124, 58, 237, 0.1), 0 0 80px rgba(124, 58, 237, 0.1)'
+                  : '0 0 0 1px rgba(123,47,255,0.3), 0 20px 60px rgba(0,0,0,0.7), 0 0 80px rgba(123,47,255,0.2)';
+                e.currentTarget.querySelector('img').style.transform = 'scale(1)';
+              }}
             >
               <img
                 src={resolveAssetUrl(film.poster_url)}
                 alt={film.title_original}
-                className="w-full aspect-[2/3] object-cover block transition-transform duration-700 group-hover:scale-[1.04]"
+                style={{
+                  width: '100%',
+                  aspectRatio: '2/3',
+                  objectFit: 'cover',
+                  display: 'block',
+                  transition: 'transform 0.7s'
+                }}
               />
 
               {embedUrl && (
-                <div className="absolute inset-0 bg-gradient-to-t from-[rgba(10,10,18,0.95)] via-[rgba(10,10,18,0.3)] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center gap-3">
-                  <div className="w-[72px] h-[72px] rounded-full bg-gradient-to-br from-[#7b2fff] to-[#e040fb] flex items-center justify-center scale-75 group-hover:scale-100 transition-transform duration-300 shadow-[0_0_40px_rgba(123,47,255,0.7),0_0_80px_rgba(224,64,251,0.4)] mb-3">
+                <div style={{
+                  position: 'absolute',
+                  inset: 0,
+                  backgroundImage: currentMode === 'light'
+                    ? 'linear-gradient(to top, rgba(255,255,255,0.85), rgba(255,255,255,0.2), transparent)'
+                    : 'linear-gradient(to top, rgba(10,10,18,0.95), rgba(10,10,18,0.3), transparent)',
+                  opacity: 0,
+                  transition: 'opacity 0.3s',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.75rem'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.opacity = 1}
+                onMouseLeave={(e) => e.currentTarget.style.opacity = 0}>
+                  <div style={{
+                    width: '72px',
+                    height: '72px',
+                    borderRadius: '50%',
+                    backgroundImage: 'linear-gradient(to bottom right, #7b2fff, #e040fb)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transform: 'scale(0.75)',
+                    transition: 'transform 0.3s',
+                    boxShadow: '0 0 40px rgba(123,47,255,0.7), 0 0 80px rgba(224,64,251,0.4)',
+                    marginBottom: '0.75rem'
+                  }}>
                     <Play size={28} color="#fff" fill="#fff" />
                   </div>
-                  <span className="font-rajdhani font-bold text-[13px] tracking-[2px] uppercase text-white">
+                  <span style={{
+                    fontFamily: "'Space Grotesk', 'rajdhani', sans-serif",
+                    fontWeight: 'bold',
+                    fontSize: '13px',
+                    letterSpacing: '2px',
+                    textTransform: 'uppercase',
+                    color: '#fff'
+                  }}>
                     {t('notation_watch_film')}
                   </span>
                 </div>
               )}
 
               {/* Duration badge */}
-              <div className="absolute bottom-3 right-3 inline-flex items-center gap-1.5 bg-[rgba(10,10,18,0.85)] border border-[rgba(123,47,255,0.4)] rounded-full px-3 py-1 font-rajdhani text-xs font-semibold tracking-[1px] text-[#9b8ec4] backdrop-blur-sm">
+              <div style={{
+                position: 'absolute',
+                bottom: '0.75rem',
+                right: '0.75rem',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.375rem',
+                backgroundColor: currentMode === 'light' ? 'rgba(255,255,255,0.9)' : 'rgba(10,10,18,0.85)',
+                border: currentMode === 'light' ? '1px solid rgba(124, 58, 237, 0.4)' : '1px solid rgba(123,47,255,0.4)',
+                borderRadius: '9999px',
+                paddingX: '0.75rem',
+                paddingY: '0.25rem',
+                fontFamily: "'Space Grotesk', 'rajdhani', sans-serif",
+                fontSize: '12px',
+                fontWeight: 600,
+                letterSpacing: '1.2px',
+                color: currentMode === 'light' ? '#7c3aed' : '#9b8ec4',
+                backdropFilter: 'blur(4px)'
+              }}>
                 <Clock size={10} />
                 {duration}
               </div>
@@ -496,18 +754,48 @@ export default function NotationJury() {
 
             {/* Themes */}
             {themes.length > 0 && (
-              <div className="bg-[rgba(15,12,30,0.85)] border border-[rgba(123,47,255,0.25)] rounded-xl p-[18px] backdrop-blur-sm">
-                <div className="flex items-center gap-2 mb-3">
-                  <Tag size={12} color="#9b8ec4" />
-                  <span className="font-orbitron text-[10px] font-bold tracking-[3px] uppercase text-[#9b8ec4]">
+              <div style={{
+                backgroundColor: currentMode === 'light' ? 'rgba(255,255,255,0.7)' : 'rgba(15,12,30,0.85)',
+                border: currentMode === 'light' ? '1px solid rgba(124, 58, 237, 0.2)' : '1px solid rgba(123,47,255,0.25)',
+                borderRadius: '0.75rem',
+                padding: '1.125rem',
+                backdropFilter: 'blur(4px)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                  <Tag size={12} color={currentMode === 'light' ? '#7c3aed' : '#9b8ec4'} />
+                  <span style={{
+                    fontFamily: 'orbitron',
+                    fontSize: '10px',
+                    fontWeight: 'bold',
+                    letterSpacing: '3px',
+                    textTransform: 'uppercase',
+                    color: currentMode === 'light' ? '#7c3aed' : '#9b8ec4'
+                  }}>
                     {t('notation_themes')}
                   </span>
                 </div>
-                <div className="flex flex-wrap gap-1">
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
                   {themes.map((theme, idx) => (
                     <span
                       key={idx}
-                      className={`inline-block px-3.5 py-1 rounded-full text-xs font-semibold tracking-[1px] uppercase transition-all duration-300 ${TAG_COLORS[idx % 4]}`}
+                      style={{
+                        display: 'inline-block',
+                        paddingX: '0.875rem',
+                        paddingY: '0.25rem',
+                        borderRadius: '9999px',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        letterSpacing: '1px',
+                        textTransform: 'uppercase',
+                        transition: 'all 0.3s',
+                        backgroundColor: currentMode === 'light' 
+                          ? 'rgba(124, 58, 237, 0.1)' 
+                          : TAG_COLORS[idx % 4].split(' ')[0],
+                        border: currentMode === 'light'
+                          ? '1px solid rgba(124, 58, 237, 0.2)'
+                          : '1px solid rgba(124, 58, 237, 0.5)',
+                        color: currentMode === 'light' ? '#7c3aed' : '#c39fff'
+                      }}
                     >
                       {theme}
                     </span>
@@ -522,46 +810,112 @@ export default function NotationJury() {
 
             {/* Festival badge + title */}
             <div>
-              <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-gradient-to-r from-[rgba(123,47,255,0.3)] to-[rgba(224,64,251,0.2)] border border-[rgba(123,47,255,0.5)] mb-4">
-                <FilmIcon size={9} color="#c39fff" />
-                <span className="font-orbitron text-[9px] font-bold tracking-[2px] uppercase text-[#c39fff]">
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.375rem',
+                paddingX: '0.875rem',
+                paddingY: '0.25rem',
+                borderRadius: '9999px',
+                backgroundImage: currentMode === 'light'
+                  ? 'linear-gradient(to right, rgba(124, 58, 237, 0.2), rgba(124, 58, 237, 0.1))'
+                  : 'linear-gradient(to right, rgba(123,47,255,0.3), rgba(224,64,251,0.2))',
+                border: currentMode === 'light' ? '1px solid rgba(124, 58, 237, 0.3)' : '1px solid rgba(123,47,255,0.5)',
+                marginBottom: '1rem'
+              }}>
+                <FilmIcon size={9} color={currentMode === 'light' ? '#7c3aed' : '#c39fff'} />
+                <span style={{
+                  fontFamily: 'orbitron',
+                  fontSize: '9px',
+                  fontWeight: 'bold',
+                  letterSpacing: '2px',
+                  textTransform: 'uppercase',
+                  color: currentMode === 'light' ? '#7c3aed' : '#c39fff'
+                }}>
                   {t('notation_official_selection')}
                 </span>
               </div>
 
               <h1
-                className="font-orbitron font-black text-white leading-tight mb-2"
                 style={{
-                  fontSize: "clamp(1.8rem, 4vw, 3rem)",
-                  letterSpacing: "-0.5px",
-                  textShadow: "0 0 40px rgba(123,47,255,0.8), 0 0 80px rgba(123,47,255,0.4)",
+                  fontFamily: 'orbitron',
+                  fontWeight: 900,
+                  color: currentMode === 'light' ? '#000000' : '#ffffff',
+                  lineHeight: 1.2,
+                  marginBottom: '0.5rem',
+                  fontSize: 'clamp(1.8rem, 4vw, 3rem)',
+                  letterSpacing: '-0.5px',
+                  textShadow: currentMode === 'light'
+                    ? '0 0 20px rgba(124, 58, 237, 0.3)'
+                    : '0 0 40px rgba(123,47,255,0.8), 0 0 80px rgba(123,47,255,0.4)'
                 }}
               >
                 {film.title_original}
               </h1>
 
               {film.title_english && film.title_english !== film.title_original && (
-                <p className="font-rajdhani text-[1.1rem] font-light italic tracking-[1px] text-[#9b8ec4]">
+                <p style={{
+                  fontFamily: "'Space Grotesk', 'rajdhani', sans-serif",
+                  fontSize: '1.1rem',
+                  fontWeight: 300,
+                  fontStyle: 'italic',
+                  letterSpacing: '1.5px',
+                  color: currentMode === 'light' ? '#7c3aed' : '#9b8ec4'
+                }}>
                   {film.title_english}
                 </p>
               )}
 
-              <div className="h-px bg-gradient-to-r from-transparent via-[rgba(123,47,255,0.5)] to-transparent mt-2 mb-6" />
+              <div style={{
+                height: '1px',
+                backgroundImage: `linear-gradient(to right, transparent, ${currentMode === 'light' ? 'rgba(124, 58, 237, 0.3)' : 'rgba(123,47,255,0.5)'}, transparent)`,
+                marginTop: '0.5rem',
+                marginBottom: '1.5rem'
+              }} />
             </div>
 
             {/* ── Synopsis — CORRIGÉ ── */}
-            <div className="bg-[rgba(15,12,30,0.85)] border border-[rgba(123,47,255,0.25)] rounded-xl p-6 backdrop-blur-sm">
+            <div style={{
+              backgroundColor: currentMode === 'light' ? 'rgba(255, 255, 255, 0.7)' : 'rgba(15,12,30,0.85)',
+              border: currentMode === 'light' ? '1px solid rgba(124, 58, 237, 0.2)' : '1px solid rgba(123,47,255,0.25)',
+              borderRadius: '0.75rem',
+              padding: '1.5rem',
+              backdropFilter: 'blur(4px)'
+            }}>
 
               {/* Header row */}
-              <div className="flex items-center justify-between mb-3.5">
-                <div className="flex items-center gap-2">
-                  <FilmIcon size={12} color="#7b2fff" />
-                  <span className="font-orbitron text-[11px] font-bold tracking-[3px] uppercase text-[#7b2fff]">
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.875rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <FilmIcon size={12} color={currentMode === 'light' ? '#7c3aed' : '#7b2fff'} />
+                  <span style={{
+                    fontFamily: 'orbitron',
+                    fontSize: '11px',
+                    fontWeight: 'bold',
+                    letterSpacing: '3px',
+                    textTransform: 'uppercase',
+                    color: currentMode === 'light' ? '#7c3aed' : '#7b2fff'
+                  }}>
                     {t('notation_synopsis')}
                   </span>
                   {/* Indicateur de langue active */}
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[rgba(123,47,255,0.15)] border border-[rgba(123,47,255,0.25)]">
-                    <span className="font-orbitron text-[8px] font-bold tracking-[2px] uppercase text-[#9b8ec4]">
+                  <span style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.25rem',
+                    paddingX: '0.5rem',
+                    paddingY: '0.125rem',
+                    borderRadius: '9999px',
+                    backgroundColor: currentMode === 'light' ? 'rgba(124, 58, 237, 0.1)' : 'rgba(123,47,255,0.15)',
+                    border: currentMode === 'light' ? '1px solid rgba(124, 58, 237, 0.2)' : '1px solid rgba(123,47,255,0.25)'
+                  }}>
+                    <span style={{
+                      fontFamily: 'orbitron',
+                      fontSize: '8px',
+                      fontWeight: 'bold',
+                      letterSpacing: '2px',
+                      textTransform: 'uppercase',
+                      color: currentMode === 'light' ? '#7c3aed' : '#9b8ec4'
+                    }}>
                       {synopsisLang === "fr" ? "🇫🇷 FR" : "🇬🇧 EN"}
                     </span>
                   </span>
@@ -572,36 +926,55 @@ export default function NotationJury() {
                   lang={synopsisLang}
                   onToggle={() => setSynopsisLang((prev) => (prev === "fr" ? "en" : "fr"))}
                   hasTranslation={hasTranslation}
+                  mode={currentMode}
                 />
               </div>
 
               {/* Texte du synopsis avec transition */}
               <p
-                key={synopsisLang}
-                className="font-rajdhani text-base font-normal leading-[1.75] text-[#c8bde8]"
-                style={{ animation: "njSlideDown 0.28s ease both" }}
+                style={{
+                  fontFamily: "'Space Grotesk', 'rajdhani', sans-serif",
+                  fontSize: '1rem',
+                  fontWeight: 400,
+                  lineHeight: 1.75,
+                  color: currentMode === 'light' ? '#333333' : '#c8bde8',
+                  animation: 'njSlideDown 0.28s ease both',
+                  letterSpacing: '0.5px'
+                }}
               >
                 {synopsisText}
               </p>
             </div>
 
             {/* Details */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem' }}>
               {directorName && (
-                <InfoCard icon={User} iconColor="#7b2fff" label={t('notation_director')}>
-                  <p className="font-rajdhani text-[17px] font-semibold text-[#f0eaff]">{directorName}</p>
+                <InfoCard icon={User} iconColor={currentMode === 'light' ? '#7c3aed' : '#7b2fff'} label={t('notation_director')} mode={currentMode}>
+                  <p style={{ fontFamily: "'Space Grotesk', 'rajdhani', sans-serif", fontSize: '17px', fontWeight: 600, color: currentMode === 'light' ? '#000000' : '#f0eaff', letterSpacing: '0.5px' }}>{directorName}</p>
                 </InfoCard>
               )}
 
-              <InfoCard icon={Clock} iconColor="#00e5ff" label={t('notation_duration')}>
-                <p className="font-rajdhani text-[17px] font-semibold text-[#f0eaff]">{duration}</p>
+              <InfoCard icon={Clock} iconColor="#00e5ff" label={t('notation_duration')} mode={currentMode}>
+                <p style={{ fontFamily: "'Space Grotesk', 'rajdhani', sans-serif", fontSize: '17px', fontWeight: 600, color: currentMode === 'light' ? '#000000' : '#f0eaff', letterSpacing: '0.5px' }}>{duration}</p>
               </InfoCard>
 
               {directorEmail && (
-                <InfoCard icon={Mail} iconColor="#e040fb" label={t('notation_contact')}>
+                <InfoCard icon={Mail} iconColor="#e040fb" label={t('notation_contact')} mode={currentMode}>
                   <a
                     href={`mailto:${directorEmail}`}
-                    className="block font-rajdhani text-sm font-semibold text-[#80c8ff] hover:text-[#b0d8ff] truncate transition-colors duration-200 no-underline"
+                    style={{
+                      display: 'block',
+                      fontFamily: "'Space Grotesk', 'rajdhani', sans-serif",
+                      fontSize: '0.875rem',
+                      fontWeight: 600,
+                      color: currentMode === 'light' ? '#7c3aed' : '#80c8ff',
+                      letterSpacing: '0.8px',
+                      truncate: 'ellipsis',
+                      transition: 'color 0.2s',
+                      textDecoration: 'none'
+                    }}
+                    onMouseEnter={(e) => e.target.style.color = currentMode === 'light' ? '#6d28d9' : '#b0d8ff'}
+                    onMouseLeave={(e) => e.target.style.color = currentMode === 'light' ? '#7c3aed' : '#80c8ff'}
                   >
                     {directorEmail}
                   </a>
@@ -609,14 +982,14 @@ export default function NotationJury() {
               )}
 
               {location && (
-                <InfoCard icon={MapPin} iconColor="#ffd740" label={t('notation_location')}>
-                  <p className="font-rajdhani text-[17px] font-semibold text-[#f0eaff]">{location}</p>
+                <InfoCard icon={MapPin} iconColor="#ffd740" label={t('notation_location')} mode={currentMode}>
+                  <p style={{ fontFamily: "'Space Grotesk', 'rajdhani', sans-serif", fontSize: '17px', fontWeight: 600, color: currentMode === 'light' ? '#000000' : '#f0eaff', letterSpacing: '0.5px' }}>{location}</p>
                 </InfoCard>
               )}
 
               {film.production_year && (
-                <InfoCard icon={Calendar} iconColor="#00e5ff" label={t('notation_production_year')} className="sm:col-span-2">
-                  <p className="font-rajdhani text-[17px] font-semibold text-[#f0eaff]">{film.production_year}</p>
+                <InfoCard icon={Calendar} iconColor="#00e5ff" label={t('notation_production_year')} mode={currentMode}>
+                  <p style={{ fontFamily: "'Space Grotesk', 'rajdhani', sans-serif", fontSize: '17px', fontWeight: 600, color: currentMode === 'light' ? '#000000' : '#f0eaff', letterSpacing: '0.5px' }}>{film.production_year}</p>
                 </InfoCard>
               )}
             </div>
@@ -624,26 +997,57 @@ export default function NotationJury() {
         </div>
 
         {/* ── Rating section ── */}
-        <div className="relative bg-[rgba(15,12,30,0.85)] border border-[rgba(123,47,255,0.25)] rounded-[20px] p-10 backdrop-blur-lg overflow-hidden sm:p-6">
+        <div style={{
+          position: 'relative',
+          backgroundColor: currentMode === 'light' ? 'rgba(255, 255, 255, 0.7)' : 'rgba(15,12,30,0.85)',
+          border: currentMode === 'light' ? '1px solid rgba(124, 58, 237, 0.2)' : '1px solid rgba(123,47,255,0.25)',
+          borderRadius: '1.25rem',
+          padding: '2.5rem',
+          backdropFilter: 'blur(4px)',
+          overflow: 'hidden'
+        }}>
 
           {/* Top chromatic bar */}
-          <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-[#7b2fff] via-[#e040fb] via-[#00e5ff] to-transparent" />
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '2px',
+            backgroundImage: 'linear-gradient(to right, transparent, #7b2fff, #e040fb, #00e5ff, transparent)',
+            opacity: currentMode === 'light' ? 0.6 : 1
+          }} />
 
           <h2
-            className="font-orbitron font-black text-center text-white mb-1.5 tracking-[2px]"
             style={{
-              fontSize: "clamp(1.2rem, 2.5vw, 1.6rem)",
-              textShadow: "0 0 30px rgba(123,47,255,0.6)",
+              fontFamily: "'Orbitron', 'Space Grotesk', sans-serif",
+              fontWeight: 900,
+              textAlign: 'center',
+              color: currentMode === 'light' ? '#000000' : '#ffffff',
+              marginBottom: '0.375rem',
+              letterSpacing: '3px',
+              fontSize: 'clamp(1.2rem, 2.5vw, 1.6rem)',
+              textShadow: currentMode === 'light'
+                ? '0 0 15px rgba(124, 58, 237, 0.3)'
+                : '0 0 30px rgba(123,47,255,0.6)'
             }}
           >
             {t('notation_your_evaluation')}
           </h2>
-          <p className="font-rajdhani text-[15px] font-normal text-center tracking-[0.5px] text-[#9b8ec4] mb-9">
+          <p style={{
+            fontFamily: "'Space Grotesk', 'rajdhani', sans-serif",
+            fontSize: '15px',
+            fontWeight: 500,
+            textAlign: 'center',
+            letterSpacing: '1px',
+            color: currentMode === 'light' ? '#666666' : '#9b8ec4',
+            marginBottom: '2.25rem'
+          }}>
             {t('notation_evaluation_subtitle')}
           </p>
 
           {/* Vote buttons */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-7">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1.75rem' }}>
             {VOTE_OPTIONS.map(({ key, Icon, selectedCls, hoverCls }) => {
               const isSelected = selectedVote === key;
               const labelKey = key === "like" ? "notation_vote_like" : key === "discuss" ? "notation_vote_discuss" : "notation_vote_dislike";
@@ -652,26 +1056,62 @@ export default function NotationJury() {
                   key={key}
                   disabled={submitted}
                   onClick={() => setSelectedVote(key)}
-                  className={[
-                    "relative flex flex-col items-center gap-3.5 px-4 py-7 rounded-xl",
-                    "font-rajdhani text-[15px] font-bold tracking-[2px] uppercase",
-                    "border bg-[rgba(10,8,22,0.7)] text-[#9b8ec4]",
-                    "cursor-pointer outline-none overflow-hidden",
-                    "transition-all duration-300",
-                    isSelected
-                      ? selectedCls
-                      : `border-[rgba(123,47,255,0.2)] ${!submitted ? `${hoverCls} hover:-translate-y-[5px] hover:shadow-[0_16px_40px_rgba(0,0,0,0.5)]` : ""}`,
-                    submitted ? "opacity-45 cursor-not-allowed !transform-none" : "",
-                  ].join(" ")}
+                  style={{
+                    position: 'relative',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '0.875rem',
+                    paddingX: '1rem',
+                    paddingY: '1.75rem',
+                    borderRadius: '0.75rem',
+                    fontFamily: "'Space Grotesk', 'rajdhani', sans-serif",
+                    fontSize: '15px',
+                    fontWeight: 600,
+                    letterSpacing: '2px',
+                    textTransform: 'uppercase',
+                    border: isSelected 
+                      ? 'none' 
+                      : `1px solid ${currentMode === 'light' ? 'rgba(124, 58, 237, 0.2)' : 'rgba(123,47,255,0.2)'}`,
+                    backgroundColor: isSelected
+                      ? (key === 'like' ? '#00dc6e' : key === 'discuss' ? '#ffd740' : '#ff5370')
+                      : currentMode === 'light' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(10,8,22,0.7)',
+                    color: isSelected ? '#000000' : currentMode === 'light' ? '#7c3aed' : '#9b8ec4',
+                    cursor: submitted ? 'not-allowed' : 'pointer',
+                    outline: 'none',
+                    overflow: 'hidden',
+                    transition: 'all 0.3s',
+                    opacity: submitted ? 0.45 : 1,
+                    boxShadow: isSelected
+                      ? `0 0 28px ${key === 'like' ? 'rgba(0,220,110,0.3)' : key === 'discuss' ? 'rgba(255,215,64,0.28)' : 'rgba(255,83,112,0.28)'}`
+                      : 'none'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isSelected && !submitted) {
+                      e.currentTarget.style.transform = 'translateY(-5px)';
+                      e.currentTarget.style.boxShadow = '0 16px 40px rgba(0,0,0,0.5)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isSelected && !submitted) {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }
+                  }}
                 >
-                  {/* Shimmer */}
-                  {!isSelected && !submitted && (
-                    <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.07] to-transparent -translate-x-full hover:translate-x-full transition-transform duration-500 pointer-events-none" />
-                  )}
-
                   {/* Icon ring */}
-                  <span className="w-[58px] h-[58px] rounded-full border-[1.5px] border-current flex items-center justify-center bg-white/[0.03] transition-all duration-300">
-                    <Icon size={24} strokeWidth={1.8} />
+                  <span style={{
+                    width: '58px',
+                    height: '58px',
+                    borderRadius: '50%',
+                    border: `1.5px solid currentColor`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+                    transition: 'all 0.3s'
+                  }}>
+                    <Icon size={24} strokeWidth={1.8} style={{ color: isSelected ? '#000000' : 'inherit' }} />
                   </span>
 
                   {t(labelKey)}
@@ -679,10 +1119,21 @@ export default function NotationJury() {
                   {/* Check badge */}
                   {isSelected && (
                     <span
-                      className="absolute top-2.5 right-2.5 w-[22px] h-[22px] rounded-full bg-current flex items-center justify-center"
-                      style={{ animation: "njPop 0.35s cubic-bezier(0.34,1.56,0.64,1) both" }}
+                      style={{
+                        position: 'absolute',
+                        top: '0.625rem',
+                        right: '0.625rem',
+                        width: '22px',
+                        height: '22px',
+                        borderRadius: '50%',
+                        backgroundColor: 'currentColor',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        animation: 'njPop 0.35s cubic-bezier(0.34,1.56,0.64,1) both'
+                      }}
                     >
-                      <Check size={11} strokeWidth={3} className="text-[#0a0a12]" />
+                      <Check size={11} strokeWidth={3} style={{ color: '#000000' }} />
                     </span>
                   )}
                 </button>
@@ -692,11 +1143,27 @@ export default function NotationJury() {
 
           {/* Comment */}
           {selectedVote && (
-            <div className="mb-6" style={{ animation: "njSlideDown 0.3s ease both" }}>
-              <label className="block font-orbitron text-[10px] font-bold tracking-[3px] uppercase text-[#9b8ec4] mb-2.5">
+            <div style={{ marginBottom: '1.5rem', animation: 'njSlideDown 0.3s ease both' }}>
+              <label style={{
+                display: 'block',
+                fontFamily: 'orbitron',
+                fontSize: '10px',
+                fontWeight: 'bold',
+                letterSpacing: '3px',
+                textTransform: 'uppercase',
+                color: currentMode === 'light' ? '#7c3aed' : '#9b8ec4',
+                marginBottom: '0.625rem'
+              }}>
                 {t('notation_comment')}{" "}
                 {!submitted && (
-                  <span className="font-rajdhani text-[13px] font-normal normal-case tracking-normal text-[rgba(155,142,196,0.45)]">
+                  <span style={{
+                    fontFamily: "'Space Grotesk', 'rajdhani', sans-serif",
+                    fontSize: '13px',
+                    fontWeight: 400,
+                    textTransform: 'none',
+                    letterSpacing: '0.3px',
+                    color: currentMode === 'light' ? 'rgba(124, 58, 237, 0.45)' : 'rgba(155,142,196,0.45)'
+                  }}>
                     {t('jury_optional')}
                   </span>
                 )}
@@ -707,7 +1174,36 @@ export default function NotationJury() {
                 disabled={submitted}
                 placeholder={t('notation_comment_placeholder')}
                 rows={6}
-                className="w-full px-5 py-4 bg-[rgba(10,8,20,0.7)] border border-[rgba(123,47,255,0.25)] rounded-xl font-rajdhani text-base font-normal leading-relaxed text-[#f0eaff] placeholder:text-[rgba(155,142,196,0.5)] resize-y outline-none transition-all duration-300 focus:border-[#7b2fff] focus:shadow-[0_0_0_3px_rgba(123,47,255,0.2),0_0_20px_rgba(123,47,255,0.1)] disabled:opacity-60 disabled:cursor-not-allowed box-border"
+                style={{
+                  width: '100%',
+                  paddingX: '1.25rem',
+                  paddingY: '1rem',
+                  backgroundColor: currentMode === 'light' ? 'rgba(255, 255, 255, 0.98)' : 'rgba(10,8,20,0.7)',
+                  border: currentMode === 'light' ? '1px solid rgba(124, 58, 237, 0.2)' : '1px solid rgba(123,47,255,0.25)',
+                  borderRadius: '0.75rem',
+                  fontFamily: "'Space Grotesk', 'rajdhani', sans-serif",
+                  fontSize: '1rem',
+                  fontWeight: 400,
+                  lineHeight: 1.5,
+                  color: currentMode === 'light' ? '#000000' : '#f0eaff',
+                  placeholderColor: currentMode === 'light' ? 'rgba(124, 58, 237, 0.3)' : 'rgba(155,142,196,0.5)',
+                  resize: 'vertical',
+                  outline: 'none',
+                  transition: 'all 0.3s',
+                  opacity: submitted ? 0.6 : 1,
+                  cursor: submitted ? 'not-allowed' : 'text',
+                  boxSizing: 'border-box'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = currentMode === 'light' ? 'rgba(124, 58, 237, 0.5)' : '#7b2fff';
+                  e.target.style.boxShadow = currentMode === 'light'
+                    ? '0 0 0 3px rgba(124, 58, 237, 0.1), 0 0 20px rgba(124, 58, 237, 0.05)'
+                    : '0 0 0 3px rgba(123,47,255,0.2), 0 0 20px rgba(123,47,255,0.1)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = currentMode === 'light' ? 'rgba(124, 58, 237, 0.2)' : 'rgba(123,47,255,0.25)';
+                  e.target.style.boxShadow = 'none';
+                }}
               />
             </div>
           )}
@@ -717,18 +1213,56 @@ export default function NotationJury() {
             <button
               disabled={!selectedVote || submitting}
               onClick={handleSubmitVote}
-              className={[
-                "w-full flex items-center justify-center gap-2.5 py-[18px] rounded-xl",
-                "font-orbitron text-[13px] font-bold tracking-[2px] uppercase",
-                "border-none cursor-pointer transition-all duration-300 relative overflow-hidden",
-                !selectedVote || submitting
-                  ? "bg-[rgba(30,25,50,0.8)] text-[rgba(155,142,196,0.35)] border border-[rgba(123,47,255,0.12)] cursor-not-allowed"
-                  : "bg-gradient-to-r from-[#7b2fff] to-[#e040fb] text-white shadow-[0_8px_32px_rgba(123,47,255,0.4),0_0_60px_rgba(224,64,251,0.2)] hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(123,47,255,0.6),0_0_80px_rgba(224,64,251,0.3)] active:translate-y-0",
-              ].join(" ")}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.625rem',
+                paddingY: '1.125rem',
+                borderRadius: '0.75rem',
+                fontFamily: 'orbitron',
+                fontSize: '13px',
+                fontWeight: 600,
+                letterSpacing: '2px',
+                textTransform: 'uppercase',
+                border: 'none',
+                cursor: !selectedVote || submitting ? 'not-allowed' : 'pointer',
+                transition: 'all 0.3s',
+                position: 'relative',
+                overflow: 'hidden',
+                backgroundColor: !selectedVote || submitting
+                  ? currentMode === 'light' ? 'rgba(124, 58, 237, 0.1)' : 'rgba(30,25,50,0.8)'
+                  : currentMode === 'light' ? '#7c3aed' : 'linear-gradient(to right, #7b2fff, #e040fb)',
+                color: !selectedVote || submitting
+                  ? currentMode === 'light' ? '#7c3aed' : 'rgba(155,142,196,0.35)'
+                  : '#ffffff',
+                boxShadow: !selectedVote || submitting
+                  ? 'none'
+                  : currentMode === 'light' 
+                    ? '0 8px 32px rgba(124, 58, 237, 0.2), 0 0 60px rgba(124, 58, 237, 0.1)'
+                    : '0 8px 32px rgba(123,47,255,0.4), 0 0 60px rgba(224,64,251,0.2)'
+              }}
+              onMouseEnter={(e) => {
+                if (!(!selectedVote || submitting)) {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = currentMode === 'light'
+                    ? '0 12px 40px rgba(124, 58, 237, 0.3), 0 0 80px rgba(124, 58, 237, 0.15)'
+                    : '0 12px 40px rgba(123,47,255,0.6), 0 0 80px rgba(224,64,251,0.3)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!(!selectedVote || submitting)) {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = currentMode === 'light'
+                    ? '0 8px 32px rgba(124, 58, 237, 0.2), 0 0 60px rgba(124, 58, 237, 0.1)'
+                    : '0 8px 32px rgba(123,47,255,0.4), 0 0 60px rgba(224,64,251,0.2)';
+                }
+              }}
             >
               {submitting ? (
                 <>
-                  <Loader2 size={16} className="animate-spin" />
+                  <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
                   {t('jury_submitting')}
                 </>
               ) : (
@@ -740,18 +1274,52 @@ export default function NotationJury() {
             </button>
           ) : (
             <div
-              className="flex items-center justify-between flex-wrap gap-4 bg-gradient-to-r from-[rgba(0,200,100,0.12)] to-[rgba(0,180,90,0.06)] border border-[rgba(0,220,110,0.4)] rounded-xl px-6 py-[22px]"
-              style={{ animation: "njSlideDown 0.35s ease both" }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '1rem',
+                backgroundImage: 'linear-gradient(to right, rgba(0,200,100,0.12), rgba(0,180,90,0.06))',
+                border: '1px solid rgba(0,220,110,0.4)',
+                borderRadius: '0.75rem',
+                paddingX: '1.5rem',
+                paddingY: '1.375rem',
+                animation: 'njSlideDown 0.35s ease both'
+              }}
             >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 flex-shrink-0 rounded-full bg-gradient-to-br from-[#00dc6e] to-[#00b856] flex items-center justify-center shadow-[0_0_24px_rgba(0,220,110,0.5)]">
-                  <Check size={22} strokeWidth={2.5} color="#0a0a12" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <div style={{
+                  width: '3rem',
+                  height: '3rem',
+                  flexShrink: 0,
+                  borderRadius: '50%',
+                  backgroundImage: 'linear-gradient(to bottom right, #00dc6e, #00b856)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 0 24px rgba(0,220,110,0.5)'
+                }}>
+                  <Check size={22} strokeWidth={2.5} color="#000000" />
                 </div>
                 <div>
-                  <p className="font-orbitron text-[12px] font-bold tracking-[2px] uppercase text-[#6dffa0] mb-1">
+                  <p style={{
+                    fontFamily: 'orbitron',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    letterSpacing: '2px',
+                    textTransform: 'uppercase',
+                    color: '#6dffa0',
+                    marginBottom: '0.25rem'
+                  }}>
                     {t('notation_vote_success')}
                   </p>
-                  <p className="font-rajdhani text-[13px] text-[rgba(109,255,160,0.6)] tracking-[0.5px]">
+                  <p style={{
+                    fontFamily: "'Space Grotesk', 'rajdhani', sans-serif",
+                    fontSize: '13px',
+                    color: 'rgba(109,255,160,0.6)',
+                    letterSpacing: '0.8px'
+                  }}>
                     {t('notation_saved_message')}
                   </p>
                 </div>
@@ -764,16 +1332,59 @@ export default function NotationJury() {
       {/* ── Video modal ── */}
       {showVideoModal && embedUrl && (
         <div
-          className="fixed inset-0 bg-black/95 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.95)',
+            backdropFilter: 'blur(4px)',
+            zIndex: 50,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1rem'
+          }}
           onClick={() => setShowVideoModal(false)}
         >
           <div
-            className="relative w-full max-w-[1100px] aspect-video rounded-2xl overflow-hidden shadow-[0_0_0_1px_rgba(123,47,255,0.4),0_40px_100px_rgba(0,0,0,0.8),0_0_80px_rgba(123,47,255,0.3)]"
+            style={{
+              position: 'relative',
+              width: '100%',
+              maxWidth: '1100px',
+              aspectRatio: '16/9',
+              borderRadius: '1rem',
+              overflow: 'hidden',
+              boxShadow: currentMode === 'light'
+                ? '0 0 0 1px rgba(124, 58, 237, 0.4), 0 40px 100px rgba(124, 58, 237, 0.2), 0 0 80px rgba(124, 58, 237, 0.15)'
+                : '0 0 0 1px rgba(123,47,255,0.4), 0 40px 100px rgba(0,0,0,0.8), 0 0 80px rgba(123,47,255,0.3)'
+            }}
             onClick={(e) => e.stopPropagation()}
           >
             <button
               onClick={() => setShowVideoModal(false)}
-              className="absolute -top-[52px] right-0 w-10 h-10 rounded-full bg-gradient-to-br from-[#7b2fff] to-[#e040fb] border-none flex items-center justify-center text-white cursor-pointer transition-all duration-300 hover:scale-110 hover:rotate-90 shadow-[0_0_20px_rgba(123,47,255,0.5)]"
+              style={{
+                position: 'absolute',
+                top: '-52px',
+                right: 0,
+                width: '40px',
+                height: '40px',
+                borderRadius: '50%',
+                backgroundImage: 'linear-gradient(to bottom right, #7b2fff, #e040fb)',
+                border: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#ffffff',
+                cursor: 'pointer',
+                transition: 'all 0.3s',
+                boxShadow: '0 0 20px rgba(123,47,255,0.5)',
+                zIndex: 51
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'scale(1.1) rotate(90deg)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'scale(1) rotate(0deg)';
+              }}
             >
               <X size={18} />
             </button>
@@ -783,7 +1394,7 @@ export default function NotationJury() {
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
-              className="w-full h-full"
+              style={{ width: '100%', height: '100%' }}
             />
           </div>
         </div>
@@ -800,6 +1411,7 @@ export default function NotationJury() {
           to   { opacity: 1; transform: translateY(0); }
         }
       `}</style>
-    </div>
+      </div>
+    </>
   );
 }

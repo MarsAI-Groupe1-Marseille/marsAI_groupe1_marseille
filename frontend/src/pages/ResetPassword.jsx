@@ -1,15 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import axios from '../config/axiosConfig';
+import StarryBackground from '../components/StarryBackground.jsx';
 
 const ResetPassword = () => {
+  const [currentMode, setCurrentMode] = useState('dark');
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      const mode = document.documentElement.getAttribute('data-mode');
+      setCurrentMode(mode || 'dark');
+    });
+
+    const mode = document.documentElement.getAttribute('data-mode');
+    setCurrentMode(mode || 'dark');
+
+    observer.observe(document.documentElement, { attributes: true });
+
+    return () => observer.disconnect();
+  }, []);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [searchParams] = useSearchParams();
   const tokenFromSearch = searchParams.get('token');
-  const token = tokenFromSearch 
+  const token = tokenFromSearch;
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -53,82 +69,170 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center">
-      <div className="w-full max-w-[450px] px-5">
+    <>
+      <StarryBackground />
+      <div style={{
+        minHeight: '100vh',
+        backgroundColor: currentMode === 'light' ? '#ffffff' : '#000000',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'relative',
+        zIndex: 10
+      }}>
+        <div style={{ width: '100%', maxWidth: '450px', padding: '1.25rem' }}>
         
-        {/* Icon User */}
-        <div className="flex justify-center mb-10 relative">
-          <div className="relative">
-            <div className="w-[70px] h-[70px] bg-[#6366f1] rounded-full flex items-center justify-center">
+          {/* Icon User */}
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2.5rem', position: 'relative' }}>
+            <div style={{ position: 'relative' }}>
+              <div style={{ width: '70px', height: '70px', backgroundColor: '#6366f1', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <svg className="w-[35px] h-[35px] fill-white" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
               </svg>
             </div>
-            <div className="absolute top-0 right-0 w-[18px] h-[18px] bg-[#3b82f6] rounded-full border-2 border-black"></div>
+            <div style={{ position: 'absolute', top: '0', right: '0', width: '18px', height: '18px', backgroundColor: '#3b82f6', borderRadius: '50%', border: '2px solid', borderColor: currentMode === 'light' ? '#ffffff' : '#000000' }}></div>
           </div>
         </div>
 
         {/* Title */}
-        <h1 className="text-2xl md:text-3xl font-bold text-center mb-8 tracking-widest text-gray-300">
+        <h1 style={{
+          fontSize: currentMode === 'light' ? '1.5rem' : '1.875rem',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          marginBottom: '2rem',
+          letterSpacing: '0.125em',
+          color: currentMode === 'light' ? '#000000' : '#d1d5db'
+        }}>
             RÉINITIALISER MOT DE PASSE
         </h1>
 
         {/* Error Message */}
         {error && (
-          <div className="mb-5 p-4 rounded-lg bg-red-500/20 border border-red-500/50 text-red-300 text-sm">
+          <div style={{
+            marginBottom: '1.25rem',
+            padding: '1rem',
+            borderRadius: '0.5rem',
+            backgroundColor: 'rgba(239, 68, 68, 0.2)',
+            border: '1px solid rgba(239, 68, 68, 0.5)',
+            color: '#fca5a5',
+            fontSize: '0.875rem'
+          }}>
             {error}
           </div>
         )}
 
         {/* Form */}
         <form onSubmit={handleSubmit}>
-          <div className="mb-5">
+          <div style={{ marginBottom: '1.25rem' }}>
             <input
               type="password"
               id="password"
               name="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-6 py-4 bg-gray-900/40 border border-gray-800 rounded-full focus:outline-none focus:border-purple-500 transition text-white placeholder-gray-500 text-sm"
+              style={{
+                width: '100%',
+                paddingLeft: '1.5rem',
+                paddingRight: '1.5rem',
+                paddingTop: '1rem',
+                paddingBottom: '1rem',
+                backgroundColor: currentMode === 'light' ? 'rgba(124, 58, 237, 0.1)' : 'rgba(107, 114, 128, 0.4)',
+                border: `1px solid ${currentMode === 'light' ? 'rgba(124, 58, 237, 0.3)' : '#1f2937'}`,
+                borderRadius: '9999px',
+                outline: 'none',
+                color: currentMode === 'light' ? '#000000' : '#ffffff',
+                placeholder: 'Nouveau mot de passe',
+                fontSize: '0.875rem'
+              }}
               placeholder="Nouveau mot de passe :"
               required
               disabled={loading}
+              onFocus={(e) => e.target.style.borderColor = currentMode === 'light' ? '#7c3aed' : '#a855f7'}
+              onBlur={(e) => e.target.style.borderColor = currentMode === 'light' ? 'rgba(124, 58, 237, 0.3)' : '#1f2937'}
             />
           </div>
 
-          <div className="mb-5">
+          <div style={{ marginBottom: '1.25rem' }}>
             <input
               type="password"
               id="confirmPassword"
               name="confirmPassword"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full px-6 py-4 bg-gray-900/40 border border-gray-800 rounded-full focus:outline-none focus:border-purple-500 transition text-white placeholder-gray-500 text-sm"
+              style={{
+                width: '100%',
+                paddingLeft: '1.5rem',
+                paddingRight: '1.5rem',
+                paddingTop: '1rem',
+                paddingBottom: '1rem',
+                backgroundColor: currentMode === 'light' ? 'rgba(124, 58, 237, 0.1)' : 'rgba(107, 114, 128, 0.4)',
+                border: `1px solid ${currentMode === 'light' ? 'rgba(124, 58, 237, 0.3)' : '#1f2937'}`,
+                borderRadius: '9999px',
+                outline: 'none',
+                color: currentMode === 'light' ? '#000000' : '#ffffff',
+                placeholder: 'Confirmer le mot de passe',
+                fontSize: '0.875rem'
+              }}
               placeholder="Confirmer le mot de passe :"
               required
               disabled={loading}
+              onFocus={(e) => e.target.style.borderColor = currentMode === 'light' ? '#7c3aed' : '#a855f7'}
+              onBlur={(e) => e.target.style.borderColor = currentMode === 'light' ? 'rgba(124, 58, 237, 0.3)' : '#1f2937'}
             />
           </div>
 
           <button 
             type="submit" 
             disabled={loading}
-            className="w-full py-4 px-5 bg-gradient-to-r from-[#c084fc] via-[#6366f1] to-[#60a5fa] border-none rounded-full text-white text-sm font-medium tracking-[3px] uppercase cursor-pointer transition-all duration-300 flex items-center justify-center gap-3 shadow-[0_8px_25px_rgba(99,102,241,0.3)] hover:-translate-y-0.5 hover:shadow-[0_12px_35px_rgba(99,102,241,0.4)] active:translate-y-0 group disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{
+              width: '100%',
+              paddingTop: '1rem',
+              paddingBottom: '1rem',
+              paddingLeft: '1.25rem',
+              paddingRight: '1.25rem',
+              background: 'linear-gradient(to right, #c084fc, #6366f1, #60a5fa)',
+              border: 'none',
+              borderRadius: '9999px',
+              color: '#ffffff',
+              fontSize: '0.875rem',
+              fontWeight: '500',
+              letterSpacing: '0.075em',
+              textTransform: 'uppercase',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              transition: 'all 0.3s',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.75rem',
+              boxShadow: '0 8px 25px rgba(99, 102, 241, 0.3)',
+              opacity: loading ? 0.5 : 1
+            }}
+            onMouseEnter={(e) => !loading && (e.target.style.transform = 'translateY(-0.125rem)', e.target.style.boxShadow = '0 12px 35px rgba(99, 102, 241, 0.4)')}
+            onMouseLeave={(e) => !loading && (e.target.style.transform = 'translateY(0)', e.target.style.boxShadow = '0 8px 25px rgba(99, 102, 241, 0.3)')}
           >
             {loading ? 'TRAITEMENT...' : 'RÉINITIALISER'}
-            {!loading && <span className="text-lg font-bold transition-transform duration-300 group-hover:translate-x-1">→</span>}
+            {!loading && <span style={{ fontSize: '1.125rem', fontWeight: 'bold', transition: 'transform 0.3s', display: 'inline-block' }} className="group-hover:translate-x-1">→</span>}
           </button>
         </form>
 
         {/* Back Link */}
-        <div className="mt-8 text-center space-y-3">
-          <Link to="/login" className="block text-sm text-gray-400 hover:text-purple-400 transition">
+        <div style={{ marginTop: '2rem', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          <Link to="/login" style={{
+            display: 'block',
+            fontSize: '0.875rem',
+            color: currentMode === 'light' ? '#7c3aed' : '#9ca3af',
+            textDecoration: 'none',
+            transition: 'color 0.3s'
+          }}
+          onMouseEnter={(e) => e.target.style.color = currentMode === 'light' ? '#6d28d9' : '#a78bfa'}
+          onMouseLeave={(e) => e.target.style.color = currentMode === 'light' ? '#7c3aed' : '#9ca3af'}>
             Retour à la connexion
           </Link>
         </div>
 
       </div>
     </div>
+    </>
   );
 };
 

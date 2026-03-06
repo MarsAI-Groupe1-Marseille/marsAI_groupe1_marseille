@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-
-import { useLanguage } from "../context/LanguageContext.jsx";
+import { useLanguage } from "../context/LanguageContext";
 import {
   Star,
   Award,
@@ -15,6 +14,7 @@ import {
 } from "lucide-react";
 import axios from "../config/axiosConfig.js";
 import "./JuryPage.css";
+import StarryBackground from "../components/StarryBackground.jsx";
   
 
 /* -------------------------------------------------------
@@ -25,8 +25,8 @@ const openSound = new Audio("/sounds/open.mp3");
 const closeSound = new Audio("/sounds/close.mp3");
 
 //  Optionnel : volume par défaut (évite de surprendre)
-openSound.volume = 0.15;
-closeSound.volume = 0.15;
+openSound.volume = 0.25;
+closeSound.volume = 0.25;
 
 const playSound = (type) => {
   const audio = type === "open" ? openSound : closeSound;
@@ -40,8 +40,7 @@ const JuryPage = () => {
   -------------------------------------------------------- */
   
   // Hook pour les traductions
-  const { t } = useLanguage();
-  const { lang } = useLanguage();
+  const { t, lang } = useLanguage();
   
   // Constantes pour les filtres (pour éviter les problèmes de comparaison avec traductions)
   const FILTER_ALL = 'all';
@@ -53,34 +52,38 @@ const JuryPage = () => {
   const [selectedJury, setSelectedJury] = useState(null); // Modale ouverte si != null
   const [isVisible, setIsVisible] = useState(false); // Déclenche animation mars-reveal
   const [filter, setFilter] = useState(FILTER_ALL);
+  const [currentMode, setCurrentMode] = useState('dark'); // Mode clair/sombre
+
+  /* -------------------------------------------------------
+     MODE CLAIR/SOMBRE
+  -------------------------------------------------------- */
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      const mode = document.documentElement.getAttribute('data-mode');
+      setCurrentMode(mode || 'dark');
+    });
+    const mode = document.documentElement.getAttribute('data-mode');
+    setCurrentMode(mode || 'dark');
+    observer.observe(document.documentElement, { attributes: true });
+    return () => observer.disconnect();
+  }, []);
 
   /* -------------------------------------------------------
      DATA PRESIDENT (statique)
   -------------------------------------------------------- */
-
   const ADMIN_DATA = {
-  full_name: "GUILLAMO Stéphane.",
-  role: "admin",
-
-  // Champs bilingues
-  specialite: {
-    fr: "Visionnaire IA & Président du Jury",
-    en: "AI Visionary & Jury President",
-  },
-  bio: {
-    fr: "Pionnier des technologies génératives, il définit la direction artistique et éthique du Mars AI Festival.",
-    en: "A pioneer in generative technologies, he shapes the artistic and ethical direction of the Mars AI Festival.",
-  },
-
-  image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800",
-
-  socials: {
-    linkedin: "https://www.linkedin.com/bruno",
-    x: "https://www.x.com/marsai_festival",
-    facebook: "https://www.facebook.com/marsai.festival",
-    instagram: "https://www.instagram.com/marsai.festival",
-  },
-};
+    full_name: "Jean-Baptiste G.",
+    role: "admin",
+    specialite: "Visionnaire IA & Président du Jury",
+    bio: "Pionnier des technologies génératives, il définit la direction artistique et éthique du Mars AI Festival.",
+    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800",
+    socials: {
+      linkedin: "https://www.linkedin.com/bruno",
+      x: "https://www.x.com/marsai_festival",
+      facebook: "https://www.facebook.com/marsai.festival",
+      instagram: "https://www.instagram.com/marsai.festival"
+    },
+  };
 
   //  Helper flag for rendering the presidency badge; can be driven by props or API later
   const president = true;
@@ -299,7 +302,9 @@ if (error) {
     PAGE
   -------------------------------------------------------- */
   return (
-    <div className="min-h-screen bg-[var(--color-bg)] pb-24 overflow-x-hidden text-[var(--color-text)]">
+    <>
+      <StarryBackground />
+      <div className="jury-page-wrapper min-h-screen bg-transparent pb-24 overflow-x-hidden text-[var(--color-text)] relative z-2">
       {/* ---------------------------------------------------
           HERO SECTION (mobile-first)
       ---------------------------------------------------- */}
@@ -317,8 +322,20 @@ if (error) {
 
         {/* Title */}
         <div className={`relative z-10 text-center px-4 mars-reveal ${isVisible ? "is-visible" : ""}`}>
-          <h1 className="text-4xl sm:text-5xl md:text-7xl font-black italic uppercase tracking-tighter mb-2 leading-none">
-            Le <span className="text-[var(--color-primary)] text-glow">Grand</span>&nbsp;Jury
+          <h1 className="hero-title text-4xl sm:text-5xl md:text-7xl font-black italic uppercase tracking-tighter mb-2 leading-none">
+            {currentMode === 'light' ? (
+              <>
+                LE{' '}
+                <span style={{ color: '#22D3EE' }}>GRAND</span>
+                {' '}JURY
+              </>
+            ) : (
+              <>
+                LE{' '}
+                <span style={{ color: '#22D3EE' }}>GRAND</span>
+                {' '}JURY
+              </>
+            )}
           </h1>
         </div>
       </section>
@@ -330,7 +347,7 @@ if (error) {
         {error && (
           <div className="container-mars px-4 -mt-10 mb-10 relative z-30">
             <div className="rounded-2xl border border-red-500/20 bg-red-500/10 px-6 py-4 text-sm">
-              <span className="font-black tracking-widest text-red-200">ALERTE</span>{" "}
+              <span className="font-black tracking-widest text-red-200">{t('jury_page_alert')}</span>{" "}
             </div>
           </div>
         )}     
@@ -350,7 +367,7 @@ if (error) {
           {/* Text */}
           <div className="flex-1 text-center lg:text-left">
             <div className="mars-cta w-full inline-flex items-center tracking-[0.3em] gap-3 px-6 py-4 sm:py-5 rounded-full bg-[var(--color-primary)] text-black text-[10px] font-black uppercase mb-6 animate-pulse">
-              <Star size={14} fill="currentColor" /> Présidence du Jury
+              <Star size={14} fill="currentColor" /> {t('jury_page_presidency')}
             </div>
 
             <h2 className="text-3xl sm:text-4xl md:text-7xl font-black uppercase italic leading-none mb-4">
@@ -358,11 +375,11 @@ if (error) {
             </h2>
 
             <p className="text-[var(--color-primary)] font-bold tracking-[0.35em] text-[11px] sm:text-xs uppercase mb-6">
-              {ADMIN_DATA.specialite[lang] || ADMIN_DATA.specialite.fr}
+              {ADMIN_DATA.specialite}
             </p>
 
             <p className="text-[var(--color-text)]/60 italic text-lg sm:text-xl font-light mb-8 md:mb-10 max-w-2xl leading-relaxed">
-              "{ADMIN_DATA.bio[lang] || ADMIN_DATA.bio.fr}"
+              "{ADMIN_DATA.bio}"
             </p>
 
             {/* Socials */}
@@ -417,7 +434,7 @@ if (error) {
       <section className="container-mars px-4">
         <div className={`relative z-10 text-center px-4 mars-reveal ${isVisible ? "is-visible" : ""}`}>
           <h2 className="text-4xl sm:text-5xl md:text-7xl font-black italic uppercase tracking-tighter mb-2 leading-none">
-            <span className="text-[var(--color-primary)] text-glow">Nos</span>&nbsp;Jury
+            <span className="text-[var(--color-primary)] text-glow">{lang === 'fr' ? 'Nos' : 'Our'}</span>&nbsp;{lang === 'fr' ? 'Jury' : 'Jury Members'}
           </h2>
 
           <div className="h-2 w-56 sm:w-72 bg-[var(--gradient-brand)] mx-auto rounded-full mt-6 mb-10 shadow-[0_0_20px_var(--color-primary)]" />
@@ -494,7 +511,7 @@ if (error) {
             <button 
               onClick={closeModal}
               className="absolute top-6 right-6 z-50 p-4 bg-black/50 backdrop-blur-md hover:bg-red-500/20 text-white rounded-full transition-all border border-white/10"
-              aria-label="Fermer"
+              aria-label={t('jury_page_close')}
             >
               <X size={24} />
             </button>
@@ -515,54 +532,54 @@ if (error) {
                 {/* Badge Accrédité (Premium) */}
                 <div className="absolute bottom-4 left-4 rounded-full border border-white/10 bg-black/40 px-4 py-1.5 backdrop-blur-md">
                   <p className="text-white/80 text-[9px] font-black uppercase tracking-[0.4em]">
-                    ACCRÉDITÉ MARS / JURY
+                    {t('jury_page_accredited')}
                   </p>
                 </div>
               </div>
               
 
-              <div className="p-4 sm:p-5 md:p-8 flex flex-col h-full justify-between overflow-hidden">
-                <div className="flex flex-col space-y-2 md:space-y-3">
+              <div className="p-4 sm:p-6 md:p-10 flex flex-col h-full overflow-hidden">
+                <div className="min-h-0 flex-1 overflow-hidden flex flex-col justify-center">
                 {/* official record info from main inserted */}
-                <div className="space-y-0.5">               
-                  <p className="text-[10px] sm:text-xs md:text-sm text-white/70 font-light leading-tight">                   
+                <div className="space-y-1 mb-2 md:mb-3">               
+                  <p className="text-xs sm:text-sm md:text-base text-white/80 font-light leading-snug">                   
                     {t('jury_page_registered')} {new Date(selectedJury.created_at).toLocaleDateString()}
                   </p>
                 </div>
-                <div className="flex items-center gap-2 text-[var(--color-secondary)]">
-                  <Sparkles size={16} className="animate-spin-slow text-[var(--color-primary)]" />
-                  <span className="text-[8px] md:text-[9px] font-black uppercase tracking-[0.25em] md:tracking-[0.35em] text-white/60">
-                    Session d'Analyse Officielle
+                <div className="flex items-center gap-2 mb-2 md:mb-3 text-[var(--color-secondary)]">
+                  <Sparkles size={20} className="animate-spin-slow text-[var(--color-primary)]" />
+                  <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] md:tracking-[0.4em] text-white/60">
+                    {t('jury_page_session')}
                   </span>
                 </div>
                 
-                <h2 className="text-xl sm:text-2xl md:text-4xl font-black italic text-white leading-none uppercase tracking-tighter pt-1">
+                <h2 className="text-2xl sm:text-3xl md:text-5xl font-black mb-1 md:mb-2 italic text-white leading-none uppercase tracking-tighter">
                   {selectedJury.full_name}
                 </h2>
                 
-                <p className="text-[var(--color-primary)] font-bold text-[9px] sm:text-[10px] md:text-xs uppercase tracking-[0.2em] md:tracking-[0.3em] leading-relaxed">
+                <p className="text-[var(--color-primary)] font-bold text-[10px] sm:text-xs md:text-sm mb-3 md:mb-5 uppercase tracking-[0.25em] md:tracking-[0.4em]">
                   {parseSpecialite(selectedJury.specialite)}
                 </p>
 
                 {/* Dossier Dossier/Note (Premium) */}
-                <div className="pt-1">
-                  <div className="p-3 sm:p-3.5 md:p-5 rounded-[18px] md:rounded-[24px] bg-white/[0.03] border border-white/10 backdrop-blur-sm">
-                    <h4 className="text-[9px] font-black text-white/30 flex items-center gap-2 uppercase tracking-[0.15em] mb-2 md:mb-3">
-                      <Cpu size={14} className="text-[var(--color-primary)]" /> Expertise & Vision
+                <div className="space-y-3 md:space-y-6">
+                  <div className="p-3 sm:p-4 md:p-6 rounded-[20px] md:rounded-[30px] bg-white/[0.03] border border-white/10 backdrop-blur-sm">
+                    <h4 className="text-[10px] font-black text-white/30 flex items-center gap-2 uppercase tracking-[0.2em] mb-4">
+                      <Cpu size={16} className="text-[var(--color-primary)]" /> {t('jury_page_expertise')}
                     </h4>
                     
-                    <p className="text-[10px] sm:text-xs md:text-sm text-white/75 font-light leading-snug italic mb-2 md:mb-3">
-                      "Expert(e) reconnu(e) pour sa capacité à identifier les ruptures technologiques et les impacts éthiques de l'IA générative."
+                    <p className="text-xs sm:text-sm md:text-base text-white/80 font-light leading-snug md:leading-relaxed italic mb-3 md:mb-5">
+                      "{t('jury_page_description')}"
                     </p>
 
-                    <ul className="space-y-1.5 md:space-y-2.5">
-                      <li className="flex items-start gap-2 text-[10px] sm:text-xs text-white/65 font-light">
-                        <Award size={14} className="text-[var(--color-primary)] shrink-0 mt-0.5" /> 
-                        <span>Évaluation des critères d'innovation pure.</span>
+                    <ul className="space-y-2 md:space-y-4">
+                      <li className="flex items-start gap-3 text-xs sm:text-sm text-white/70 font-light">
+                        <Award size={18} className="text-[var(--color-primary)] shrink-0" /> 
+                        <span>{t('jury_page_innovation')}</span>
                       </li>
-                      <li className="hidden sm:flex items-start gap-2 text-[10px] sm:text-xs text-white/65 font-light">
-                        <Award size={14} className="text-[var(--color-primary)] shrink-0 mt-0.5" /> 
-                        <span>Analyse de la viabilité systémique des projets.</span>
+                      <li className="hidden sm:flex items-start gap-3 text-xs sm:text-sm text-white/70 font-light">
+                        <Award size={18} className="text-[var(--color-primary)] shrink-0" /> 
+                        <span>{t('jury_page_viability')}</span>
                       </li>
                     </ul>
                   </div>
@@ -571,16 +588,17 @@ if (error) {
 
                 <button 
                   onClick={closeModal}
-                  className="mars-cta mt-3 md:mt-4 w-full py-2.5 md:py-3.5 text-[9px] md:text-[10px] font-black tracking-[0.3em] md:tracking-[0.4em] uppercase rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.3)]"
+                  className="mars-cta mt-3 md:mt-4 w-full py-3 md:py-4 text-[9px] md:text-[10px] font-black tracking-[0.3em] md:tracking-[0.4em] uppercase rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.3)] shrink-0"
                 >
-                  Fermer la Fiche
+                  {t('jury_page_close_card')}
                 </button>
               </div>
             </div>
           </div>
         </div>
-        )};
+        )}
     </div>
+    </>
   );
 } 
 

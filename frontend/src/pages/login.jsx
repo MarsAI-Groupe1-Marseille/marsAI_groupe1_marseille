@@ -1,16 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import PageTransition from '../components/PageTransition.jsx';
+import StarryBackground from '../components/StarryBackground.jsx';
 
 const Connexion = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const [currentMode, setCurrentMode] = useState('dark');
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      const mode = document.documentElement.getAttribute('data-mode');
+      setCurrentMode(mode || 'dark');
+    });
+
+    const mode = document.documentElement.getAttribute('data-mode');
+    setCurrentMode(mode || 'dark');
+
+    observer.observe(document.documentElement, { attributes: true });
+
+    return () => observer.disconnect();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -50,32 +66,71 @@ const Connexion = () => {
 
   return (
     <PageTransition pageKey="login">
-    <div className="min-h-screen bg-black text-white">
-      <div className="flex flex-col min-h-screen">
+    <>
+    <StarryBackground />
+    <div style={{
+      minHeight: '100vh',
+      backgroundColor: currentMode === 'light' ? '#ffffff' : '#000000',
+      color: currentMode === 'light' ? '#000000' : '#ffffff',
+      position: 'relative',
+      zIndex: 10
+    }}>
+      <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
 
         {/* Main Content */}
-        <div className="flex-1 flex items-center justify-center px-4 py-8 md:py-12">
-          <div className="w-full max-w-md">
+        <div style={{ flex: '1', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem 1rem' }}>
+          <div style={{ width: '100%', maxWidth: '28rem' }}>
             {/* Icon and Title */}
-            <div className="flex justify-center mb-8">
-              <div className="relative">
-                <div className="w-16 h-16 bg-linear-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}>
+              <div style={{ position: 'relative' }}>
+                <div style={{
+                  width: '4rem',
+                  height: '4rem',
+                  background: 'linear-gradient(to bottom right, #3b82f6, #9333ea)',
+                  borderRadius: '9999px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
                   <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                 </div>
-                <div className="absolute -top-1 -right-1 w-4 h-4 bg-blue-400 rounded-full animate-pulse"></div>
+                <div style={{
+                  position: 'absolute',
+                  top: '-4px',
+                  right: '-4px',
+                  width: '1rem',
+                  height: '1rem',
+                  backgroundColor: '#60a5fa',
+                  borderRadius: '9999px',
+                  animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                }}></div>
               </div>
             </div>
 
-            <h1 className="text-2xl md:text-3xl font-bold text-center mb-8 tracking-widest text-gray-300">
+            <h1 style={{
+              fontSize: currentMode === 'light' ? '1.875rem' : '2rem',
+              fontWeight: 'bold',
+              textAlign: 'center',
+              marginBottom: '2rem',
+              letterSpacing: '0.1em',
+              color: currentMode === 'light' ? '#333333' : '#d1d5db'
+            }}>
               CONNEXION
             </h1>
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               {error && (
-                <div className="p-4 bg-red-900/30 border border-red-700 rounded-lg text-red-300 text-sm">
+                <div style={{
+                  padding: '1rem',
+                  backgroundColor: currentMode === 'light' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(127, 29, 29, 0.3)',
+                  border: `1px solid ${currentMode === 'light' ? '#dc2626' : '#b91c1c'}`,
+                  borderRadius: '0.5rem',
+                  color: currentMode === 'light' ? '#991b1b' : '#fca5a5',
+                  fontSize: '0.875rem'
+                }}>
                   {error}
                 </div>
               )}
@@ -87,7 +142,23 @@ const Connexion = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full px-6 py-4 bg-gray-900/40 border border-gray-800 rounded-full focus:outline-none focus:border-purple-500 transition text-white placeholder-gray-500 text-sm"
+                  style={{
+                    width: '100%',
+                    padding: '1rem 1.5rem',
+                    backgroundColor: currentMode === 'light' ? '#f3f0ff' : 'rgba(17, 24, 39, 0.4)',
+                    border: `1px solid ${currentMode === 'light' ? 'rgba(124,58,237,0.3)' : '#1f2937'}`,
+                    borderRadius: '9999px',
+                    outline: 'none',
+                    color: currentMode === 'light' ? '#000000' : '#ffffff',
+                    fontSize: '0.875rem',
+                    transition: 'all 0.3s'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = currentMode === 'light' ? '#7c3aed' : '#a060ff';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = currentMode === 'light' ? 'rgba(124,58,237,0.3)' : '#1f2937';
+                  }}
                   placeholder="Adresse mail"
                   required
                 />
@@ -101,20 +172,61 @@ const Connexion = () => {
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className="w-full px-6 py-4 bg-gray-900/40 border border-gray-800 rounded-full focus:outline-none focus:border-purple-500 transition text-white placeholder-gray-500 text-sm"
+                  style={{
+                    width: '100%',
+                    padding: '1rem 1.5rem',
+                    backgroundColor: currentMode === 'light' ? '#f3f0ff' : 'rgba(17, 24, 39, 0.4)',
+                    border: `1px solid ${currentMode === 'light' ? 'rgba(124,58,237,0.3)' : '#1f2937'}`,
+                    borderRadius: '9999px',
+                    outline: 'none',
+                    color: currentMode === 'light' ? '#000000' : '#ffffff',
+                    fontSize: '0.875rem',
+                    transition: 'all 0.3s'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = currentMode === 'light' ? '#7c3aed' : '#a060ff';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = currentMode === 'light' ? 'rgba(124,58,237,0.3)' : '#1f2937';
+                  }}
                   placeholder="Mot de passe :"
                   required
                 />
               </div>
 
               {/* Submit Button with gradient */}
-              <div className="pt-4">
+              <div style={{ paddingTop: '1rem' }}>
                 <button
                   type="submit"
-                  className="w-full py-4 bg-linear-to-r from-purple-500 via-purple-600 to-blue-500 hover:from-purple-600 hover:via-purple-700 hover:to-blue-600 rounded-full font-semibold transition text-white shadow-lg shadow-purple-500/50 flex items-center justify-center space-x-2 uppercase tracking-wider"
+                  style={{
+                    width: '100%',
+                    padding: '1rem',
+                    background: 'linear-gradient(to right, #a855f7, #9333ea, #3b82f6)',
+                    borderRadius: '9999px',
+                    fontWeight: '600',
+                    color: '#ffffff',
+                    boxShadow: '0 10px 20px rgba(168, 85, 247, 0.5)',
+                    border: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.5rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.transform = 'translateY(-2px)';
+                    e.target.style.boxShadow = '0 15px 30px rgba(168, 85, 247, 0.6)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.transform = 'translateY(0)';
+                    e.target.style.boxShadow = '0 10px 20px rgba(168, 85, 247, 0.5)';
+                  }}
                 >
                   <span>Connexion</span>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg style={{ width: '1.25rem', height: '1.25rem' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                   </svg>
                 </button>
@@ -122,12 +234,29 @@ const Connexion = () => {
             </form>
 
             {/* Social Login Buttons */}
-            <div className="mt-8">
-              <div className="flex items-center justify-center space-x-4">
+            <div style={{ marginTop: '2rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem' }}>
                 {/* Google */}
                 <button
                   onClick={handleGoogleLogin}
-                  className="w-14 h-14 bg-gray-900/40 border border-gray-800 hover:border-gray-600 rounded-full flex items-center justify-center transition group"
+                  style={{
+                    width: '3.5rem',
+                    height: '3.5rem',
+                    backgroundColor: currentMode === 'light' ? '#f3f0ff' : 'rgba(17, 24, 39, 0.4)',
+                    border: `1px solid ${currentMode === 'light' ? 'rgba(124,58,237,0.2)' : '#374151'}`,
+                    borderRadius: '9999px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.3s',
+                    cursor: 'pointer'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.borderColor = currentMode === 'light' ? 'rgba(124,58,237,0.5)' : '#4b5563';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.borderColor = currentMode === 'light' ? 'rgba(124,58,237,0.2)' : '#374151';
+                  }}
                   aria-label="Se connecter avec Google"
                 >
                   <svg className="w-6 h-6" viewBox="0 0 24 24">
@@ -154,8 +283,23 @@ const Connexion = () => {
             </div>
 
             {/* Footer Links */}
-            <div className="mt-8 text-center space-y-3">
-              <Link to="/forgotpass" className="block text-sm text-gray-400 hover:text-purple-400 transition">
+            <div style={{ marginTop: '2rem', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <Link
+                to="/forgotpass"
+                style={{
+                  display: 'block',
+                  fontSize: '0.875rem',
+                  color: currentMode === 'light' ? '#7c3aed' : '#9ca3af',
+                  textDecoration: 'none',
+                  transition: 'color 0.3s'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.color = currentMode === 'light' ? '#6d28d9' : '#d1d5db';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.color = currentMode === 'light' ? '#7c3aed' : '#9ca3af';
+                }}
+              >
                 Mot de passe oublié ?
               </Link>
             </div>
@@ -163,6 +307,7 @@ const Connexion = () => {
         </div>
       </div>
     </div>
+    </>      
     </PageTransition>
   );
 };

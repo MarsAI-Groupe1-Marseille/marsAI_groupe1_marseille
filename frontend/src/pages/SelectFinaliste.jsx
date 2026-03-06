@@ -42,17 +42,30 @@ function getInitialColors(initials) {
 }
 
 /* ─── COMPOSANTS UTILITAIRES ─── */
-function Avatar({ initials, size = "md" }) {
-  const sizes = { sm: "w-8 h-8 text-xs", md: "w-10 h-10 text-sm" };
-  const grad = getInitialColors(initials);
+function Avatar({ initials, size = "md", currentMode = 'dark' }) {
+  const sizes = { sm: { w: '32px', h: '32px', textSize: '0.75rem' }, md: { w: '40px', h: '40px', textSize: '0.875rem' } };
+  const s = sizes[size];
   return (
-    <div className={`${sizes[size]} rounded-full bg-gradient-to-br ${grad} flex items-center justify-center font-bold text-white flex-shrink-0 shadow-lg`}>
+    <div style={{
+      width: s.w,
+      height: s.h,
+      borderRadius: '50%',
+      background: 'linear-gradient(135deg, #a855f7, #9333ea)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontWeight: 'bold',
+      color: '#ffffff',
+      flexShrink: 0,
+      boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
+      fontSize: s.textSize
+    }}>
       {initials}
     </div>
   );
 }
 
-function VoteBadge({ status }) {
+function VoteBadge({ status, currentMode = 'dark' }) {
   const normalized = status || "";
   const { t } = useLanguage();
   const labels = {
@@ -60,16 +73,49 @@ function VoteBadge({ status }) {
     DISCUSS: t('selectfinaliste_to_discuss'),
     DISLIKE: "Dislike"
   };
-  const styles = {
-    LIKE: "bg-emerald-950/60 border-emerald-600 text-emerald-400",
-    DISCUSS: "bg-amber-950/60 border-amber-600 text-amber-400",
-    DISLIKE: "bg-rose-950/60 border-rose-600 text-rose-400"
+  
+  const getStyle = () => {
+    if (normalized === 'LIKE') {
+      return {
+        backgroundColor: currentMode === 'light' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.2)',
+        borderColor: currentMode === 'light' ? '#059669' : 'rgba(16, 185, 129, 0.5)',
+        color: currentMode === 'light' ? '#059669' : '#4ade80'
+      };
+    }
+    if (normalized === 'DISCUSS') {
+      return {
+        backgroundColor: currentMode === 'light' ? 'rgba(217, 119, 6, 0.1)' : 'rgba(217, 119, 6, 0.2)',
+        borderColor: currentMode === 'light' ? '#b45309' : 'rgba(217, 119, 6, 0.5)',
+        color: currentMode === 'light' ? '#b45309' : '#facc15'
+      };
+    }
+    return {
+      backgroundColor: currentMode === 'light' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.2)',
+      borderColor: currentMode === 'light' ? '#dc2626' : 'rgba(239, 68, 68, 0.5)',
+      color: currentMode === 'light' ? '#dc2626' : '#fca5a5'
+    };
   };
+  
   const label = labels[normalized] || "Vote";
-  const style = styles[normalized] || "bg-neutral-900 border-neutral-700 text-neutral-400";
+  const styleObj = getStyle();
 
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-full border text-[10px] font-black uppercase tracking-wider ${style}`}>
+    <span style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      paddingLeft: '0.5rem',
+      paddingRight: '0.5rem',
+      paddingTop: '0.125rem',
+      paddingBottom: '0.125rem',
+      borderRadius: '9999px',
+      border: `1px solid ${styleObj.borderColor}`,
+      fontSize: '0.625rem',
+      fontWeight: '900',
+      textTransform: 'uppercase',
+      letterSpacing: '0.05em',
+      backgroundColor: styleObj.backgroundColor,
+      color: styleObj.color
+    }}>
       {label}
     </span>
   );
@@ -81,56 +127,170 @@ function countVotesByStatus(evaluations, status) {
 }
 
 /* ─── MODAL VOTES ─── */
-function VotesModal({ film, voteStatus, onClose }) {
+function VotesModal({ film, voteStatus, onClose, currentMode = 'dark' }) {
   const { t } = useLanguage();
   if (!film || !voteStatus) return null;
   const evaluations = (film.comments || []).filter(c => c.vote_status === voteStatus);
   const statusLabel = voteStatus === 'LIKE' ? t('selectfinaliste_jury_likes') : t('selectfinaliste_to_discuss');
   const isLike = voteStatus === 'LIKE';
-  const headerGradient = isLike ? "from-emerald-950/40 to-teal-950/40" : "from-amber-950/40 to-orange-950/40";
-  const borderColor = isLike ? "border-emerald-700/50" : "border-amber-700/50";
-  const iconColor = isLike ? "text-emerald-400" : "text-amber-400";
-  const badgeColor = isLike ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-300" : "bg-amber-500/20 border-amber-500/50 text-amber-300";
-  const cardBgHover = isLike ? "hover:bg-emerald-950/20" : "hover:bg-amber-950/20";
-  const cardBorderHover = isLike ? "hover:border-emerald-600/50" : "hover:border-amber-600/50";
+  const bgColors = isLike 
+    ? { header: currentMode === 'light' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(16, 185, 129, 0.15)', border: currentMode === 'light' ? '#d1fae5' : '#064e3b' }
+    : { header: currentMode === 'light' ? 'rgba(217, 119, 6, 0.15)' : 'rgba(217, 119, 6, 0.15)', border: currentMode === 'light' ? '#fed7aa' : '#78350f' };
+  const iconColor = isLike ? '#059669' : '#b45309';
+  const badgeBg = isLike ? 'rgba(16, 185, 129, 0.2)' : 'rgba(217, 119, 6, 0.2)';
+  const badgeBorder = isLike ? 'rgba(16, 185, 129, 0.5)' : 'rgba(217, 119, 6, 0.5)';
+  const badgeColor = isLike ? '#059669' : '#b45309';
+  const cardHoverBg = isLike ? currentMode === 'light' ? 'rgba(16, 185, 129, 0.05)' : 'rgba(16, 185, 129, 0.1)' : currentMode === 'light' ? 'rgba(217, 119, 6, 0.05)' : 'rgba(217, 119, 6, 0.1)';
+  const cardBorderHover = isLike ? currentMode === 'light' ? '#a7f3d0' : 'rgba(16, 185, 129, 0.5)' : currentMode === 'light' ? '#fcdcac' : 'rgba(217, 119, 6, 0.5)';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
-      <div className={`relative bg-neutral-900 border ${borderColor} rounded-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden shadow-2xl`}>
-        <div className={`px-6 py-5 border-b ${borderColor} bg-gradient-to-r ${headerGradient}`}>
-          <div className="flex items-start justify-between">
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      zIndex: 50,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '1rem'
+    }}>
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        backdropFilter: 'blur(4px)'
+      }} onClick={onClose} />
+      <div style={{
+        position: 'relative',
+        backgroundColor: currentMode === 'light' ? '#ffffff' : '#171717',
+        border: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+        borderRadius: '1rem',
+        width: '100%',
+        maxWidth: '42rem',
+        maxHeight: '85vh',
+        overflow: 'hidden',
+        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)'
+      }}>
+        <div style={{
+          paddingLeft: '1.5rem',
+          paddingRight: '1.5rem',
+          paddingTop: '1.25rem',
+          paddingBottom: '1.25rem',
+          borderBottom: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+          background: `linear-gradient(to right, ${bgColors.header}, transparent)`
+        }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
             <div>
-              <div className="flex items-center gap-2 mb-1">
-                {isLike ? <ThumbsUp size={16} className={iconColor} /> : <AlertCircle size={16} className={iconColor} />}
-                <span className={`text-xs font-bold uppercase tracking-widest ${iconColor}`}>{statusLabel} {t('selectfinaliste_jury_opinion')}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                {isLike ? <ThumbsUp size={16} style={{ color: iconColor }} /> : <AlertCircle size={16} style={{ color: iconColor }} />}
+                <span style={{
+                  fontSize: '0.75rem',
+                  fontWeight: 'bold',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  color: iconColor
+                }}>{statusLabel} {t('selectfinaliste_jury_opinion')}</span>
               </div>
-              <h2 className="text-xl font-black text-white">{film.titre}</h2>
-              <p className="text-sm text-neutral-400 mt-0.5">{film.real}</p>
+              <h2 style={{
+                fontSize: '1.25rem',
+                fontWeight: 'black',
+                color: currentMode === 'light' ? '#000000' : '#ffffff'
+              }}>{film.titre}</h2>
+              <p style={{
+                fontSize: '0.875rem',
+                color: currentMode === 'light' ? '#999999' : '#a3a3a3',
+                marginTop: '0.125rem'
+              }}>{film.real}</p>
             </div>
-            <button onClick={onClose} className="p-2 hover:bg-neutral-800 rounded-lg transition text-neutral-500 hover:text-white">
+            <button onClick={onClose} style={{
+              padding: '0.5rem',
+              backgroundColor: currentMode === 'light' ? '#f5f5f5' : '#262626',
+              borderRadius: '0.5rem',
+              border: 'none',
+              color: currentMode === 'light' ? '#666666' : '#a3a3a3',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = currentMode === 'light' ? '#e5e5e5' : '#404040';
+              e.currentTarget.style.color = currentMode === 'light' ? '#000000' : '#ffffff';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = currentMode === 'light' ? '#f5f5f5' : '#262626';
+              e.currentTarget.style.color = currentMode === 'light' ? '#666666' : '#a3a3a3';
+            }}>
               <X size={18} />
             </button>
           </div>
         </div>
-        <div className="overflow-y-auto max-h-[60vh] p-6 space-y-4">
+        <div style={{
+          overflowY: 'auto',
+          maxHeight: '60vh',
+          padding: '1.5rem',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '1rem'
+        }}>
           {evaluations.length === 0 ? (
-            <div className="text-center py-12 text-neutral-500">
-              {isLike ? <ThumbsUp size={32} className="mx-auto mb-3 opacity-30" /> : <AlertCircle size={32} className="mx-auto mb-3 opacity-30" />}
-              <p className="text-sm">{isLike ? t('selectfinaliste_no_likes_for_film') : t('selectfinaliste_no_discusses_for_film')}</p>
+            <div style={{
+              textAlign: 'center',
+              paddingTop: '3rem',
+              paddingBottom: '3rem',
+              color: currentMode === 'light' ? '#999999' : '#a3a3a3'
+            }}>
+              {isLike ? <ThumbsUp size={32} style={{ margin: '0 auto 0.75rem', opacity: 0.3 }} /> : <AlertCircle size={32} style={{ margin: '0 auto 0.75rem', opacity: 0.3 }} />}
+              <p style={{ fontSize: '0.875rem' }}>{isLike ? t('selectfinaliste_no_likes_for_film') : t('selectfinaliste_no_discusses_for_film')}</p>
             </div>
           ) : evaluations.map((c, idx) => (
-            <div key={idx} className={`bg-neutral-800/60 border border-neutral-700/60 ${cardBgHover} ${cardBorderHover} rounded-xl p-4 transition duration-300`}>
-              <div className="flex items-start gap-3">
-                <Avatar initials={c.avatar} />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className="font-bold text-sm text-white">{c.jury}</span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full border font-semibold ${badgeColor}`}>{statusLabel}</span>
-                  </div>
-                  <span className="text-xs text-neutral-500 flex-shrink-0">{c.date}</span>
-                  <p className="text-sm text-neutral-200 leading-relaxed mt-2">{c.text || `(${t('selectfinaliste_no_comment')})`}</p>
+            <div key={idx} style={{
+              backgroundColor: currentMode === 'light' ? 'rgba(229, 229, 229, 0.4)' : 'rgba(38, 38, 38, 0.6)',
+              border: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+              borderRadius: '0.75rem',
+              padding: '1rem',
+              transition: 'all 0.3s',
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '0.75rem'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = cardHoverBg;
+              e.currentTarget.style.borderColor = cardBorderHover;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = currentMode === 'light' ? 'rgba(229, 229, 229, 0.4)' : 'rgba(38, 38, 38, 0.6)';
+              e.currentTarget.style.borderColor = currentMode === 'light' ? '#e5e5e5' : '#262626';
+            }}>
+              <Avatar initials={c.avatar} currentMode={currentMode} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                  <span style={{
+                    fontWeight: 'bold',
+                    fontSize: '0.875rem',
+                    color: currentMode === 'light' ? '#000000' : '#ffffff'
+                  }}>{c.jury}</span>
+                  <span style={{
+                    fontSize: '0.75rem',
+                    paddingLeft: '0.5rem',
+                    paddingRight: '0.5rem',
+                    paddingTop: '0.125rem',
+                    paddingBottom: '0.125rem',
+                    borderRadius: '9999px',
+                    border: `1px solid ${badgeBorder}`,
+                    fontWeight: 'semibold',
+                    backgroundColor: badgeBg,
+                    color: badgeColor
+                  }}>{statusLabel}</span>
                 </div>
+                <span style={{
+                  fontSize: '0.75rem',
+                  color: currentMode === 'light' ? '#999999' : '#a3a3a3',
+                  flexShrink: 0
+                }}>{c.date}</span>
+                <p style={{
+                  fontSize: '0.875rem',
+                  color: currentMode === 'light' ? '#333333' : '#e5e5e5',
+                  lineHeight: '1.5',
+                  marginTop: '0.5rem'
+                }}>{c.text || `(${t('selectfinaliste_no_comment')})`}</p>
               </div>
             </div>
           ))}
@@ -140,85 +300,172 @@ function VotesModal({ film, voteStatus, onClose }) {
   );
 }
 
-/* ─── MODAL COMMENTAIRES ─── */
-function CommentsModal({ film, onClose }) {
-  const { t } = useLanguage();
-  if (!film) return null;
-  const voteCounts = film.comments.reduce((acc, c) => {
-    const status = c.vote_status || "";
-    if (!acc[status]) {
-      acc[status] = 0;
-    }
-    acc[status] += 1;
-    return acc;
-  }, { LIKE: 0, DISCUSS: 0, DISLIKE: 0 });
+const CommentsModal = ({ film, onClose, currentMode }) => {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-neutral-900 border border-neutral-700 rounded-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden shadow-2xl">
-        <div className="px-6 py-5 border-b border-neutral-800 bg-gradient-to-r from-violet-950/60 to-neutral-900">
-          <div className="flex items-start justify-between">
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      zIndex: 50,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '1rem'
+    }}>
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        backdropFilter: 'blur(4px)'
+      }} onClick={onClose} />
+      <div style={{
+        position: 'relative',
+        backgroundColor: currentMode === 'light' ? '#ffffff' : '#171717',
+        border: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+        borderRadius: '1rem',
+        width: '100%',
+        maxWidth: '42rem',
+        maxHeight: '85vh',
+        overflow: 'hidden',
+        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)'
+      }}>
+    <div style={{
+          paddingLeft: '1.5rem',
+          paddingRight: '1.5rem',
+          paddingTop: '1.25rem',
+          paddingBottom: '1.25rem',
+          borderBottom: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+          backgroundImage: `linear-gradient(to right, ${currentMode === 'light' ? 'rgba(217, 119, 6, 0.05)' : 'rgba(217, 119, 6, 0.15)'}, transparent)`
+        }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
             <div>
-              <div className="flex items-center gap-2 mb-1">
-                <MessageSquare size={16} className="text-violet-400" />
-                <span className="text-xs font-bold uppercase tracking-widest text-violet-400">{t('selectfinaliste_jury_opinion')}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                <MessageSquare size={16} style={{ color: currentMode === 'light' ? '#7c3aed' : '#a78bfa' }} />
+                <span style={{
+                  fontSize: '0.75rem',
+                  fontWeight: 'bold',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  color: currentMode === 'light' ? '#7c3aed' : '#a78bfa'
+                }}>{t('selectfinaliste_jury_opinion')}</span>
               </div>
-              <h2 className="text-xl font-black text-white">{film.titre}</h2>
-              <p className="text-sm text-neutral-400 mt-0.5">{film.real}</p>
+              <h2 style={{
+                fontSize: '1.25rem',
+                fontWeight: 'black',
+                color: currentMode === 'light' ? '#000000' : '#ffffff'
+              }}>{film.titre}</h2>
+              <p style={{
+                fontSize: '0.875rem',
+                color: currentMode === 'light' ? '#999999' : '#a3a3a3',
+                marginTop: '0.125rem'
+              }}>{film.real}</p>
             </div>
-            <div className="flex flex-col items-end gap-2">
-              <button onClick={onClose} className="p-2 hover:bg-neutral-800 rounded-lg transition text-neutral-500 hover:text-white">
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
+              <button onClick={onClose} style={{
+                padding: '0.5rem',
+                backgroundColor: currentMode === 'light' ? '#f5f5f5' : '#262626',
+                borderRadius: '0.5rem',
+                border: 'none',
+                color: currentMode === 'light' ? '#666666' : '#a3a3a3',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = currentMode === 'light' ? '#e5e5e5' : '#404040';
+                e.currentTarget.style.color = currentMode === 'light' ? '#000000' : '#ffffff';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = currentMode === 'light' ? '#f5f5f5' : '#262626';
+                e.currentTarget.style.color = currentMode === 'light' ? '#666666' : '#a3a3a3';
+              }}>
                 <X size={18} />
               </button>
               {film.comments.length > 0 && (
-                <div className="text-right">
-                  <div className="text-xs text-neutral-500 mb-2">{film.comments.length} {t('selectfinaliste_jury_opinions')}</div>
-                  <div className="mt-3 flex flex-col gap-1.5">
-                    {voteCounts.LIKE > 0 && (
-                      <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 px-2 py-1 rounded-full">
-                        <ThumbsUp size={10} /> {t('selectfinaliste_liked')}: {voteCounts.LIKE}
-                      </span>
-                    )}
-                    {voteCounts.DISCUSS > 0 && (
-                      <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider bg-amber-500/20 border border-amber-500/50 text-amber-300 px-2 py-1 rounded-full">
-                        <AlertCircle size={10} /> {t('selectfinaliste_to_discuss')}: {voteCounts.DISCUSS}
-                      </span>
-                    )}
-                    {voteCounts.DISLIKE > 0 && (
-                      <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider bg-rose-500/20 border border-rose-500/50 text-rose-300 px-2 py-1 rounded-full">
-                        Dislike: {voteCounts.DISLIKE}
-                      </span>
-                    )}
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{
+                    fontSize: '0.75rem',
+                    color: currentMode === 'light' ? '#999999' : '#a3a3a3',
+                    marginBottom: '0.5rem'
+                  }}>{film.comments.length} {t('selectfinaliste_jury_opinions')}</div>
+                  <div style={{ marginTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
+                    {/* Vote counts - handled separately if needed */}
                   </div>
                 </div>
               )}
             </div>
           </div>
         </div>
-        <div className="overflow-y-auto max-h-[60vh] p-6 space-y-4">
+        <div style={{
+          overflowY: 'auto',
+          maxHeight: '60vh',
+          padding: '1.5rem',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '1rem'
+        }}>
           {film.comments.length === 0 ? (
-            <div className="text-center py-12 text-neutral-500">
-              <MessageSquare size={32} className="mx-auto mb-3 opacity-30" />
-              <p className="text-sm">{t('selectfinaliste_no_comments_for_film')}</p>
+            <div style={{
+              textAlign: 'center',
+              paddingTop: '3rem',
+              paddingBottom: '3rem',
+              color: currentMode === 'light' ? '#999999' : '#a3a3a3'
+            }}>
+              <MessageSquare size={32} style={{ margin: '0 auto 0.75rem', opacity: 0.3 }} />
+              <p style={{ fontSize: '0.875rem' }}>{t('selectfinaliste_no_comments_for_film')}</p>
             </div>
           ) : film.comments.map((c, idx) => {
-              const getBgClass = () => {
-                if (c.vote_status === 'LIKE') return 'bg-emerald-500/10 border-emerald-600/30 hover:bg-emerald-500/15 hover:border-emerald-500/50';
-                if (c.vote_status === 'DISCUSS') return 'bg-amber-500/10 border-amber-600/30 hover:bg-amber-500/15 hover:border-amber-500/50';
-                return 'bg-rose-500/10 border-rose-600/30 hover:bg-rose-500/15 hover:border-rose-500/50';
+              const isLikeComment = c.vote_status === 'LIKE';
+              const isDiscussComment = c.vote_status === 'DISCUSS';
+              const getBgStyle = () => {
+                if (isLikeComment) {
+                  return {
+                    backgroundColor: currentMode === 'light' ? 'rgba(16, 185, 129, 0.05)' : 'rgba(16, 185, 129, 0.1)',
+                    borderColor: currentMode === 'light' ? '#d1fae5' : 'rgba(16, 185, 129, 0.3)'
+                  };
+                }
+                if (isDiscussComment) {
+                  return {
+                    backgroundColor: currentMode === 'light' ? 'rgba(217, 119, 6, 0.05)' : 'rgba(217, 119, 6, 0.1)',
+                    borderColor: currentMode === 'light' ? '#fed7aa' : 'rgba(217, 119, 6, 0.3)'
+                  };
+                }
+                return {
+                  backgroundColor: currentMode === 'light' ? 'rgba(239, 68, 68, 0.05)' : 'rgba(239, 68, 68, 0.1)',
+                  borderColor: currentMode === 'light' ? '#fecaca' : 'rgba(239, 68, 68, 0.3)'
+                };
               };
+              const bgStyle = getBgStyle();
               return (
-                <div key={idx} className={`${getBgClass()} border rounded-xl p-4 transition duration-300`}>
-                  <div className="flex items-start gap-3">
-                    <Avatar initials={c.avatar} />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2 mb-2">
-                        <span className="font-bold text-sm text-white">{c.jury}</span>
-                        <VoteBadge status={c.vote_status} />
-                      </div>
-                      <span className="text-xs text-neutral-500 flex-shrink-0">{c.date}</span>
-                      <p className="text-sm text-neutral-200 mt-2 leading-relaxed">{c.text || `(${t('selectfinaliste_no_comment')})`}</p>
+                <div key={idx} style={{
+                  backgroundColor: bgStyle.backgroundColor,
+                  border: `1px solid ${bgStyle.borderColor}`,
+                  borderRadius: '0.75rem',
+                  padding: '1rem',
+                  transition: 'all 0.3s',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '0.75rem'
+                }}>
+                  <Avatar initials={c.avatar} currentMode={currentMode} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                      <span style={{
+                        fontWeight: 'bold',
+                        fontSize: '0.875rem',
+                        color: currentMode === 'light' ? '#000000' : '#ffffff'
+                      }}>{c.jury}</span>
+                      <VoteBadge status={c.vote_status} currentMode={currentMode} />
                     </div>
+                    <span style={{
+                      fontSize: '0.75rem',
+                      color: currentMode === 'light' ? '#999999' : '#a3a3a3',
+                      flexShrink: 0
+                    }}>{c.date}</span>
+                    <p style={{
+                      fontSize: '0.875rem',
+                      color: currentMode === 'light' ? '#333333' : '#e5e5e5',
+                      marginTop: '0.5rem',
+                      lineHeight: '1.5'
+                    }}>{c.text || `(${t('selectfinaliste_no_comment')})`}</p>
                   </div>
                 </div>
               );
@@ -230,7 +477,7 @@ function CommentsModal({ film, onClose }) {
 }
 
 /* ─── GRAPHE SÉLECTION ─── */
-function SelectionChart({ films }) {
+function SelectionChart({ films, currentMode = 'dark' }) {
   const { t } = useLanguage();
   const selected = films.filter(f => f.selected).length;
   const total = films.length;
@@ -251,11 +498,24 @@ function SelectionChart({ films }) {
   const maxTag = Math.max(...tagEntries.map(([,v]) => v), 1);
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-      <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 flex items-center gap-6">
-        <div className="relative flex-shrink-0">
-          <svg width="120" height="120" className="-rotate-90">
-            <circle cx="60" cy="60" r="52" fill="none" stroke="#262626" strokeWidth="10" />
+    <div style={{
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+      gap: '1rem',
+      marginBottom: '2rem'
+    }}>
+      <div style={{
+        backgroundColor: currentMode === 'light' ? '#ffffff' : '#1a1a1a',
+        border: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+        borderRadius: '1rem',
+        padding: '1.5rem',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '1.5rem'
+      }}>
+        <div style={{ position: 'relative', flexShrink: 0 }}>
+          <svg width="120" height="120" style={{ transform: 'rotate(-90deg)' }}>
+            <circle cx="60" cy="60" r="52" fill="none" stroke={currentMode === 'light' ? '#e5e5e5' : '#262626'} strokeWidth="10" />
             <circle
               cx="60" cy="60" r="52" fill="none"
               stroke="url(#violet-grad)" strokeWidth="10"
@@ -270,47 +530,138 @@ function SelectionChart({ films }) {
               </linearGradient>
             </defs>
           </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-2xl font-black text-white">{selected}</span>
-            <span className="text-xs text-neutral-500">/{total}</span>
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <span style={{
+              fontSize: '1.5rem',
+              fontWeight: 'black',
+              color: currentMode === 'light' ? '#000000' : '#ffffff'
+            }}>{selected}</span>
+            <span style={{
+              fontSize: '0.75rem',
+              color: currentMode === 'light' ? '#999999' : '#a3a3a3'
+            }}>/{total}</span>
           </div>
         </div>
         <div>
-          <div className="text-xs font-bold uppercase tracking-widest text-violet-400 mb-1">{t('selectfinaliste_selected_films')}</div>
-          <div className="text-4xl font-black text-white">{pct}<span className="text-xl text-neutral-500">%</span></div>
-          <div className="text-sm text-neutral-400 mt-1">{t('selectfinaliste_selection_rate')}</div>
-          <div className="flex gap-4 mt-3">
-            <div className="flex items-center gap-1.5 text-xs text-neutral-400">
-              <span className="w-2 h-2 rounded-full bg-violet-500" />
+          <div style={{
+            fontSize: '0.75rem',
+            fontWeight: 'bold',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            color: '#7c3aed',
+            marginBottom: '0.25rem'
+          }}>{t('selectfinaliste_selected_films')}</div>
+          <div style={{
+            fontSize: '2.25rem',
+            fontWeight: 'black',
+            color: currentMode === 'light' ? '#000000' : '#ffffff'
+          }}>{pct}<span style={{ fontSize: '0.875rem', color: currentMode === 'light' ? '#999999' : '#a3a3a3' }}>%</span></div>
+          <div style={{
+            fontSize: '0.875rem',
+            color: currentMode === 'light' ? '#999999' : '#a3a3a3',
+            marginTop: '0.25rem'
+          }}>{t('selectfinaliste_selection_rate')}</div>
+          <div style={{ display: 'flex', gap: '1rem', marginTop: '0.75rem' }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.375rem',
+              fontSize: '0.75rem',
+              color: currentMode === 'light' ? '#999999' : '#a3a3a3'
+            }}>
+              <span style={{
+                width: '0.5rem',
+                height: '0.5rem',
+                borderRadius: '50%',
+                backgroundColor: '#a855f7'
+              }} />
               {t('selectfinaliste_selected_status')} ({selected})
             </div>
-            <div className="flex items-center gap-1.5 text-xs text-neutral-400">
-              <span className="w-2 h-2 rounded-full bg-neutral-700" />
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.375rem',
+              fontSize: '0.75rem',
+              color: currentMode === 'light' ? '#999999' : '#a3a3a3'
+            }}>
+              <span style={{
+                width: '0.5rem',
+                height: '0.5rem',
+                borderRadius: '50%',
+                backgroundColor: currentMode === 'light' ? '#e5e5e5' : '#404040'
+              }} />
               {t('selectfinaliste_pending')} ({total - selected})
             </div>
           </div>
         </div>
       </div>
 
-      <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
-        <div className="text-xs font-bold uppercase tracking-widest text-violet-400 mb-4">{t('selectfinaliste_selected_genres')}</div>
-        <div className="space-y-3">
+      <div style={{
+        backgroundColor: currentMode === 'light' ? '#ffffff' : '#1a1a1a',
+        border: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+        borderRadius: '1rem',
+        padding: '1.5rem'
+      }}>
+        <div style={{
+          fontSize: '0.75rem',
+          fontWeight: 'bold',
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+          color: '#7c3aed',
+          marginBottom: '1rem'
+        }}>{t('selectfinaliste_selected_genres')}</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {tagEntries.map(([tag, count]) => (
             <div key={tag}>
-              <div className="flex justify-between text-xs mb-1">
-                <span className="text-neutral-300 font-semibold truncate">{tag}</span>
-                <span className="text-neutral-500 flex-shrink-0 ml-2">{count} film{count > 1 ? "s" : ""}</span>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                fontSize: '0.75rem',
+                marginBottom: '0.25rem'
+              }}>
+                <span style={{
+                  color: currentMode === 'light' ? '#333333' : '#e5e5e5',
+                  fontWeight: '600',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
+                }}>{tag}</span>
+                <span style={{
+                  color: currentMode === 'light' ? '#999999' : '#a3a3a3',
+                  flexShrink: 0,
+                  marginLeft: '0.5rem'
+                }}>{count} film{count > 1 ? "s" : ""}</span>
               </div>
-              <div className="h-2 bg-neutral-800 rounded-full overflow-hidden">
+              <div style={{
+                height: '0.5rem',
+                backgroundColor: currentMode === 'light' ? '#e5e5e5' : '#262626',
+                borderRadius: '9999px',
+                overflow: 'hidden'
+              }}>
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-violet-600 to-violet-400 transition-all duration-700"
-                  style={{ width: `${(count / maxTag) * 100}%` }}
+                  style={{
+                    height: '100%',
+                    borderRadius: '9999px',
+                    backgroundImage: 'linear-gradient(to right, #7c3aed, #a78bfa)',
+                    transition: 'width 0.7s ease',
+                    width: `${(count / maxTag) * 100}%`
+                  }}
                 />
               </div>
             </div>
           ))}
           {tagEntries.length === 0 && (
-            <p className="text-sm text-neutral-500">{t('selectfinaliste_no_films_selected')}</p>
+            <p style={{
+              fontSize: '0.875rem',
+              color: currentMode === 'light' ? '#999999' : '#a3a3a3'
+            }}>{t('selectfinaliste_no_films_selected')}</p>
           )}
         </div>
       </div>
@@ -333,8 +684,24 @@ export default function SelectFinaliste() {
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState("");
+  const [currentMode, setCurrentMode] = useState('dark');
   const toastTimer = useRef(null);
   const limit = 12;
+
+  useEffect(() => {
+    const handleModeChange = (e) => {
+      const mode = document.documentElement.getAttribute('data-mode') || 'dark';
+      setCurrentMode(mode);
+    };
+
+    const observer = new MutationObserver(handleModeChange);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-mode'] });
+
+    const mode = document.documentElement.getAttribute('data-mode') || 'dark';
+    setCurrentMode(mode);
+
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -443,70 +810,201 @@ export default function SelectFinaliste() {
   const toDiscussCount = films.filter(f => f.toDiscuss).length;
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-white" style={{ fontFamily: "'DM Sans', 'Segoe UI', sans-serif" }}>
+    <div style={{
+      minHeight: '100vh',
+      backgroundImage: currentMode === 'light' ? 'linear-gradient(to right, #ffffff, #ffffff)' : 'linear-gradient(to right, rgba(124, 58, 237, 0.15), rgba(99, 102, 241, 0.1), transparent)',
+      backgroundColor: currentMode === 'light' ? '#ffffff' : '#0f0f0f',
+      color: currentMode === 'light' ? '#000000' : '#ffffff',
+      fontFamily: "'DM Sans', 'Segoe UI', sans-serif"
+    }}>
 
       {/* Header */}
-      <div className="border-b border-neutral-800 bg-neutral-950/80 backdrop-blur-sm sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="bg-violet-600 p-2 rounded-lg">
-              <Film size={20} className="text-white" />
+      <div style={{
+        borderBottom: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+        backgroundColor: currentMode === 'light' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(15, 15, 15, 0.8)',
+        backdropFilter: 'blur(8px)',
+        position: 'sticky',
+        top: 0,
+        zIndex: 40
+      }}>
+        <div style={{
+          maxWidth: '80rem',
+          marginLeft: 'auto',
+          marginRight: 'auto',
+          paddingLeft: '1.5rem',
+          paddingRight: '1.5rem',
+          paddingTop: '1rem',
+          paddingBottom: '1rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{
+              backgroundColor: '#7c3aed',
+              padding: '0.5rem',
+              borderRadius: '0.5rem'
+            }}>
+              <Film size={20} style={{ color: '#ffffff' }} />
             </div>
             <div>
-              <div className="text-xs text-violet-400 font-bold uppercase tracking-widest">{t('selectfinaliste_admin')}</div>
-              <h1 className="text-lg font-black text-white leading-none">{t('selectfinaliste_title')}</h1>
+              <div style={{
+                fontSize: '0.75rem',
+                color: '#7c3aed',
+                fontWeight: 'bold',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em'
+              }}>{t('selectfinaliste_admin')}</div>
+              <h1 style={{
+                fontSize: '1.125rem',
+                fontWeight: 'black',
+                color: currentMode === 'light' ? '#000000' : '#ffffff',
+                lineHeight: 1
+              }}>{t('selectfinaliste_title')}</h1>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-2 bg-violet-950/60 border border-violet-800/50 rounded-full px-4 py-2">
-              <Trophy size={14} className="text-violet-400" />
-              <span className="text-sm font-bold text-violet-300">{selectedCount} {t('selectfinaliste_selected')}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{
+              display: 'none',
+              alignItems: 'center',
+              gap: '0.5rem',
+              backgroundColor: currentMode === 'light' ? 'rgba(124, 58, 237, 0.15)' : 'rgba(124, 58, 237, 0.2)',
+              border: `1px solid ${currentMode === 'light' ? '#c084fc' : 'rgba(124, 58, 237, 0.4)'}`,
+              borderRadius: '9999px',
+              paddingLeft: '1rem',
+              paddingRight: '1rem',
+              paddingTop: '0.5rem',
+              paddingBottom: '0.5rem',
+              '@media (min-width: 640px)': {
+                display: 'flex'
+              }
+            }}>
+              <Trophy size={14} style={{ color: '#a78bfa' }} />
+              <span style={{
+                fontSize: '0.875rem',
+                fontWeight: 'bold',
+                color: '#c084fc'
+              }}>{selectedCount} {t('selectfinaliste_selected')}</span>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div style={{
+        maxWidth: '80rem',
+        marginLeft: 'auto',
+        marginRight: 'auto',
+        paddingLeft: '1.5rem',
+        paddingRight: '1.5rem',
+        paddingTop: '2rem',
+        paddingBottom: '2rem'
+      }}>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+          gap: '1rem',
+          marginBottom: '2rem'
+        }}>
           {[
-            { icon: Film, label: t('selectfinaliste_total_submitted'), value: films.length, color: "text-blue-400", bg: "bg-blue-950/40 border-blue-800/40" },
-            { icon: Check, label: t('selectfinaliste_selected'), value: selectedCount, color: "text-violet-400", bg: "bg-violet-950/40 border-violet-800/40" },
-            { icon: Award, label: t('selectfinaliste_awards_given'), value: films.filter(f => f.prize).length, color: "text-amber-400", bg: "bg-amber-950/40 border-amber-800/40" },
-            { icon: MessageSquare, label: t('selectfinaliste_comments'), value: films.reduce((s, f) => s + f.comments.length, 0), color: "text-emerald-400", bg: "bg-emerald-950/40 border-emerald-800/40" },
-          ].map(({ icon: Icon, label, value, color, bg }) => (
-            <div key={label} className={`rounded-xl border p-4 ${bg}`}>
-              <Icon size={18} className={`${color} mb-2`} />
-              <div className="text-2xl font-black text-white">{value}</div>
-              <div className="text-xs text-neutral-500 mt-0.5">{label}</div>
+            { icon: Film, label: t('selectfinaliste_total_submitted'), value: films.length, color: '#3b82f6', bg: currentMode === 'light' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.15)', border: currentMode === 'light' ? '#bfdbfe' : 'rgba(59, 130, 246, 0.3)' },
+            { icon: Check, label: t('selectfinaliste_selected'), value: selectedCount, color: '#a78bfa', bg: currentMode === 'light' ? 'rgba(124, 58, 237, 0.1)' : 'rgba(124, 58, 237, 0.15)', border: currentMode === 'light' ? '#e9d5ff' : 'rgba(124, 58, 237, 0.3)' },
+            { icon: Award, label: t('selectfinaliste_awards_given'), value: films.filter(f => f.prize).length, color: '#facc15', bg: currentMode === 'light' ? 'rgba(217, 119, 6, 0.1)' : 'rgba(217, 119, 6, 0.15)', border: currentMode === 'light' ? '#fed7aa' : 'rgba(217, 119, 6, 0.3)' },
+            { icon: MessageSquare, label: t('selectfinaliste_comments'), value: films.reduce((s, f) => s + f.comments.length, 0), color: '#4ade80', bg: currentMode === 'light' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.15)', border: currentMode === 'light' ? '#d1fae5' : 'rgba(16, 185, 129, 0.3)' },
+          ].map(({ icon: Icon, label, value, color, bg, border }) => (
+            <div key={label} style={{
+              borderRadius: '0.75rem',
+              border: `1px solid ${border}`,
+              padding: '1rem',
+              backgroundColor: bg
+            }}>
+              <Icon size={18} style={{ color: color, marginBottom: '0.5rem' }} />
+              <div style={{ fontSize: '1.5rem', fontWeight: 'black', color: currentMode === 'light' ? '#000000' : '#ffffff' }}>{value}</div>
+              <div style={{ fontSize: '0.75rem', color: currentMode === 'light' ? '#999999' : '#a3a3a3', marginTop: '0.125rem' }}>{label}</div>
             </div>
           ))}
         </div>
 
         {/* Chart */}
-        <SelectionChart films={films} />
+        <SelectionChart films={films} currentMode={currentMode} />
 
         {/* Search & Filters */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-6">
-          <div className="relative flex-1">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" />
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.75rem',
+          marginBottom: '1.5rem',
+          '@media (min-width: 640px)': {
+            flexDirection: 'row'
+          }
+        }}>
+          <div style={{ position: 'relative', flex: 1 }}>
+            <Search size={15} style={{
+              position: 'absolute',
+              left: '0.75rem',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: currentMode === 'light' ? '#999999' : '#666666'
+            }} />
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder={t('selectfinaliste_search_placeholder')}
-              className="w-full bg-neutral-900 border border-neutral-800 rounded-xl pl-9 pr-4 py-2.5 text-sm text-neutral-200 placeholder-neutral-600 focus:outline-none focus:border-violet-600 transition"
+              style={{
+                width: '100%',
+                backgroundColor: currentMode === 'light' ? '#f5f5f5' : '#0f0f0f',
+                border: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+                borderRadius: '0.75rem',
+                paddingLeft: '2.25rem',
+                paddingRight: '1rem',
+                paddingTop: '0.625rem',
+                paddingBottom: '0.625rem',
+                fontSize: '0.875rem',
+                color: currentMode === 'light' ? '#000000' : '#e5e5e5',
+                placeholder: currentMode === 'light' ? '#999999' : '#666666',
+                outline: 'none',
+                transition: 'border 0.2s',
+                boxSizing: 'border-box'
+              }}
+              onFocus={(e) => e.target.style.borderColor = '#7c3aed'}
+              onBlur={(e) => e.target.style.borderColor = currentMode === 'light' ? '#e5e5e5' : '#262626'}
             />
           </div>
-          <div className="flex gap-2 flex-wrap">
+          <div style={{
+            display: 'flex',
+            gap: '0.5rem',
+            flexWrap: 'wrap'
+          }}>
             {/* Tous */}
             <button
               onClick={() => { setFilterSelected("all"); setPage(1); }}
-              className={`px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition border ${
-                filterSelected === "all"
-                  ? "bg-violet-600 border-violet-500 text-white"
-                  : "bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-neutral-200"
-              }`}
+              style={{
+                paddingLeft: '1rem',
+                paddingRight: '1rem',
+                paddingTop: '0.625rem',
+                paddingBottom: '0.625rem',
+                borderRadius: '0.75rem',
+                fontSize: '0.75rem',
+                fontWeight: 'bold',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                transition: 'all 0.2s',
+                border: filterSelected === "all" ? '1px solid #7c3aed' : `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+                backgroundColor: filterSelected === "all" ? '#7c3aed' : currentMode === 'light' ? '#f5f5f5' : '#1a1a1a',
+                color: filterSelected === "all" ? '#ffffff' : currentMode === 'light' ? '#666666' : '#a3a3a3',
+                cursor: 'pointer'
+              }}
+              onMouseEnter={(e) => {
+                if (filterSelected !== "all") {
+                  e.currentTarget.style.color = currentMode === 'light' ? '#000000' : '#ffffff';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (filterSelected !== "all") {
+                  e.currentTarget.style.color = currentMode === 'light' ? '#666666' : '#a3a3a3';
+                }
+              }}
             >
               {t('selectfinaliste_all')}
             </button>
@@ -514,11 +1012,22 @@ export default function SelectFinaliste() {
             {/* Sélectionnés */}
             <button
               onClick={() => { setFilterSelected("selected"); setPage(1); }}
-              className={`px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition border ${
-                filterSelected === "selected"
-                  ? "bg-violet-600 border-violet-500 text-white"
-                  : "bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-neutral-200"
-              }`}
+              style={{
+                paddingLeft: '1rem',
+                paddingRight: '1rem',
+                paddingTop: '0.625rem',
+                paddingBottom: '0.625rem',
+                borderRadius: '0.75rem',
+                fontSize: '0.75rem',
+                fontWeight: 'bold',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                transition: 'all 0.2s',
+                border: filterSelected === "selected" ? '1px solid #7c3aed' : `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+                backgroundColor: filterSelected === "selected" ? '#7c3aed' : currentMode === 'light' ? '#f5f5f5' : '#1a1a1a',
+                color: filterSelected === "selected" ? '#ffffff' : currentMode === 'light' ? '#666666' : '#a3a3a3',
+                cursor: 'pointer'
+              }}
             >
               {t('selectfinaliste_selected')}
             </button>
@@ -526,16 +1035,41 @@ export default function SelectFinaliste() {
             {/* Like */}
             <button
               onClick={() => { setFilterSelected("liked"); setPage(1); }}
-              className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition border ${
-                filterSelected === "liked"
-                  ? "bg-emerald-600 border-emerald-500 text-white"
-                  : "bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-emerald-400 hover:border-emerald-800"
-              }`}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.375rem',
+                paddingLeft: '1rem',
+                paddingRight: '1rem',
+                paddingTop: '0.625rem',
+                paddingBottom: '0.625rem',
+                borderRadius: '0.75rem',
+                fontSize: '0.75rem',
+                fontWeight: 'bold',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                transition: 'all 0.2s',
+                border: filterSelected === "liked" ? '1px solid #059669' : `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+                backgroundColor: filterSelected === "liked" ? '#059669' : currentMode === 'light' ? '#f5f5f5' : '#1a1a1a',
+                color: filterSelected === "liked" ? '#ffffff' : currentMode === 'light' ? '#666666' : '#a3a3a3',
+                cursor: 'pointer'
+              }}
             >
               <ThumbsUp size={13} />
               {t('selectfinaliste_liked')}
               {likedCount > 0 && (
-                <span className={`ml-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-black ${filterSelected === "liked" ? "bg-emerald-500 text-white" : "bg-emerald-950 text-emerald-400"}`}>
+                <span style={{
+                  marginLeft: '0.125rem',
+                  borderRadius: '9999px',
+                  paddingLeft: '0.375rem',
+                  paddingRight: '0.375rem',
+                  paddingTop: '0.125rem',
+                  paddingBottom: '0.125rem',
+                  fontSize: '0.625rem',
+                  fontWeight: 'black',
+                  backgroundColor: filterSelected === "liked" ? '#10b981' : currentMode === 'light' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(16, 185, 129, 0.3)',
+                  color: filterSelected === "liked" ? '#ffffff' : currentMode === 'light' ? '#059669' : '#4ade80'
+                }}>
                   {likedCount}
                 </span>
               )}
@@ -544,16 +1078,41 @@ export default function SelectFinaliste() {
             {/* À discuter */}
             <button
               onClick={() => { setFilterSelected("toDiscuss"); setPage(1); }}
-              className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition border ${
-                filterSelected === "toDiscuss"
-                  ? "bg-amber-600 border-amber-500 text-white"
-                  : "bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-amber-400 hover:border-amber-800"
-              }`}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.375rem',
+                paddingLeft: '1rem',
+                paddingRight: '1rem',
+                paddingTop: '0.625rem',
+                paddingBottom: '0.625rem',
+                borderRadius: '0.75rem',
+                fontSize: '0.75rem',
+                fontWeight: 'bold',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                transition: 'all 0.2s',
+                border: filterSelected === "toDiscuss" ? '1px solid #b45309' : `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+                backgroundColor: filterSelected === "toDiscuss" ? '#b45309' : currentMode === 'light' ? '#f5f5f5' : '#1a1a1a',
+                color: filterSelected === "toDiscuss" ? '#ffffff' : currentMode === 'light' ? '#666666' : '#a3a3a3',
+                cursor: 'pointer'
+              }}
             >
               <AlertCircle size={13} />
               {t('selectfinaliste_to_discuss')}
               {toDiscussCount > 0 && (
-                <span className={`ml-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-black ${filterSelected === "toDiscuss" ? "bg-amber-500 text-white" : "bg-amber-950 text-amber-400"}`}>
+                <span style={{
+                  marginLeft: '0.125rem',
+                  borderRadius: '9999px',
+                  paddingLeft: '0.375rem',
+                  paddingRight: '0.375rem',
+                  paddingTop: '0.125rem',
+                  paddingBottom: '0.125rem',
+                  fontSize: '0.625rem',
+                  fontWeight: 'black',
+                  backgroundColor: filterSelected === "toDiscuss" ? '#d97706' : currentMode === 'light' ? 'rgba(217, 119, 6, 0.15)' : 'rgba(217, 119, 6, 0.3)',
+                  color: filterSelected === "toDiscuss" ? '#ffffff' : currentMode === 'light' ? '#b45309' : '#facc15'
+                }}>
                   {toDiscussCount}
                 </span>
               )}
@@ -562,11 +1121,29 @@ export default function SelectFinaliste() {
         </div>
 
         {/* Table */}
-        <div className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden">
-          <div className="hidden sm:grid grid-cols-[64px_1fr_1fr_160px_1fr_auto] gap-0">
+        <div style={{
+          backgroundColor: currentMode === 'light' ? '#ffffff' : '#1a1a1a',
+          border: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+          borderRadius: '1rem',
+          overflow: 'hidden'
+        }} className="hidden sm:block">
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '64px 1fr 1fr 160px 1fr auto',
+            gap: 0
+          }}>
             {/* Header */}
             {["", t('gallery_title'), t('selectfinaliste_director'), t('selectfinaliste_status'), t('selectfinaliste_award'), t('selectfinaliste_actions')].map(h => (
-              <div key={h} className="px-4 py-3 text-xs font-bold uppercase tracking-widest text-neutral-500 border-b border-neutral-800 bg-neutral-950/50">
+              <div key={h} style={{
+                padding: '0.75rem 1rem',
+                fontSize: '0.75rem',
+                fontWeight: 'bold',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                color: currentMode === 'light' ? '#999999' : '#666666',
+                borderBottom: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+                backgroundColor: currentMode === 'light' ? '#f5f5f5' : '#0f0f0f'
+              }}>
                 {h}
               </div>
             ))}
@@ -575,98 +1152,275 @@ export default function SelectFinaliste() {
             {filtered.map(f => (
               <React.Fragment key={f.id}>
                 {/* Poster */}
-                <div className="px-3 py-3 border-b border-neutral-800/60 flex items-center">
-                  <div className="w-10 h-14 rounded-lg overflow-hidden bg-neutral-800 flex-shrink-0">
+                <div style={{
+                  padding: '0.75rem',
+                  borderBottom: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+                  display: 'flex',
+                  alignItems: 'center'
+                }}>
+                  <div style={{
+                    width: '40px',
+                    height: '56px',
+                    borderRadius: '0.5rem',
+                    overflow: 'hidden',
+                    backgroundColor: currentMode === 'light' ? '#e5e5e5' : '#262626',
+                    flexShrink: 0
+                  }}>
                     {f.posterUrl ? (
-                      <img src={f.posterUrl} alt={f.titre} className="w-full h-full object-cover" onError={e => { e.target.style.display = 'none'; }} />
+                      <img src={f.posterUrl} alt={f.titre} style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover'
+                      }} onError={e => { e.target.style.display = 'none'; }} />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-neutral-600"><Film size={16} /></div>
+                      <div style={{
+                        width: '100%',
+                        height: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: currentMode === 'light' ? '#e5e5e5' : '#404040'
+                      }}><Film size={16} /></div>
                     )}
                   </div>
                 </div>
 
                 {/* Titre */}
-                <div className="px-4 py-3 border-b border-neutral-800/60 flex flex-col justify-center">
-                  <div className="font-bold text-sm text-white">{f.titre}</div>
-                  <div className="flex gap-1 mt-1 flex-wrap">
+                <div style={{
+                  padding: '0.75rem 1rem',
+                  borderBottom: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center'
+                }}>
+                  <div style={{
+                    fontWeight: 'bold',
+                    fontSize: '0.875rem',
+                    color: currentMode === 'light' ? '#000000' : '#ffffff'
+                  }}>{f.titre}</div>
+                  <div style={{
+                    display: 'flex',
+                    gap: '0.25rem',
+                    marginTop: '0.25rem',
+                    flexWrap: 'wrap'
+                  }}>
                     {(f.tags ? f.tags.split(",") : []).slice(0, 2).map(tag => (
-                      <span key={tag} className="text-xs bg-neutral-800 text-neutral-400 px-2 py-0.5 rounded-full">{tag.trim()}</span>
+                      <span key={tag} style={{
+                        fontSize: '0.75rem',
+                        backgroundColor: currentMode === 'light' ? '#e5e5e5' : '#262626',
+                        color: currentMode === 'light' ? '#666666' : '#999999',
+                        padding: '0.125rem 0.5rem',
+                        borderRadius: '9999px'
+                      }}>{tag.trim()}</span>
                     ))}
                   </div>
                 </div>
 
                 {/* Réalisateur */}
-                <div className="px-4 py-3 border-b border-neutral-800/60 flex items-center text-sm text-neutral-300 font-medium">
+                <div style={{
+                  padding: '0.75rem 1rem',
+                  borderBottom: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  fontSize: '0.875rem',
+                  color: currentMode === 'light' ? '#333333' : '#e5e5e5',
+                  fontWeight: '500'
+                }}>
                   {f.real}
                 </div>
 
                 {/* Statut + Toggle */}
-                <div className="px-4 py-3 border-b border-neutral-800/60 flex items-center gap-3">
+                <div style={{
+                  padding: '0.75rem 1rem',
+                  borderBottom: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem'
+                }}>
                   <button
                     onClick={() => toggleSelected(f.id)}
-                    className={`relative inline-flex w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none flex-shrink-0 ${
-                      f.selected ? "bg-violet-600" : "bg-neutral-700"
-                    }`}
+                    style={{
+                      position: 'relative',
+                      display: 'inline-flex',
+                      width: '44px',
+                      height: '24px',
+                      borderRadius: '9999px',
+                      transition: 'all 0.2s',
+                      backgroundColor: f.selected ? '#a855f7' : (currentMode === 'light' ? '#e5e5e5' : '#404040'),
+                      border: 'none',
+                      cursor: 'pointer',
+                      flexShrink: 0,
+                      padding: 0
+                    }}
                   >
-                    <span className={`inline-block w-4 h-4 bg-white rounded-full shadow transform transition-transform duration-200 mt-1 ${
-                      f.selected ? "translate-x-6" : "translate-x-1"
-                    }`} />
+                    <span style={{
+                      display: 'inline-block',
+                      width: '16px',
+                      height: '16px',
+                      backgroundColor: '#ffffff',
+                      borderRadius: '50%',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.5)',
+                      transform: f.selected ? 'translateX(24px)' : 'translateX(4px)',
+                      transition: 'transform 0.2s',
+                      marginTop: '4px'
+                    }} />
                   </button>
-                  <span className={`text-xs font-bold uppercase tracking-wider ${f.selected ? "text-violet-400" : "text-neutral-600"}`}>
+                  <span style={{
+                    fontSize: '0.75rem',
+                    fontWeight: 'bold',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.025em',
+                    color: f.selected ? '#a855f7' : (currentMode === 'light' ? '#999999' : '#666666')
+                  }}>
                     {f.selected ? t('selectfinaliste_selected_status') : "—"}
                   </span>
                 </div>
 
                 {/* Prix */}
-                <div className="px-4 py-3 border-b border-neutral-800/60 flex items-center">
+                <div style={{
+                  padding: '0.75rem 1rem',
+                  borderBottom: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+                  display: 'flex',
+                  alignItems: 'center'
+                }}>
                   {editingPrize === f.id ? (
-                    <div className="flex items-center gap-2 w-full">
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      width: '100%'
+                    }}>
                       <input
                         autoFocus
                         value={prizeInput}
                         onChange={e => setPrizeInput(e.target.value)}
                         onKeyDown={e => { if (e.key === "Enter") savePrize(f.id); if (e.key === "Escape") setEditingPrize(null); }}
                         placeholder="Ex: Grand Prix..."
-                        className="flex-1 bg-neutral-800 border border-violet-600 rounded-lg px-3 py-1.5 text-xs text-white placeholder-neutral-500 focus:outline-none"
+                        style={{
+                          flex: 1,
+                          backgroundColor: currentMode === 'light' ? '#f5f5f5' : '#262626',
+                          border: `1px solid #a855f7`,
+                          borderRadius: '0.5rem',
+                          padding: '0.375rem 0.75rem',
+                          fontSize: '0.75rem',
+                          color: currentMode === 'light' ? '#000000' : '#ffffff',
+                          outline: 'none'
+                        }}
                       />
-                      <button onClick={() => savePrize(f.id)} className="p-1.5 bg-violet-600 hover:bg-violet-500 rounded-lg transition">
-                        <Check size={14} className="text-white" />
+                      <button onClick={() => savePrize(f.id)} style={{
+                        padding: '0.375rem 0.5rem',
+                        backgroundColor: '#a855f7',
+                        color: '#ffffff',
+                        borderRadius: '0.375rem',
+                        border: 'none',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }} onMouseEnter={e => e.currentTarget.style.backgroundColor = '#9333ea'} onMouseLeave={e => e.currentTarget.style.backgroundColor = '#a855f7'}>
+                        <Check size={14} />
                       </button>
-                      <button onClick={() => { setEditingPrize(null); if (!f.prize) setFilms(p => p.map(x => x.id === f.id ? { ...x, selected: false } : x)); }} className="p-1.5 bg-neutral-800 hover:bg-neutral-700 rounded-lg transition">
-                        <X size={14} className="text-neutral-400" />
+                      <button onClick={() => { setEditingPrize(null); if (!f.prize) setFilms(p => p.map(x => x.id === f.id ? { ...x, selected: false } : x)); }} style={{
+                        padding: '0.375rem 0.5rem',
+                        backgroundColor: currentMode === 'light' ? '#e5e5e5' : '#404040',
+                        color: currentMode === 'light' ? '#333333' : '#a3a3a3',
+                        borderRadius: '0.375rem',
+                        border: 'none',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }} onMouseEnter={e => e.currentTarget.style.backgroundColor = currentMode === 'light' ? '#d1d5db' : '#505050'} onMouseLeave={e => e.currentTarget.style.backgroundColor = currentMode === 'light' ? '#e5e5e5' : '#404040'}>
+                        <X size={14} />
                       </button>
                     </div>
-                  ) : f.selected ? (
-                    <button
-                      onClick={() => { setEditingPrize(f.id); setPrizeInput(f.prize); }}
-                      className="flex items-center gap-2 group"
-                    >
+                  ) : (
+                    <button onClick={() => { setEditingPrize(f.id); setPrizeInput(f.prize); }} style={{
+                      width: '100%',
+                      textAlign: 'left',
+                      background: 'none',
+                      border: 'none',
+                      padding: 0,
+                      cursor: 'pointer'
+                    }}>
                       {f.prize ? (
-                        <span className="flex items-center gap-1.5 text-xs font-bold text-amber-400 bg-amber-950/40 border border-amber-800/40 px-3 py-1 rounded-full group-hover:border-amber-600 transition">
-                          <Trophy size={12} /> {f.prize}
+                        <span style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.375rem',
+                          fontSize: '0.75rem',
+                          fontWeight: 'bold',
+                          color: '#f59e0b',
+                          backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                          border: `1px solid rgba(245, 158, 11, 0.3)`,
+                          padding: '0.25rem 0.75rem',
+                          borderRadius: '9999px'
+                        }}>
+                          <Trophy size={11} /> {f.prize}
                         </span>
                       ) : (
-                        <span className="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-violet-400 transition">
-                          <Plus size={12} /> {t('selectfinaliste_assign_award')}
+                        <span style={{
+                          fontSize: '0.75rem',
+                          color: currentMode === 'light' ? '#999999' : '#666666',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.25rem'
+                        }}>
+                          <Plus size={11} /> Attribuer un prix
                         </span>
                       )}
                     </button>
-                  ) : (
-                    <span className="text-xs text-neutral-700">—</span>
                   )}
                 </div>
 
                 {/* Actions */}
-                <div className="px-4 py-3 border-b border-neutral-800/60 flex items-center gap-2">
+                <div style={{
+                  padding: '0.75rem 1rem',
+                  borderBottom: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}>
                   {/* Bouton commentaires */}
                   <button
                     onClick={() => setCommentFilm(f)}
-                    className="relative flex items-center justify-center w-9 h-9 rounded-xl border border-neutral-700 bg-neutral-800 text-neutral-400 hover:text-violet-400 hover:border-violet-600 transition"
+                    style={{
+                      position: 'relative',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '0.75rem',
+                      border: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#404040'}`,
+                      backgroundColor: currentMode === 'light' ? '#f5f5f5' : '#262626',
+                      color: currentMode === 'light' ? '#999999' : '#a3a3a3',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.borderColor = '#a855f7';
+                      e.currentTarget.style.color = '#a855f7';
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.borderColor = currentMode === 'light' ? '#e5e5e5' : '#404040';
+                      e.currentTarget.style.color = currentMode === 'light' ? '#999999' : '#a3a3a3';
+                    }}
                     title={t('selectfinaliste_view_comments')}
                   >
                     <MessageSquare size={15} />
                     {f.comments.length > 0 && (
-                      <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-violet-600 text-white text-[9px] font-black flex items-center justify-center">
+                      <span style={{
+                        position: 'absolute',
+                        top: '-6px',
+                        right: '-6px',
+                        width: '16px',
+                        height: '16px',
+                        borderRadius: '50%',
+                        backgroundColor: '#a855f7',
+                        color: '#ffffff',
+                        fontSize: '9px',
+                        fontWeight: 'black',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
                         {f.comments.length}
                       </span>
                     )}
@@ -675,12 +1429,47 @@ export default function SelectFinaliste() {
                   {/* Bouton Like */}
                   <button
                     onClick={() => setVoteFilm({ film: f, status: 'LIKE' })}
+                    style={{
+                      position: 'relative',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '0.75rem',
+                      border: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#404040'}`,
+                      backgroundColor: currentMode === 'light' ? '#f5f5f5' : '#262626',
+                      color: currentMode === 'light' ? '#999999' : '#a3a3a3',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.borderColor = '#10b981';
+                      e.currentTarget.style.color = '#10b981';
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.borderColor = currentMode === 'light' ? '#e5e5e5' : '#404040';
+                      e.currentTarget.style.color = currentMode === 'light' ? '#999999' : '#a3a3a3';
+                    }}
                     title={t('selectfinaliste_view_likes')}
-                    className="relative flex items-center justify-center w-9 h-9 rounded-xl border border-neutral-700 bg-neutral-800 text-neutral-400 hover:text-emerald-400 hover:border-emerald-600 transition"
                   >
                     <ThumbsUp size={15} />
                     {countVotesByStatus(f.comments, 'LIKE') > 0 && (
-                      <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-emerald-600 text-white text-[9px] font-black flex items-center justify-center">
+                      <span style={{
+                        position: 'absolute',
+                        top: '-6px',
+                        right: '-6px',
+                        width: '16px',
+                        height: '16px',
+                        borderRadius: '50%',
+                        backgroundColor: '#10b981',
+                        color: '#ffffff',
+                        fontSize: '9px',
+                        fontWeight: 'black',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
                         {countVotesByStatus(f.comments, 'LIKE')}
                       </span>
                     )}
@@ -689,12 +1478,47 @@ export default function SelectFinaliste() {
                   {/* Bouton À discuter */}
                   <button
                     onClick={() => setVoteFilm({ film: f, status: 'DISCUSS' })}
+                    style={{
+                      position: 'relative',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '0.75rem',
+                      border: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#404040'}`,
+                      backgroundColor: currentMode === 'light' ? '#f5f5f5' : '#262626',
+                      color: currentMode === 'light' ? '#999999' : '#a3a3a3',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.borderColor = '#f59e0b';
+                      e.currentTarget.style.color = '#f59e0b';
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.borderColor = currentMode === 'light' ? '#e5e5e5' : '#404040';
+                      e.currentTarget.style.color = currentMode === 'light' ? '#999999' : '#a3a3a3';
+                    }}
                     title={t('selectfinaliste_view_to_discuss')}
-                    className="relative flex items-center justify-center w-9 h-9 rounded-xl border border-neutral-700 bg-neutral-800 text-neutral-400 hover:text-amber-400 hover:border-amber-600 transition"
                   >
                     <AlertCircle size={15} />
                     {countVotesByStatus(f.comments, 'DISCUSS') > 0 && (
-                      <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-amber-600 text-white text-[9px] font-black flex items-center justify-center">
+                      <span style={{
+                        position: 'absolute',
+                        top: '-6px',
+                        right: '-6px',
+                        width: '16px',
+                        height: '16px',
+                        borderRadius: '50%',
+                        backgroundColor: '#f59e0b',
+                        color: '#ffffff',
+                        fontSize: '9px',
+                        fontWeight: 'black',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
                         {countVotesByStatus(f.comments, 'DISCUSS')}
                       </span>
                     )}
@@ -704,141 +1528,118 @@ export default function SelectFinaliste() {
             ))}
           </div>
 
-          {/* MOBILE VIEW */}
-          <div className="sm:hidden divide-y divide-neutral-800">
-            {filtered.map(f => (
-              <div key={f.id} className="p-4">
-                <div className="flex gap-3">
-                  <div className="w-12 h-16 rounded-lg overflow-hidden bg-neutral-800 flex-shrink-0">
-                    {f.posterUrl ? (
-                      <img src={f.posterUrl} alt={f.titre} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-neutral-600"><Film size={16} /></div>
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-bold text-sm text-white truncate">{f.titre}</div>
-                    <div className="text-xs text-neutral-400">{f.real}</div>
-                    {f.selected && f.prize && (
-                      <span className="inline-flex items-center gap-1 text-xs text-amber-400 mt-1">
-                        <Trophy size={10} /> {f.prize}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex flex-col items-end gap-2">
-                    <button
-                      onClick={() => toggleSelected(f.id)}
-                      className={`relative inline-flex w-10 h-5 rounded-full transition-colors flex-shrink-0 ${f.selected ? "bg-violet-600" : "bg-neutral-700"}`}
-                    >
-                      <span className={`inline-block w-3.5 h-3.5 bg-white rounded-full shadow transform transition-transform mt-[3px] ${f.selected ? "translate-x-5" : "translate-x-1"}`} />
-                    </button>
-                    <div className="flex gap-1.5">
-                      <button
-                        onClick={() => setCommentFilm(f)}
-                        className="relative flex items-center justify-center w-8 h-8 rounded-lg border border-neutral-700 bg-neutral-800 text-neutral-400 hover:text-violet-400 transition"
-                      >
-                        <MessageSquare size={14} />
-                        {f.comments.length > 0 && (
-                          <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-violet-600 text-white text-[9px] font-black flex items-center justify-center">
-                            {f.comments.length}
-                          </span>
-                        )}
-                      </button>
-                      <button
-                        onClick={() => setVoteFilm({ film: f, status: 'LIKE' })}
-                        className="relative flex items-center justify-center w-8 h-8 rounded-lg border border-neutral-700 bg-neutral-800 text-neutral-400 hover:text-emerald-400 hover:border-emerald-600 transition"
-                      >
-                        <ThumbsUp size={13} />
-                        {countVotesByStatus(f.comments, 'LIKE') > 0 && (
-                          <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-emerald-600 text-white text-[9px] font-black flex items-center justify-center">
-                            {countVotesByStatus(f.comments, 'LIKE')}
-                          </span>
-                        )}
-                      </button>
-                      <button
-                        onClick={() => setVoteFilm({ film: f, status: 'DISCUSS' })}
-                        className="relative flex items-center justify-center w-8 h-8 rounded-lg border border-neutral-700 bg-neutral-800 text-neutral-400 hover:text-amber-400 hover:border-amber-600 transition"
-                      >
-                        <AlertCircle size={13} />
-                        {countVotesByStatus(f.comments, 'DISCUSS') > 0 && (
-                          <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-amber-600 text-white text-[9px] font-black flex items-center justify-center">
-                            {countVotesByStatus(f.comments, 'DISCUSS')}
-                          </span>
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                {f.selected && (
-                  <div className="mt-3">
-                    {editingPrize === f.id ? (
-                      <div className="flex gap-2">
-                        <input
-                          autoFocus
-                          value={prizeInput}
-                          onChange={e => setPrizeInput(e.target.value)}
-                          onKeyDown={e => { if (e.key === "Enter") savePrize(f.id); }}
-                          placeholder="Nom du prix..."
-                          className="flex-1 bg-neutral-800 border border-violet-600 rounded-lg px-3 py-1.5 text-xs text-white placeholder-neutral-500 focus:outline-none"
-                        />
-                        <button onClick={() => savePrize(f.id)} className="p-1.5 bg-violet-600 rounded-lg">
-                          <Check size={14} className="text-white" />
-                        </button>
-                      </div>
-                    ) : (
-                      <button onClick={() => { setEditingPrize(f.id); setPrizeInput(f.prize); }} className="w-full text-left">
-                        {f.prize ? (
-                          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-400 bg-amber-950/40 border border-amber-800/40 px-3 py-1 rounded-full">
-                            <Trophy size={11} /> {f.prize}
-                          </span>
-                        ) : (
-                          <span className="text-xs text-neutral-500 flex items-center gap-1">
-                            <Plus size={11} /> Attribuer un prix
-                          </span>
-                        )}
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-
           {loading && (
-            <div className="text-center py-10 text-neutral-500">
+            <div style={{
+              textAlign: 'center',
+              paddingTop: '2.5rem',
+              paddingBottom: '2.5rem',
+              color: currentMode === 'light' ? '#999999' : '#a3a3a3'
+            }}>
               {t('selectfinaliste_loading')}
             </div>
           )}
 
           {apiError && !loading && (
-            <div className="text-center py-10 text-rose-400">
+            <div style={{
+              textAlign: 'center',
+              paddingTop: '2.5rem',
+              paddingBottom: '2.5rem',
+              color: '#f87171'
+            }}>
               {apiError}
             </div>
           )}
 
           {filtered.length === 0 && !loading && !apiError && (
-            <div className="text-center py-16 text-neutral-500">
-              <Film size={32} className="mx-auto mb-3 opacity-30" />
-              <p className="text-sm">{t('selectfinaliste_no_films_found')}</p>
+            <div style={{
+              textAlign: 'center',
+              paddingTop: '4rem',
+              paddingBottom: '4rem',
+              color: currentMode === 'light' ? '#999999' : '#a3a3a3'
+            }}>
+              <Film size={32} style={{ margin: '0 auto 0.75rem', opacity: 0.3 }} />
+              <p style={{ fontSize: '0.875rem' }}>{t('selectfinaliste_no_films_found')}</p>
             </div>
           )}
         </div>
 
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-5">
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '1rem',
+          marginTop: '1.25rem'
+        }}>
           <button
             onClick={() => setPage(p => Math.max(1, p - 1))}
             disabled={page <= 1 || loading}
-            className="px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider border border-neutral-800 text-neutral-400 hover:text-white hover:border-neutral-600 disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{
+              paddingLeft: '1rem',
+              paddingRight: '1rem',
+              paddingTop: '0.5rem',
+              paddingBottom: '0.5rem',
+              borderRadius: '0.5rem',
+              fontSize: '0.75rem',
+              fontWeight: 'bold',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              border: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+              color: currentMode === 'light' ? '#666666' : '#a3a3a3',
+              backgroundColor: currentMode === 'light' ? '#ffffff' : '#0f0f0f',
+              cursor: page <= 1 || loading ? 'not-allowed' : 'pointer',
+              opacity: page <= 1 || loading ? 0.4 : 1,
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => {
+              if (!(page <= 1 || loading)) {
+                e.currentTarget.style.borderColor = currentMode === 'light' ? '#999999' : '#404040';
+                e.currentTarget.style.color = currentMode === 'light' ? '#000000' : '#ffffff';
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = currentMode === 'light' ? '#e5e5e5' : '#262626';
+              e.currentTarget.style.color = currentMode === 'light' ? '#666666' : '#a3a3a3';
+            }}
           >
             {t('selectfinaliste_previous_page')}
           </button>
-          <div className="text-xs text-neutral-500">
+          <div style={{
+            fontSize: '0.75rem',
+            color: currentMode === 'light' ? '#999999' : '#a3a3a3',
+            whiteSpace: 'nowrap'
+          }}>
             {t('selectfinaliste_title')} {page} / {totalPages}
           </div>
           <button
             onClick={() => setPage(p => Math.min(totalPages, p + 1))}
             disabled={page >= totalPages || loading}
-            className="px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider border border-neutral-800 text-neutral-400 hover:text-white hover:border-neutral-600 disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{
+              paddingLeft: '1rem',
+              paddingRight: '1rem',
+              paddingTop: '0.5rem',
+              paddingBottom: '0.5rem',
+              borderRadius: '0.5rem',
+              fontSize: '0.75rem',
+              fontWeight: 'bold',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              border: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+              color: currentMode === 'light' ? '#666666' : '#a3a3a3',
+              backgroundColor: currentMode === 'light' ? '#ffffff' : '#0f0f0f',
+              cursor: page >= totalPages || loading ? 'not-allowed' : 'pointer',
+              opacity: page >= totalPages || loading ? 0.4 : 1,
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => {
+              if (!(page >= totalPages || loading)) {
+                e.currentTarget.style.borderColor = currentMode === 'light' ? '#999999' : '#404040';
+                e.currentTarget.style.color = currentMode === 'light' ? '#000000' : '#ffffff';
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = currentMode === 'light' ? '#e5e5e5' : '#262626';
+              e.currentTarget.style.color = currentMode === 'light' ? '#666666' : '#a3a3a3';
+            }}
           >
             {t('selectfinaliste_next_page')}
           </button>
@@ -847,7 +1648,7 @@ export default function SelectFinaliste() {
       </div>
 
       {/* Modal commentaires */}
-      {commentFilm && <CommentsModal film={commentFilm} onClose={() => setCommentFilm(null)} />}
+      {commentFilm && <CommentsModal film={commentFilm} onClose={() => setCommentFilm(null)} currentMode={currentMode} />}
 
       {/* Modal votes */}
       {voteFilm.film && (
@@ -855,12 +1656,42 @@ export default function SelectFinaliste() {
           film={voteFilm.film}
           voteStatus={voteFilm.status}
           onClose={() => setVoteFilm({ film: null, status: null })}
+          currentMode={currentMode}
         />
       )}
 
       {/* Toast */}
-      <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-neutral-900 border border-neutral-700 text-white text-sm font-semibold px-5 py-3 rounded-xl shadow-2xl transition-all duration-300 ${toast.visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3 pointer-events-none"}`}>
-        <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: toast.color }} />
+      <div style={{
+        position: 'fixed',
+        bottom: '1.5rem',
+        right: '1.5rem',
+        zIndex: 50,
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.75rem',
+        backgroundColor: currentMode === 'light' ? '#ffffff' : '#171717',
+        border: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+        color: currentMode === 'light' ? '#000000' : '#ffffff',
+        fontSize: '0.875rem',
+        fontWeight: '600',
+        paddingLeft: '1.25rem',
+        paddingRight: '1.25rem',
+        paddingTop: '0.75rem',
+        paddingBottom: '0.75rem',
+        borderRadius: '0.75rem',
+        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)',
+        transition: 'all 0.3s ease',
+        opacity: toast.visible ? 1 : 0,
+        transform: toast.visible ? 'translateY(0)' : 'translateY(12px)',
+        pointerEvents: toast.visible ? 'auto' : 'none'
+      }}>
+        <span style={{
+          width: '0.5rem',
+          height: '0.5rem',
+          borderRadius: '50%',
+          flexShrink: 0,
+          backgroundColor: toast.color
+        }} />
         {toast.msg}
       </div>
     </div>

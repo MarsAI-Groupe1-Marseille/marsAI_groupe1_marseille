@@ -1,6 +1,7 @@
 import React from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { Handshake, Mail, MapPin } from 'lucide-react';
+import StarryBackground from '../components/StarryBackground.jsx';
 
 export default function Sponsors() {
   const { t } = useLanguage();
@@ -44,7 +45,9 @@ export default function Sponsors() {
   ];
 
   return (
-    <div className="min-h-screen bg-neutral-950 py-20 px-6">
+    <>
+      <StarryBackground />
+      <div className="min-h-screen bg-transparent py-20 px-6 relative z-2">
       <div className="max-w-6xl mx-auto">
         {/* Header Section */}
         <header className="text-center mb-16">
@@ -154,6 +157,7 @@ export default function Sponsors() {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
