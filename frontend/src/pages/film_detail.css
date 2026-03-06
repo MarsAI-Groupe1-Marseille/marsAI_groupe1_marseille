@@ -4,7 +4,7 @@
 
 /* Container principal avec le même gradient que galerie */
 .film-detail-container {
-  background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+  background: transparent;
   min-height: 100vh;
   color: white;
 }
