@@ -113,6 +113,7 @@ const Footer = () => {
                 <Link className="hover:text-[var(--color-secondary)] transition-colors" to="/contact">Contact</Link>
                 <Link className="hover:text-[var(--color-secondary)] transition-colors" to="/jury">{t('footer_jury')}</Link>
                 <Link className="hover:text-[var(--color-secondary)] transition-colors" to="/sponsors">{t('footer_sponsors')}</Link>
+                <Link className="hover:text-[var(--color-secondary)] transition-colors" to="/palmares">{t('palmares')}</Link>
                 <Link className="hover:text-[var(--color-secondary)] transition-colors" to="/submission">{t('footer_submission')}</Link>
               </div>
             </div>
@@ -179,7 +180,7 @@ const Footer = () => {
 
             <div className="flex items-center gap-4 text-xs text-[var(--color-text-muted)]">
               <Link className="hover:text-[var(--color-secondary)] transition-colors" to="/legal">{t('footer_legal')}</Link>
-              <a className="hover:text-[var(--color-secondary)] transition-colors" href="#">{t('footer_privacy')}</a>
+              <Link className="hover:text-[var(--color-secondary)] transition-colors" to="/confidentiality">{t('footer_privacy')}</Link>
             </div>
           </div>
         </div>

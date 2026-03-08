@@ -10,6 +10,7 @@ export default function JuryTab() {
   const { t } = useLanguage();
   const { user: currentUser } = useAuth();
   const isModerator = currentUser?.role === "moderator";
+  const [currentMode, setCurrentMode] = useState('dark');
   const [juryMembers, setJuryMembers] = useState([]);
   const [globalStats, setGlobalStats] = useState({
     jury_count: 0,
@@ -82,6 +83,19 @@ export default function JuryTab() {
     fetchJury();
   }, []);
 
+  // Mode detection
+  useEffect(() => {
+    const updateMode = () => {
+      const mode = document.documentElement.getAttribute('data-mode') || 'dark';
+      setCurrentMode(mode);
+    };
+
+    updateMode();
+    const observer = new MutationObserver(updateMode);
+    observer.observe(document.documentElement, { attributes: true });
+    return () => observer.disconnect();
+  }, []);
+
   const fetchJury = async () => {
     try {
       setLoading(true);
@@ -145,19 +159,69 @@ export default function JuryTab() {
           <h3 className="text-lg md:text-xl font-bold text-violet-400">{t('jury_tab_global_stats')}</h3>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">
-          <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 md:p-6 hover:bg-neutral-800/50 hover:border-neutral-700 transition">
-            <p className="text-xs md:text-sm text-neutral-400 font-medium">{t('jury_jury_members_label')}</p>
-            <p className="text-2xl sm:text-3xl font-bold mt-3 md:mt-4 text-violet-400">{globalStats.jury_count || juryMembers.length}</p>
+          <div style={{
+            backgroundColor: currentMode === 'light' ? '#f5f5f5' : '#171717',
+            border: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+            borderRadius: '12px',
+            padding: '16px 24px',
+            transition: 'all 0.3s',
+          }}>
+            <p style={{
+              fontSize: '12px',
+              color: currentMode === 'light' ? '#666666' : '#a3a3a3',
+              fontWeight: '500'
+            }}>{t('jury_jury_members_label')}</p>
+            <p style={{
+              fontSize: 'clamp(24px, 5vw, 32px)',
+              fontWeight: 'bold',
+              marginTop: '12px',
+              color: currentMode === 'light' ? '#7c3aed' : '#a78bfa'
+            }}>{globalStats.jury_count || juryMembers.length}</p>
           </div>
-          <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 md:p-6 hover:bg-neutral-800/50 hover:border-neutral-700 transition">
-            <p className="text-xs md:text-sm text-neutral-400 font-medium">{t('jury_tab_films_to_evaluate')}</p>
-            <p className="text-2xl sm:text-3xl font-bold mt-3 md:mt-4 text-violet-400">{globalStats.approved_films}</p>
+          <div style={{
+            backgroundColor: currentMode === 'light' ? '#f5f5f5' : '#171717',
+            border: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+            borderRadius: '12px',
+            padding: '16px 24px',
+            transition: 'all 0.3s',
+          }}>
+            <p style={{
+              fontSize: '12px',
+              color: currentMode === 'light' ? '#666666' : '#a3a3a3',
+              fontWeight: '500'
+            }}>{t('jury_tab_films_to_evaluate')}</p>
+            <p style={{
+              fontSize: 'clamp(24px, 5vw, 32px)',
+              fontWeight: 'bold',
+              marginTop: '12px',
+              color: currentMode === 'light' ? '#7c3aed' : '#a78bfa'
+            }}>{globalStats.approved_films}</p>
           </div>
-          <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 hover:bg-neutral-800 transition">
-            <p className="text-sm text-neutral-400">{t('jury_tab_total_progress')}</p>
-            <p className="text-3xl font-bold mt-2 text-violet-400">{globalStats.total_progress}%</p>
+          <div style={{
+            backgroundColor: currentMode === 'light' ? '#f5f5f5' : '#171717',
+            border: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+            borderRadius: '12px',
+            padding: '24px',
+            transition: 'all 0.3s',
+          }}>
+            <p style={{
+              fontSize: '14px',
+              color: currentMode === 'light' ? '#666666' : '#a3a3a3'
+            }}>{t('jury_tab_total_progress')}</p>
+            <p style={{
+              fontSize: '32px',
+              fontWeight: 'bold',
+              marginTop: '8px',
+              color: currentMode === 'light' ? '#7c3aed' : '#a78bfa'
+            }}>{globalStats.total_progress}%</p>
           </div>
-          <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 hover:bg-neutral-800 transition">
+          <div style={{
+            backgroundColor: currentMode === 'light' ? '#f5f5f5' : '#171717',
+            border: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+            borderRadius: '12px',
+            padding: '24px',
+            transition: 'all 0.3s',
+          }}>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-neutral-400">{t('jury_tab_global_decisions')}</p>
@@ -234,7 +298,14 @@ export default function JuryTab() {
         {showForm && (
           <form
             onSubmit={handleAddMember}
-            className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 md:p-6 space-y-4"
+            style={{
+              backgroundColor: currentMode === 'light' ? '#f5f5f5' : '#171717',
+              border: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+              borderRadius: '12px',
+              padding: '16px 24px',
+              display: 'grid',
+              gap: '16px'
+            }}
           >
             <input
               type="email"
@@ -243,7 +314,17 @@ export default function JuryTab() {
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               required
               disabled={formLoading}
-              className="w-full px-4 py-2 md:py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 text-sm md:text-base focus:outline-none focus:border-violet-500 disabled:opacity-50"
+              style={{
+                width: '100%',
+                padding: '10px 16px',
+                backgroundColor: currentMode === 'light' ? '#ffffff' : '#262626',
+                border: `1px solid ${currentMode === 'light' ? '#d1d5db' : '#374151'}`,
+                borderRadius: '8px',
+                color: currentMode === 'light' ? '#000000' : '#ffffff',
+                placeholder: currentMode === 'light' ? '#999999' : '#6b7280',
+                fontSize: '14px',
+                opacity: formLoading ? 0.5 : 1
+              }}
             />
             <input
               type="text"
@@ -252,31 +333,77 @@ export default function JuryTab() {
               onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
               required
               disabled={formLoading}
-              className="w-full px-4 py-2 md:py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 text-sm md:text-base focus:outline-none focus:border-violet-500 disabled:opacity-50"
+              style={{
+                width: '100%',
+                padding: '10px 16px',
+                backgroundColor: currentMode === 'light' ? '#ffffff' : '#262626',
+                border: `1px solid ${currentMode === 'light' ? '#d1d5db' : '#374151'}`,
+                borderRadius: '8px',
+                color: currentMode === 'light' ? '#000000' : '#ffffff',
+                fontSize: '14px',
+                opacity: formLoading ? 0.5 : 1
+              }}
             />
             <select
               value={formData.role}
               onChange={(e) => setFormData({ ...formData, role: e.target.value })}
               disabled={formLoading}
-              className="w-full px-4 py-2 md:py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm md:text-base focus:outline-none focus:border-violet-500 disabled:opacity-50"
+              style={{
+                width: '100%',
+                padding: '10px 16px',
+                backgroundColor: currentMode === 'light' ? '#ffffff' : '#262626',
+                border: `1px solid ${currentMode === 'light' ? '#d1d5db' : '#374151'}`,
+                borderRadius: '8px',
+                color: currentMode === 'light' ? '#000000' : '#ffffff',
+                fontSize: '14px',
+                opacity: formLoading ? 0.5 : 1
+              }}
             >
               <option value="jury">{t('jury_tab_role_option')}</option>
             </select>
             {formError && (
-              <div className="text-sm text-red-400 bg-red-900/20 border border-red-700/30 rounded-lg p-3">
+              <div style={{
+                fontSize: '14px',
+                color: '#f87171',
+                backgroundColor: currentMode === 'light' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.2)',
+                border: `1px solid ${currentMode === 'light' ? 'rgba(239, 68, 68, 0.3)' : 'rgba(239, 68, 68, 0.5)'}`,
+                borderRadius: '8px',
+                padding: '12px'
+              }}>
                 {formError}
               </div>
             )}
             {formSuccess && (
-              <div className="text-sm text-emerald-300 bg-emerald-900/20 border border-emerald-700/30 rounded-lg p-3">
+              <div style={{
+                fontSize: '14px',
+                color: '#6ee7b7',
+                backgroundColor: currentMode === 'light' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.2)',
+                border: `1px solid ${currentMode === 'light' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(16, 185, 129, 0.5)'}`,
+                borderRadius: '8px',
+                padding: '12px'
+              }}>
                 {formSuccess}
               </div>
             )}
-            <div className="flex gap-3">
+            <div style={{display: 'flex', gap: '12px'}}>
               <button
                 type="submit"
                 disabled={formLoading}
-                className="flex-1 px-4 py-2 md:py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition disabled:opacity-50 text-sm md:text-base"
+                style={{
+                  flex: 1,
+                  padding: '10px 16px',
+                  backgroundColor: '#16a34a',
+                  color: '#ffffff',
+                  fontWeight: '600',
+                  borderRadius: '8px',
+                  border: 'none',
+                  transition: 'all 0.3s',
+                  cursor: formLoading ? 'not-allowed' : 'pointer',
+                  opacity: formLoading ? 0.5 : 1,
+                  fontSize: '14px'
+                }}
+                onMouseEnter={(e) => !formLoading && (e.target.style.backgroundColor = '#15803d')}
+                onMouseLeave={(e) => (e.target.style.backgroundColor = '#16a34a')}
               >
                 {formLoading ? t('jury_tab_in_progress') : t('jury_tab_add_button')}
               </button>
@@ -288,7 +415,19 @@ export default function JuryTab() {
                   setFormSuccess(null);
                 }}
                 disabled={formLoading}
-                className="flex-1 px-4 py-2 md:py-3 bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700 font-semibold rounded-lg transition disabled:opacity-50 text-sm md:text-base"
+                style={{
+                  flex: 1,
+                  padding: '10px 16px',
+                  backgroundColor: currentMode === 'light' ? '#ffffff' : '#262626',
+                  color: currentMode === 'light' ? '#000000' : '#ffffff',
+                  border: `1px solid ${currentMode === 'light' ? '#d1d5db' : '#374151'}`,
+                  fontWeight: '600',
+                  borderRadius: '8px',
+                  transition: 'all 0.3s',
+                  cursor: formLoading ? 'not-allowed' : 'pointer',
+                  opacity: formLoading ? 0.5 : 1,
+                  fontSize: '14px'
+                }}
               >
                 {t('jury_tab_cancel_button')}
               </button>
@@ -297,10 +436,16 @@ export default function JuryTab() {
         )}
 
         {loading && (
-          <div className="text-sm text-neutral-400">{t('jury_tab_loading')}</div>
+          <div style={{
+            fontSize: '14px',
+            color: currentMode === 'light' ? '#666666' : '#a3a3a3'
+          }}>{t('jury_tab_loading')}</div>
         )}
         {error && (
-          <div className="text-sm text-red-400">{error}</div>
+          <div style={{
+            fontSize: '14px',
+            color: '#f87171'
+          }}>{error}</div>
         )}
 
         {/* Cartes des Membres */}
@@ -315,7 +460,13 @@ export default function JuryTab() {
             const specialties = parseSpecialite(member.specialite);
 
             return (
-          <div key={member.id} className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 md:p-6 hover:bg-neutral-800 transition">
+          <div key={member.id} style={{
+            backgroundColor: currentMode === 'light' ? '#f5f5f5' : '#171717',
+            border: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+            borderRadius: '12px',
+            padding: '16px 24px',
+            transition: 'all 0.3s'
+          }}>
             <div className="flex items-start gap-4 mb-6">
               {member.avatar_url ? (
                 <img
@@ -363,10 +514,21 @@ export default function JuryTab() {
                   {votesCast}/{totalFilms}
                 </span>
               </div>
-              <div className="w-full h-2 bg-neutral-800 rounded-full overflow-hidden border border-neutral-700">
+              <div style={{
+                width: '100%',
+                height: '8px',
+                backgroundColor: currentMode === 'light' ? '#e5e5e5' : '#262626',
+                borderRadius: '9999px',
+                overflow: 'hidden',
+                border: `1px solid ${currentMode === 'light' ? '#d4d4d4' : '#1f2937'}`
+              }}>
                 <div
-                  className="h-full bg-gradient-to-r from-violet-500 to-violet-400 transition-all duration-300"
-                  style={{ width: `${progressPercentage}%` }}
+                  style={{
+                    height: '100%',
+                    background: 'linear-gradient(to right, #a855f7, #ec4899)',
+                    transition: 'all 0.3s',
+                    width: `${progressPercentage}%`
+                  }}
                 ></div>
               </div>
             </div>
@@ -518,11 +680,19 @@ export default function JuryTab() {
         </div>
 
         {/* VERSION DESKTOP (lg et +) - TABLEAU */}
-        <div className="hidden lg:block bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
+        <div style={{
+          backgroundColor: currentMode === 'light' ? '#f5f5f5' : '#171717',
+          border: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+          borderRadius: '12px',
+          overflow: 'hidden'
+        }} className="hidden lg:block">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-neutral-800 bg-neutral-800/50">
+                <tr style={{
+                  borderBottom: `1px solid ${currentMode === 'light' ? '#e5e5e5' : '#262626'}`,
+                  backgroundColor: currentMode === 'light' ? '#fafafa' : 'rgba(23, 23, 23, 0.7)'
+                }}>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-violet-400 min-w-fit">
                     {t('jury_table_name')}
                   </th>
@@ -564,8 +734,18 @@ export default function JuryTab() {
                   const progressPercentage = totalFilms > 0 ? Math.round((votesCast / totalFilms) * 100) : 0;
 
                   return (
-                    <tr key={member.id} className="hover:bg-neutral-800/50 transition">
-                      <td className="px-6 py-4 text-neutral-300 sticky left-0 z-10 bg-neutral-900 hover:bg-neutral-800/30">
+                    <tr key={member.id} style={{
+                      backgroundColor: currentMode === 'light' ? '#ffffff' : '#1a1a1a',
+                      transition: 'all 0.3s'
+                    }} className="hover:bg-opacity-70 border-b" style={{borderBottomColor: currentMode === 'light' ? '#e5e5e5' : '#262626'}}>
+                      <td style={{
+                        padding: '22px 24px',
+                        color: currentMode === 'light' ? '#000000' : '#d1d5db',
+                        backgroundColor: currentMode === 'light' ? '#f5f5f5' : '#171717',
+                        position: 'sticky',
+                        left: 0,
+                        zIndex: 10
+                      }}>
                         <div className="flex items-center gap-3 min-w-fit">
                           {member.avatar_url ? (
                             <img
@@ -584,41 +764,80 @@ export default function JuryTab() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-sm text-neutral-400">
-                        <div className="max-w-xs">
+                      <td style={{
+                        padding: '22px 24px',
+                        fontSize: '14px',
+                        color: currentMode === 'light' ? '#666666' : '#a3a3a3',
+                        textAlign: 'left'
+                      }}>
+                        <div style={{maxWidth: '280px'}}>
                           {parseSpecialite(member.specialite).length > 0 ? (
                             parseSpecialite(member.specialite).join(', ')
                           ) : (
-                            <span className="text-neutral-500 italic">{t('jury_tab_no_specialty')}</span>
+                            <span style={{color: currentMode === 'light' ? '#999999' : '#737373', fontStyle: 'italic'}}>{t('jury_tab_no_specialty')}</span>
                           )}
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-center">
-                        <div className="flex flex-col items-center gap-2">
-                          <span className="text-violet-400 font-semibold whitespace-nowrap">
+                      <td style={{
+                        padding: '22px 24px',
+                        textAlign: 'center'
+                      }}>
+                        <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px'}}>
+                          <span style={{color: currentMode === 'light' ? '#7c3aed' : '#a78bfa', fontWeight: '600', whiteSpace: 'nowrap'}}>
                             {votesCast}/{totalFilms}
                           </span>
-                          <div className="w-24 h-2 bg-neutral-700 rounded-full">
+                          <div style={{
+                            width: '96px',
+                            height: '8px',
+                            backgroundColor: currentMode === 'light' ? '#e5e5e5' : '#262626',
+                            borderRadius: '9999px'
+                          }}>
                             <div
-                              className="h-full bg-gradient-to-r from-violet-500 to-violet-400 rounded-full transition-all duration-300"
-                              style={{ width: `${progressPercentage}%` }}
+                              style={{
+                                height: '100%',
+                                background: 'linear-gradient(to right, #a855f7, #ec4899)',
+                                borderRadius: '9999px',
+                                transition: 'all 0.3s',
+                                width: `${progressPercentage}%`
+                              }}
                             ></div>
                           </div>
-                          <span className="text-xs text-neutral-500">{progressPercentage}%</span>
+                          <span style={{fontSize: '12px', color: currentMode === 'light' ? '#999999' : '#737373'}}>{progressPercentage}%</span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-center">
-                        <div className="bg-green-900/20 text-green-400 font-semibold rounded-lg py-2 px-3 inline-block">
+                      <td style={{padding: '22px 24px', textAlign: 'center'}}>
+                        <div style={{
+                          backgroundColor: currentMode === 'light' ? 'rgba(34, 197, 94, 0.1)' : 'rgba(34, 197, 94, 0.2)',
+                          color: '#22c55e',
+                          fontWeight: '600',
+                          borderRadius: '8px',
+                          padding: '8px 12px',
+                          display: 'inline-block'
+                        }}>
                           {stats.like}
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-center">
-                        <div className="bg-red-900/20 text-red-400 font-semibold rounded-lg py-2 px-3 inline-block">
+                      <td style={{padding: '22px 24px', textAlign: 'center'}}>
+                        <div style={{
+                          backgroundColor: currentMode === 'light' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.2)',
+                          color: '#ef4444',
+                          fontWeight: '600',
+                          borderRadius: '8px',
+                          padding: '8px 12px',
+                          display: 'inline-block'
+                        }}>
                           {stats.dislike}
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-center">
-                        <div className="bg-yellow-900/20 text-yellow-400 font-semibold rounded-lg py-2 px-3 inline-block">
+                      <td style={{padding: '22px 24px', textAlign: 'center'}}>
+                        <div style={{
+                          backgroundColor: currentMode === 'light' ? 'rgba(245, 158, 11, 0.1)' : 'rgba(245, 158, 11, 0.2)',
+                          color: '#f59e0b',
+                          fontWeight: '600',
+                          borderRadius: '8px',
+                          padding: '8px 12px',
+                          display: 'inline-block'
+                        }}>
                           {stats.discuss}
                         </div>
                       </td>

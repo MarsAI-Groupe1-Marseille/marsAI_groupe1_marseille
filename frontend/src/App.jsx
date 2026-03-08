@@ -7,6 +7,7 @@ import Faq from './pages/faq.jsx';
 import Contact from './pages/contact.jsx';
 import FilmDetail from './pages/film_detail.jsx';
 import Legal from './pages/legal.jsx';
+import Confidentiality from './pages/confidentiality.jsx';
 import Dashboard from './pages/dashboard.jsx';
 import DashboardUser from './pages/dashboardUser.jsx';
 import DashboardJury from './pages/dashboardJury.jsx';
@@ -32,6 +33,7 @@ import ErrorDisplay from './components/ErrorDisplay.jsx';
 import JuryPage from './pages/JuryPage.jsx';
 import SelectFinaliste from './pages/SelectFinaliste.jsx';
 import Sponsors from './pages/Sponsors.jsx';
+import Palmares from './pages/palmares.jsx';
 import Unauthorized from './pages/Unauthorized.jsx';
 import { setGlobalErrorHandler } from './config/axiosConfig.js';
 
@@ -83,6 +85,8 @@ function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/galerie/:id" element={<FilmDetail />} />
           <Route path="/legal" element={<Legal />} />
+          <Route path="/legal/confidentiality" element={<Confidentiality />} />
+          <Route path="/confidentiality" element={<Confidentiality />} />
           <Route path="/login" element={<Login />} />
           <Route path='/submission' element={<SubmissionForm />} />
           <Route path="/active-compte" element={<ActiveCompte />} />
@@ -90,6 +94,7 @@ function App() {
           <Route path="/forgotpass" element={<Forgotpass />} />
           <Route path="/jury" element={<JuryPage />} />
           <Route path="/sponsors" element={<Sponsors />} />
+          <Route path="/palmares" element={<Palmares />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
 
 

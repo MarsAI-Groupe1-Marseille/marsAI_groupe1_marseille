@@ -23,9 +23,7 @@ export const AuthProvider = ({ children }) => {
       }
 
       try {
-        const response = await axios.get('/auth/me', {
-          skipErrorHandling: true // Ne pas afficher l'erreur sur les pages publiques
-        });
+        const response = await axios.get('/auth/me');
         if (response?.data) {
           localStorage.setItem('user', JSON.stringify(response.data));
           setUser(response.data);
@@ -38,6 +36,23 @@ export const AuthProvider = ({ children }) => {
     };
 
     initAuth();
+
+    // Écouter les changements d'avatar depuis d'autres composants
+    const handleAvatarUpdate = (event) => {
+      console.log('🎯 EVENT RECEIVED in AuthContext:', event.detail);
+      const updatedUser = event.detail;
+      if (updatedUser) {
+        console.log('📝 Saving to localStorage:', updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        setUser(updatedUser);
+        console.log('✅ User state updated in AuthContext');
+      }
+    };
+
+    window.addEventListener('userAvatarUpdated', handleAvatarUpdate);
+    return () => {
+      window.removeEventListener('userAvatarUpdated', handleAvatarUpdate);
+    };
   }, []);
 
   const login = async (email, password) => {

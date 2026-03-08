@@ -65,8 +65,9 @@ const Header = () => { //
     () => [
       { label: t('home'), to: "/" },
       { label: t('gallery'), to: "/galerie" },      
-      { label: "JURY", to: "/jury" },
+      { label: t('jury'), to: "/jury" },
       { label: t('sponsors'), to: "/sponsors" },
+      { label: t('palmares'), to: "/palmares" },
     ],
     [lang, t]
   ); //
@@ -151,7 +152,7 @@ const Header = () => { //
       {/* TOP ROW : logo + burger mobile / nav desktop */}
       {/* ===================================================== */}
       <div
-        className="container-mars flex items-center justify-between overflow-x-clip"
+        className="container-mars flex items-center justify-start gap-4 overflow-x-clip"
         style={{ paddingTop: "var(--header-py)", paddingBottom: "var(--header-py)" }}
       >
         {/* LOGO */}
@@ -168,7 +169,7 @@ const Header = () => { //
           </span>
         </Link>
 
-        {/* BURGER MOBILE : seul ici (zéro risque d’overflow) */}
+        {/* BURGER MOBILE */}
         <div className="flex items-center gap-2 md:hidden shrink-0">
           <button
             type="button"
@@ -194,7 +195,7 @@ const Header = () => { //
             </Link>
           ))}
 
-          <div className="mars-btn inline-flex items-center gap-1">
+          <div className="inline-flex items-center gap-0.5">
             <button
               type="button"
               onClick={toggleLanguage}
@@ -204,30 +205,30 @@ const Header = () => { //
             >
               {lang === 'fr' ? <FlagFR /> : <FlagEN />}
             </button>
+
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="mars-btn mars-glow inline-flex items-center justify-center"
+              aria-label="Changer le thème"
+              title="Thème"
+            >
+              <Palette size={16} className="md:size-[18px]" />
+            </button>
+
+            <button
+              type="button"
+              onClick={toggleMode}
+              className="mars-btn mars-glow inline-flex items-center justify-center"
+              aria-label="Mode clair/sombre"
+              title="Mode"
+            >
+              {mode === "light" ? <Moon size={16} className="md:size-[18px]" /> : <Sun size={16} className="md:size-[18px]" />}
+            </button>
           </div>
 
-          <button
-            type="button"
-            onClick={toggleTheme}
-            className="mars-btn mars-glow inline-flex items-center justify-center"
-            aria-label="Changer le thème"
-            title="Thème"
-          >
-            <Palette size={16} className="md:size-[18px]" />
-          </button>
-
-          <button
-            type="button"
-            onClick={toggleMode}
-            className="mars-btn mars-glow inline-flex items-center justify-center"
-            aria-label="Mode clair/sombre"
-            title="Mode"
-          >
-            {mode === "light" ? <Moon size={16} className="md:size-[18px]" /> : <Sun size={16} className="md:size-[18px]" />}
-          </button>
-
-          <Link to="/submission" className="mars-cta mars-glow inline-flex items-center gap-1 md:gap-2 text-xs lg:text-sm px-2 md:px-3 py-1.5 md:py-2">
-            <Clapperboard size={14} className="md:size-[16px]" />
+          <Link to="/submission" className="mars-cta mars-glow inline-flex items-center gap-1 md:gap-1.5 text-xs px-1.5 md:px-2 py-1 md:py-1.5">
+            <Clapperboard size={12} className="md:size-[14px]" />
             <span className="hidden lg:inline">{submitLabel}</span>
           </Link>
 

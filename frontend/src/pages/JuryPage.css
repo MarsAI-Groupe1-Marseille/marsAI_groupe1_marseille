@@ -60,3 +60,17 @@
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
+/* --- HERO TITLE : Blanc en dark, Noir en light --- */
+.hero-title {
+  color: #ffffff;
+}
+
+/* --- MODE LIGHT : Fond transparent pour voir les étoiles --- */
+:root[data-mode="light"] .jury-page-wrapper {
+  background: transparent !important;
+}
+
+:root[data-mode="light"] .hero-title {
+  color: #000000 !important;
+}

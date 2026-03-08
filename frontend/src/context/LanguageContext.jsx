@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 
 const LanguageContext = createContext();
 
@@ -20,17 +20,18 @@ export const LanguageProvider = ({ children }) => {
     document.documentElement.lang = lang;
   }, [lang]);
 
-  const toggleLanguage = () => {
+  const toggleLanguage = useCallback(() => {
     setLang(prev => prev === 'fr' ? 'en' : 'fr');
-  };
+  }, []);
 
-  const t = (key) => {
+  const t = useCallback((key) => {
     const translations = {
       fr: {
         'home': 'ACCUEIL',
         'gallery': 'GALERIE',
         'jury': 'JURY',
         'sponsors': 'SPONSORS',
+        'palmares': 'PALMARÈS',
         'submit': 'Soumettre un film',
         'logout': 'Déconnexion',
         'login': 'Connexion',
@@ -689,16 +690,33 @@ export const LanguageProvider = ({ children }) => {
         'home_btn_login_jury': 'Connexion Jury',
         'home_cta_get_started': 'Commencer',
         'home_cta_learn_more': 'En savoir plus',
-        // Jury Page Keys        
-        "jury_president_title": "Visionnaire IA & Président du Jury",
-        "jury_president_bio": "Pionnier des technologies génératives, il définit la direction artistique et éthique du Mars AI Festival."
-
+        'sponsors': 'SPONSORS',
+        'contact_title': 'Nous Contacter',
+        'contact_subtitle': 'Une question, un partenariat ou une idée ? Notre équipe vous répondra dans les meilleurs délais.',
+        'contact_email_label': 'Email',
+        'contact_discord_label': 'Discord',
+        'contact_discord_text': 'Rejoignez notre serveur pour discuter avec la communauté.',
+        'contact_location_label': 'Localisation',
+        'contact_location_text': 'Paris / Mars (virtuel)',
+        'contact_form_sent_title': 'Message envoyé !',
+        'contact_form_sent_message': 'Merci de nous avoir contactés — nous reviendrons vers vous très prochainement.',
+        'contact_form_send_another': 'Envoyer un autre message',
+        'contact_form_name_label': 'Nom',
+        'contact_form_name_placeholder': 'Jean Dupont',
+        'contact_form_email_label': 'Email',
+        'contact_form_email_placeholder': 'jean@email.com',
+        'contact_form_subject_label': 'Sujet',
+        'contact_form_subject_placeholder': 'Votre sujet...',
+        'contact_form_message_label': 'Message',
+        'contact_form_message_placeholder': 'Votre message...',
+        'contact_form_send_button': 'Envoyer',
       },
       en: {
         'home': 'HOME',
         'gallery': 'GALLERY',
         'jury': 'JURY',
         'sponsors': 'SPONSORS',
+        'palmares': 'AWARDS',
         'submit': 'Submit a film',
         'logout': 'Logout',
         'login': 'Login',
@@ -1356,17 +1374,41 @@ export const LanguageProvider = ({ children }) => {
         'selectfinaliste_award_assigned': 'Award assigned: {award}',
         'selectfinaliste_film_selected_no_award': 'Film selected without award',
         'selectfinaliste_error_save_award': 'Error saving award',
-        // Jury Page Keys (English)
-        "jury_president_title": "AI Visionary & Jury President",
-        "jury_president_bio": "A pioneer in generative technologies, he shapes the artistic and ethical direction of the Mars AI Festival."
+        'sponsors': 'SPONSORS',
+        'contact_title': 'Contact Us',
+        'contact_subtitle': 'Do you have a question, partnership opportunity, or idea? Our team will get back to you as quickly as possible.',
+        'contact_email_label': 'Email',
+        'contact_discord_label': 'Discord',
+        'contact_discord_text': 'Join our server to chat with the community.',
+        'contact_location_label': 'Location',
+        'contact_location_text': 'Paris / Mars (virtual)',
+        'contact_form_sent_title': 'Message Sent!',
+        'contact_form_sent_message': 'Thank you for contacting us — we\'ll get back to you very soon.',
+        'contact_form_send_another': 'Send Another Message',
+        'contact_form_name_label': 'Name',
+        'contact_form_name_placeholder': 'John Doe',
+        'contact_form_email_label': 'Email',
+        'contact_form_email_placeholder': 'john@email.com',
+        'contact_form_subject_label': 'Subject',
+        'contact_form_subject_placeholder': 'Your subject...',
+        'contact_form_message_label': 'Message',
+        'contact_form_message_placeholder': 'Your message...',
+        'contact_form_send_button': 'Send',
       }
     };
 
     return translations[lang]?.[key] || key;
-  };
+  }, [lang]);
+
+  const contextValue = useMemo(() => ({ 
+    lang, 
+    setLang, 
+    toggleLanguage, 
+    t 
+  }), [lang, toggleLanguage, t]);
 
   return (
-    <LanguageContext.Provider value={{ lang, setLang, toggleLanguage, t }}>
+    <LanguageContext.Provider value={contextValue}>
       {children}
     </LanguageContext.Provider>
   );
