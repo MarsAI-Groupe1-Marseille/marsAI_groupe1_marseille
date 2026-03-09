@@ -1,14 +1,27 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate,useLocation } from "react-router-dom";
 import { LogOut, Star, Globe } from "lucide-react";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useLanguage } from "../context/LanguageContext.jsx";
 
 const JuryHeader = () => {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const { t, lang, toggleLanguage } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
+  const [juryData, setJuryData] = useState({
+    full_name: "",
+    avatar_url: ""
+  });
+
+  useEffect(() => {
+    if (user) {
+      setJuryData({
+        full_name: user.full_name || "",
+        avatar_url: user.avatar_url || ""
+      });
+    }
+  }, [user]);
 
   const handleLogout = async () => {
     await logout();
@@ -59,6 +72,29 @@ const JuryHeader = () => {
             <LogOut size={16} className="md:size-[18px]" />
             <span className="hidden lg:inline">Deconnexion</span>
           </button>
+          
+          {/* Avatar */}
+          <div className="ml-2 md:ml-3">
+            <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center border-2 border-violet-400 shadow-md">
+              {juryData?.avatar_url ? (
+                <img
+                  src={juryData.avatar_url}
+                  alt={juryData?.full_name || 'Jury'}
+                  className="w-full h-full object-cover rounded-full"
+                />
+              ) : (
+                <span className="text-white font-bold text-sm">
+                  {juryData.full_name
+                    ? juryData.full_name
+                        .split(' ')
+                        .map(n => n[0])
+                        .join('')
+                        .toUpperCase()
+                    : 'J'}
+                </span>
+              )}
+            </div>
+          </div>
         </nav>
       </div>
     </header>

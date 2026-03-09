@@ -1,7 +1,36 @@
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
+const jwt = require('jsonwebtoken');
 
 const BACKEND_URL = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 3000}`;
+
+const getTokenFromCookieHeader = (cookieHeader = '') => {
+    const tokenPair = cookieHeader
+        .split(';')
+        .map((part) => part.trim())
+        .find((part) => part.startsWith('token='));
+
+    if (!tokenPair) return null;
+    return decodeURIComponent(tokenPair.substring('token='.length));
+};
+
+const isAdminRequest = (req) => {
+    if (req.user && req.user.role === 'admin') {
+        return true;
+    }
+
+    const token = req.cookies?.token || getTokenFromCookieHeader(req.headers.cookie || '');
+    if (!token || !process.env.JWT_SECRET) {
+        return false;
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        return decoded?.role === 'admin';
+    } catch (error) {
+        return false;
+    }
+};
 
 // ===== RATE LIMITERS =====
 
@@ -23,8 +52,8 @@ const generalLimiter = rateLimit({
     standardHeaders: true,      // Return rate limit info in the `RateLimit-*` headers
     legacyHeaders: false,       // Disable the `X-RateLimit-*` headers
     skip: (req) => {
-        // Les administrateurs et routes publiques légitimes ne sont pas limités
-        return req.user && req.user.role === 'admin';
+        // Les administrateurs ne sont pas limités (même si req.user n'est pas encore attaché)
+        return isAdminRequest(req);
     }
 });
 
@@ -91,8 +120,8 @@ const authenticatedLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
     skip: (req) => {
-        // Les administrateurs ne sont pas limités
-        return req.user && req.user.role === 'admin';
+        // Les administrateurs ne sont pas limités (même si req.user n'est pas encore attaché)
+        return isAdminRequest(req);
     }
 });
 

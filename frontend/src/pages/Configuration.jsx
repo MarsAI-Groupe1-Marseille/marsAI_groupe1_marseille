@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from '../config/axiosConfig.js'
 import { useLanguage } from '../context/LanguageContext.jsx'
+import { useAuth } from '../context/AuthContext.jsx'
 import { Settings, CheckCircle, AlertCircle } from 'lucide-react'
 import {
   BarChart,
@@ -998,31 +999,14 @@ const AssignCard = ({ filmsCount, juryCount, onClick, t }) => (
 const Configuration = () => {
   const navigate = useNavigate()
   const { t } = useLanguage()
+  const { user: adminUser } = useAuth()
   const [playlists, setPlaylists] = useState([])
   const [filmsCount, setFilmsCount] = useState(0)
   const [juryCount, setJuryCount] = useState(0)
   const [showModal, setShowModal] = useState(false)
   const [showHomeModal, setShowHomeModal] = useState(false)
   const [activeSections, setActiveSections] = useState(4)
-  const [adminUser, setAdminUser] = useState({ full_name: "Admin Test", email: "email@exemple.com", job_title: "Directeur" })
   const [loading, setLoading] = useState(false)
-
-  useEffect(() => {
-    const verifyAdmin = async () => {
-      try {
-        const userStr = localStorage.getItem('user')
-        if (!userStr) { setLoading(false); return }
-        const user = JSON.parse(userStr)
-        if (user.role !== 'admin') { setLoading(false); return }
-        setAdminUser(user)
-        setLoading(false)
-      } catch (error) {
-        console.error('Erreur vérification admin:', error)
-        setLoading(false)
-      }
-    }
-    verifyAdmin()
-  }, [])
 
   useEffect(() => {
     const fetchPlaylists = async () => {
@@ -1087,9 +1071,17 @@ const Configuration = () => {
               </div>
               <div className="flex flex-col items-center text-center">
                 <div className="w-20 h-20 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center border-2 border-violet-400 shadow-lg mb-4">
-                  <span className="text-white font-bold text-2xl">
-                    {adminUser?.full_name ? adminUser.full_name.split(' ').map(n => n[0]).join('').toUpperCase() : 'A'}
-                  </span>
+                  {adminUser?.avatar_url ? (
+                    <img
+                      src={adminUser.avatar_url}
+                      alt={adminUser?.full_name || 'Admin'}
+                      className="w-full h-full object-cover rounded-full"
+                    />
+                  ) : (
+                    <span className="text-white font-bold text-2xl">
+                      {adminUser?.full_name ? adminUser.full_name.split(' ').map(n => n[0]).join('').toUpperCase() : 'A'}
+                    </span>
+                  )}
                 </div>
                 <p className="text-sm font-semibold text-white break-words mb-1">{adminUser?.full_name}</p>
                 <p className="text-xs text-neutral-400 break-all">{adminUser?.email}</p>

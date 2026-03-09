@@ -38,8 +38,11 @@ exports.login = async (req, res) => {
             message:"Connexion réussie.",
             user: {
                 id: user.id,
+                email: user.email,
                 full_name: user.full_name,
-                role: user.role
+                role: user.role,
+                avatar_url: user.avatar_url,
+                account_status: user.account_status
             }
         }); 
     } catch (error) {
@@ -86,7 +89,9 @@ exports.getMe = async (req, res) => {
         id: req.user.id,
         email: req.user.email,
         full_name: req.user.full_name,
-        role: req.user.role
+        role: req.user.role,
+        avatar_url: req.user.avatar_url,
+        account_status: req.user.account_status
     });
 };
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import axios, { fetchCSRFToken } from '../config/axiosConfig';
 import { Search, ChevronRight, ChevronLeft, Check, X, Clock, Globe, Users, LayoutDashboard, Film as FilmIcon, BarChart3, Calendar, Settings, AlertCircle } from "lucide-react";
 import { useLanguage } from '../context/LanguageContext.jsx';
+import { useAuth } from '../context/AuthContext.jsx';
 import {
   BarChart,
   Bar,
@@ -332,6 +333,7 @@ function RejectFilmModal({ filmId, isOpen, onClose, onConfirm, t }) {
 /* ─────────────────────────── COMPOSANT PRINCIPAL ─────────────── */
 export default function GestionFilms() {
   const { t } = useLanguage();
+  const { user: adminData } = useAuth();
   const [films, setFilms]         = useState([]);
   const [loading, setLoading]     = useState(false);
   const [totalPages, setTotalPages] = useState(1);
@@ -345,30 +347,7 @@ export default function GestionFilms() {
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
   const [pendingRejectFilmId, setPendingRejectFilmId] = useState(null);
   const [toast, setToast]         = useState({ visible: false, msg: "", color: "#4f8ef7" });
-  const [adminData, setAdminData] = useState({
-    full_name: "Admin Test",
-    email: "email@exemple.com",
-    job_title: "Directeur",
-    avatar_url: ""
-  });
   const toastTimer                = useRef(null);
-
-  useEffect(() => {
-    const user = localStorage.getItem('user');
-    if (user) {
-      try {
-        const userData = JSON.parse(user);
-        setAdminData({
-          full_name: userData.full_name || "Admin Test",
-          email: userData.email || "email@exemple.com",
-          job_title: userData.job_title || "Directeur",
-          avatar_url: userData.avatar_url || ""
-        });
-      } catch (err) {
-        console.error("Error parsing user data:", err);
-      }
-    }
-  }, []);
 
   // Debounce pour la recherche
   useEffect(() => {
@@ -546,9 +525,9 @@ export default function GestionFilms() {
               </div>
 
               {/* Right side - Admin Profile (outside card) */}
-              <div className="flex flex-col items-center md:items-end gap-2">
+              <div className="flex flex-col items-center text-center">
                 {/* Avatar */}
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center border-2 border-violet-400 shadow-lg">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center border-2 border-violet-400 shadow-lg mb-4">
                   {adminData?.avatar_url ? (
                     <img
                       src={adminData.avatar_url}

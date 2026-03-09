@@ -117,7 +117,9 @@ function UserDetailModal({ user, onClose, t }) {
                                 <div className="p-3 rounded-lg bg-neutral-800/50 border border-neutral-700">
                                     <p className="text-xs text-neutral-500 mb-1">{t('dashboard_user_status') || 'Statut'}</p>
                                     <p className="text-sm font-semibold text-violet-400">
-                                        {user.password_hash ? 'Actif' : 'En attente'}
+                                        {user.account_status === 'active'
+                                            ? (t('dashboard_user_status_active') || 'Actif')
+                                            : (t('dashboard_user_status_pending') || 'En attente')}
                                     </p>
                                 </div>
                                 <div className="p-3 rounded-lg bg-neutral-800/50 border border-neutral-700">

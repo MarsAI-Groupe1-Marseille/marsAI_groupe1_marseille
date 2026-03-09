@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import {Link } from "react-router-dom";
 import {BarChart3, Layers, TrendingUp, LayoutDashboard, Users, Film} from "lucide-react";
 import { useLanguage } from '../context/LanguageContext.jsx';
+import { useAuth } from '../context/AuthContext.jsx';
 import axios from '../config/axiosConfig';
 import {
     AreaChart,
@@ -75,14 +76,9 @@ function ActionCard({ title, buttonText, onClick, icon, disabled = false }) {
 
 const Dashboard = () => {
     const { t } = useLanguage();
-    const userStr = localStorage.getItem('user');
-    const currentUser = userStr ? JSON.parse(userStr) : null;
-    const isModerator = currentUser?.role === "moderator";
-    const [adminUser, setAdminUser] = useState({
-        full_name: "Admin Test",
-        email: "email@exemple.com",
-        job_title: "Directeur"
-    });
+    const { user } = useAuth();
+    const isModerator = user?.role === "moderator";
+    const adminUser = user; // Utiliser directement user du contexte
     const [loading, setLoading] = useState(false);
     const [dashboardStats, setDashboardStats] = useState({
         totalSubmissions: 0,
@@ -161,31 +157,9 @@ const Dashboard = () => {
     }, []);
 
     useEffect(() => {
-        const verifyAdmin = async () => {
-            try {
-                const userStr = localStorage.getItem('user');
-                
-                if (!userStr) {
-                    setLoading(false);
-                    return;
-                }
-
-                const user = JSON.parse(userStr);
-                if (user.role !== 'admin') {
-                    setLoading(false);
-                    return;
-                }
-
-                setAdminUser(user);
-                setLoading(false);
-            } catch (error) {
-                console.error('Erreur vérification admin:', error);
-                setLoading(false);
-            }
-        };
-
-        verifyAdmin();
-    }, []);
+        // adminUser vient maintenant directement du contexte AuthContext
+        setLoading(false);
+    }, [adminUser]);
 
     if (loading) {
         return (
@@ -218,18 +192,26 @@ const Dashboard = () => {
                             </div>
 
                             {/* Right side - Admin Profile (outside card) */}
-                            <div className="flex flex-col items-center md:items-end gap-2">
+                            <div className="flex flex-col items-center text-center">
                                 {/* Avatar */}
-                                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center border-2 border-violet-400 shadow-lg">
-                                    <span className="text-white font-bold text-2xl">
-                                        {adminUser?.full_name
-                                            ? adminUser.full_name
-                                                .split(' ')
-                                                .map(n => n[0])
-                                                .join('')
-                                                .toUpperCase()
-                                            : 'A'}
-                                    </span>
+                                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center border-2 border-violet-400 shadow-lg mb-4">
+                                    {adminUser?.avatar_url ? (
+                                        <img
+                                            src={adminUser.avatar_url}
+                                            alt={adminUser?.full_name || 'Admin'}
+                                            className="w-full h-full object-cover rounded-full"
+                                        />
+                                    ) : (
+                                        <span className="text-white font-bold text-2xl">
+                                            {adminUser?.full_name
+                                                ? adminUser.full_name
+                                                    .split(' ')
+                                                    .map(n => n[0])
+                                                    .join('')
+                                                    .toUpperCase()
+                                                : 'A'}
+                                        </span>
+                                    )}
                                 </div>
                                 
                                 {/* Name and Email */}

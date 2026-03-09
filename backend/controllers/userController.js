@@ -7,6 +7,21 @@ const { validateUploadedFilesBySignature, cleanupUploadedFiles } = require('../s
 
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
+const resolveAccountStatus = (user) => {
+    if (user.account_status === 'active' || user.account_status === 'pending') {
+        return user.account_status;
+    }
+    return user.password_hash ? 'active' : 'pending';
+};
+
+const toSafeUser = (user) => {
+    const plain = user.toJSON ? user.toJSON() : { ...user };
+    plain.account_status = resolveAccountStatus(plain);
+    delete plain.password_hash;
+    delete plain.invite_token;
+    return plain;
+};
+
 /**
  * TICKET #74 : INVITATION D'UN UTILISATEUR (Jury, Admin, Modérateur)
  * Implémentation générique pour créer tout type d'utilisateur avec invitation par email.
@@ -134,7 +149,7 @@ exports.resetPassword = async (req, res) => {
 
         // Mettre à jour l'utilisateur : définir le mot de passe et invalider le token
         await User.update(
-            { password_hash, invite_token: null, invite_token_expires_at: null },
+            { password_hash, account_status: 'active', invite_token: null, invite_token_expires_at: null },
             { where: { invite_token: token } }
         );
 
@@ -180,6 +195,7 @@ exports.activateAccount = async (req, res) => {
 
         const password_hash = await bcrypt.hash(new_password, 10);
         user.password_hash = password_hash;
+        user.account_status = 'active';
         user.invite_token = null;
         user.invite_token_expires_at = null;
         
@@ -218,10 +234,10 @@ exports.activateAccount = async (req, res) => {
 exports.getAllUsers = async (req, res) => {
     try {
         const users = await User.findAll({
-            // On exclut les données sensibles par sécurité
-            attributes: { exclude: ['password_hash', 'invite_token'] }
+            // invite_token ne doit jamais être exposé
+            attributes: { exclude: ['invite_token'] }
         });
-        res.json(users);
+        res.json(users.map(toSafeUser));
     } catch (error) {
         return sendErrorResponse(res, 500, error, 'Erreur lors de la récupération des utilisateurs.');
     }
@@ -234,13 +250,13 @@ exports.getUserById = async (req, res) => {
     try {
         const userId = req.params.id;
         const user = await User.findByPk(userId, {
-            attributes: { exclude: ['password_hash', 'invite_token'] }
+            attributes: { exclude: ['invite_token'] }
         });
         
         if (!user) {
             return res.status(404).json({ error: 'Utilisateur non trouvé' });
         }
-        res.json(user);
+        res.json(toSafeUser(user));
     } catch (error) {
         return sendErrorResponse(res, 500, error, 'Erreur lors de la récupération de l\'utilisateur.');
     }
@@ -295,13 +311,16 @@ exports.updateUser = async (req, res) => {
             user.avatar_url = req.file.location;
         }
 
+        user.account_status = resolveAccountStatus(user);
+
         await user.save();
         res.json({ message: 'Utilisateur mis à jour avec succès', user: {
             id: user.id,
             email: user.email,
             full_name: user.full_name,
             role: user.role,
-            avatar_url: user.avatar_url
+            avatar_url: user.avatar_url,
+            account_status: user.account_status
         } });
     } catch (error) {
         if (req.file) {
