@@ -349,7 +349,7 @@ export default function GestionFilms() {
     full_name: "Admin Test",
     email: "email@exemple.com",
     job_title: "Directeur",
-    avatar: ""
+    avatar_url: ""
   });
   const toastTimer                = useRef(null);
 
@@ -362,7 +362,7 @@ export default function GestionFilms() {
           full_name: userData.full_name || "Admin Test",
           email: userData.email || "email@exemple.com",
           job_title: userData.job_title || "Directeur",
-          avatar: userData.avatar || ""
+          avatar_url: userData.avatar_url || ""
         });
       } catch (err) {
         console.error("Error parsing user data:", err);
@@ -549,15 +549,23 @@ export default function GestionFilms() {
               <div className="flex flex-col items-center md:items-end gap-2">
                 {/* Avatar */}
                 <div className="w-20 h-20 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center border-2 border-violet-400 shadow-lg">
-                  <span className="text-white font-bold text-2xl">
-                    {adminData.full_name
-                      ? adminData.full_name
-                          .split(' ')
-                          .map(n => n[0])
-                          .join('')
-                          .toUpperCase()
-                      : 'A'}
-                  </span>
+                  {adminData?.avatar_url ? (
+                    <img
+                      src={adminData.avatar_url}
+                      alt={adminData?.full_name || 'Admin'}
+                      className="w-full h-full object-cover rounded-full"
+                    />
+                  ) : (
+                    <span className="text-white font-bold text-2xl">
+                      {adminData.full_name
+                        ? adminData.full_name
+                            .split(' ')
+                            .map(n => n[0])
+                            .join('')
+                            .toUpperCase()
+                        : 'A'}
+                    </span>
+                  )}
                 </div>
                 
                 {/* Name and Email */}
