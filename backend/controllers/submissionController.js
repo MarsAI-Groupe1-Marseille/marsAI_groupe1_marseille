@@ -193,7 +193,7 @@ exports.getAllSubmissions = async (req, res) => {
         const limit = parseInt(req.query.limit) || 9;     // Films par page par défaut : 9
         const search = req.query.search || '';            // Recherche titre
         const genre = req.query.genre || '';              // Filtre par genre/thème
-        const status = req.query.status || '';            // Filtre par statut (approved, rejected, submitted)
+        const status = req.query.status || '';            // Filtre par statut (admin) : approved/rejected/submitted/all
         const lang = req.query.lang || 'fr';              // Langue pour le filtre : 'fr' ou 'en'
 
         // Calcul de l'offset (combien de films on saute)
@@ -215,9 +215,14 @@ exports.getAllSubmissions = async (req, res) => {
             whereCondition.theme_tags = { [Op.like]: `%${genre}%` };
         }
 
-        // Si un filtre de statut est présent (ex: "approved", "rejected", "submitted")
-        if (status) {
+        // Statut :
+        // - status=all   -> aucun filtre (admin)
+        // - status=...   -> filtre explicite (admin)
+        // - pas de status -> uniquement approved (galerie publique)
+        if (status && status !== 'all') {
             whereCondition.approval_status = status;
+        } else if (!status) {
+            whereCondition.approval_status = 'approved';
         }
 
         // --- 3. EXÉCUTION DE LA REQUÊTE ---
@@ -260,7 +265,11 @@ exports.getSubmissionById = async (req, res) => {
     const id = req.params.id; // L'ID qui vient de l'URL (/api/submissions/12)
 
     try {
-        const submission = await Submission.findByPk(id, {
+        const submission = await Submission.findOne({
+            where: {
+                id,
+                approval_status: 'approved'
+            },
             include: [
                 {
                     model: Director,
@@ -348,8 +357,8 @@ exports.getSimilarSubmissions = async (req, res) => {
         // 3. Chercher tous les films approuvés (sauf celui-ci) par tags similaires
         const allSubmissions = await Submission.findAll({
             where: {
-                id: { [Op.ne]: id } // Exclure le film actuel
-                // approval_status: 'approved' // Uniquement approuvés
+                id: { [Op.ne]: id }, // Exclure le film actuel
+                approval_status: 'approved' // Uniquement approuvés
             },
             attributes: ['id', 'title_original', 'title_english', 'poster_url', 'theme_tags'],
             include: [
