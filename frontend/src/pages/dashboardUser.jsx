@@ -357,6 +357,7 @@ function UserRow({ user, isEditing, toggleEdit, editingData, setEditingData, onS
                 </div>
             </div>
 
+            {isEditing && (
                 <div className="bg-neutral-950 p-6 border-b border-neutral-800">
                     <FormEdition 
                         user={user} 
@@ -368,6 +369,7 @@ function UserRow({ user, isEditing, toggleEdit, editingData, setEditingData, onS
                         t={t}
                     />
                 </div>
+            )}
         </>
     );
 }
