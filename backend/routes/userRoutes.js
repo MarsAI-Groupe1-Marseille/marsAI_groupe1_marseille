@@ -28,11 +28,12 @@ router.get('/:id',
     userController.getUserById
 );
 
-// Cette ligne permet à l'Admin de modifier le rôle d'un utilisateur (jury, admin, modérateur) ou son nom complet ou son email
+// Cette ligne permet à l'Admin de modifier le rôle d'un utilisateur (jury, admin, modérateur), son nom complet, son email ou son avatar
 router.put('/:id',
     verifyToken,          // 1. Vérification connexion
     checkRole('admin'),   // 2. Vérification rôle Admin
-    csrfProtection,       // 3. Protection CSRF
+    upload.single('avatar'), // 3. Upload avatar
+    csrfProtection,       // 4. Protection CSRF
     userController.updateUser
 );
 

@@ -1,4 +1,4 @@
-const { User } = require('../models');
+﻿const { User } = require('../models');
 const emailService = require('../services/emailService');
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
@@ -258,9 +258,28 @@ exports.updateUser = async (req, res) => {
         if (!user) {
             return res.status(404).json({ error: 'Utilisateur non trouvé' });
         }
+
+        // Validation forte de l'avatar uploadé (signature binaire).
+        if (req.file) {
+            const filesByField = { avatar: [req.file] };
+            const signatureValidation = await validateUploadedFilesBySignature(filesByField);
+
+            if (!signatureValidation.ok) {
+                await cleanupUploadedFiles(filesByField);
+                return res.status(400).json({
+                    message: 'Fichier avatar invalide.',
+                    error: signatureValidation.message,
+                    errors: [{
+                        field: signatureValidation.field || 'avatar',
+                        message: signatureValidation.message
+                    }]
+                });
+            }
+        }
+
         // Mise à jour des champs si ils sont fournis
-        if(!full_name && !role && !email) {
-            return res.status(400).json({ error: 'Au moins un champ (full_name, role, email) doit être fourni pour la mise à jour.' });
+        if (!full_name && !role && !email && !req.file) {
+            return res.status(400).json({ error: 'Au moins un champ (full_name, role, email, avatar) doit être fourni pour la mise à jour.' });
         }
         if (full_name) user.full_name = full_name;
         if (role) {
@@ -271,14 +290,23 @@ exports.updateUser = async (req, res) => {
             user.role = role;
         }
         if (email) user.email = email;
+
+        if (req.file?.location) {
+            user.avatar_url = req.file.location;
+        }
+
         await user.save();
         res.json({ message: 'Utilisateur mis à jour avec succès', user: {
             id: user.id,
             email: user.email,
             full_name: user.full_name,
-            role: user.role
+            role: user.role,
+            avatar_url: user.avatar_url
         } });
     } catch (error) {
+        if (req.file) {
+            await cleanupUploadedFiles({ avatar: [req.file] });
+        }
         return sendErrorResponse(res, 500, error, 'Erreur lors de la mise à jour de l\'utilisateur.');
     }
 };
