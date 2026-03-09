@@ -376,7 +376,7 @@ export default function GestionFilms() {
       'refuse': 'rejected',
       'attente': 'submitted'
     };
-    return statusMap[frontendStatus] || '';
+    return statusMap[frontendStatus] || 'all';
   };
 
   // Mapping des données backend vers format frontend

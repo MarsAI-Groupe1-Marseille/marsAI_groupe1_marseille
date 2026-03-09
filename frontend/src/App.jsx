@@ -31,7 +31,7 @@ import { useError } from './context/ErrorContext.jsx';
 import ErrorDisplay from './components/ErrorDisplay.jsx';
 import JuryPage from './pages/JuryPage.jsx';
 import SelectFinaliste from './pages/SelectFinaliste.jsx';
-import Sponsors from './pages/Sponsors.jsx';
+import Palmares from './pages/palmares.jsx';
 import Unauthorized from './pages/Unauthorized.jsx';
 import { setGlobalErrorHandler } from './config/axiosConfig.js';
 
@@ -89,7 +89,7 @@ function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/forgotpass" element={<Forgotpass />} />
           <Route path="/jury" element={<JuryPage />} />
-          <Route path="/sponsors" element={<Sponsors />} />
+          <Route path="/palmares" element={<Palmares />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
 
 
