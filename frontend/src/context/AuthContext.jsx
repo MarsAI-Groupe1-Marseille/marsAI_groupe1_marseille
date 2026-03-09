@@ -10,12 +10,12 @@ export const AuthProvider = ({ children }) => {
   // Récupérer l'user depuis localStorage au montage
   useEffect(() => {
     const initAuth = async () => {
+      let hasSavedUser = false;
       const savedUser = localStorage.getItem('user');
       if (savedUser) {
         try {
           setUser(JSON.parse(savedUser));
-          setLoading(false);
-          return;
+          hasSavedUser = true;
         } catch (error) {
           console.error('Erreur parsing user:', error);
           localStorage.removeItem('user');
@@ -31,7 +31,9 @@ export const AuthProvider = ({ children }) => {
           setUser(response.data);
         }
       } catch (error) {
-        setUser(null);
+        if (!hasSavedUser) {
+          setUser(null);
+        }
       } finally {
         setLoading(false);
       }

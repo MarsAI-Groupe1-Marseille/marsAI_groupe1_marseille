@@ -266,24 +266,30 @@ export default function JuryAssignment() {
               </div>
 
               {/* Right side - Admin Profile (outside card) */}
-              <div className="flex flex-col items-center md:items-end gap-2">
+              <div className="flex flex-col items-center text-center">
                 {/* Avatar */}
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center border-2 border-violet-400 shadow-lg">
-                  <span className="text-white font-bold text-2xl">
-                    {user?.full_name
-                      ? user.full_name
-                          .split(' ')
-                          .map(n => n[0])
-                          .join('')
-                          .toUpperCase()
-                      : 'A'}
-                  </span>
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center border-2 border-violet-400 shadow-lg mb-4">
+                  {user?.avatar_url ? (
+                    <img
+                      src={user.avatar_url}
+                      alt={user?.full_name || 'Admin'}
+                      className="w-full h-full object-cover rounded-full"
+                    />
+                  ) : (
+                    <span className="text-white font-bold text-2xl">
+                      {user?.full_name
+                        ? user.full_name
+                            .split(' ')
+                            .map(n => n[0])
+                            .join('')
+                            .toUpperCase()
+                        : 'A'}
+                    </span>
+                  )}
                 </div>
-                {/* Admin Info */}
-                <div className="text-center md:text-right">
-                  <p className="text-base font-semibold text-white">{user?.full_name}</p>
-                  <p className="text-xs text-neutral-400">{user?.email}</p>
-                </div>
+                {/* Name and Email */}
+                <p className="text-sm font-semibold text-white break-words mb-1">{user?.full_name}</p>
+                <p className="text-xs text-neutral-400 break-all">{user?.email}</p>
               </div>
             </div>
           </div>

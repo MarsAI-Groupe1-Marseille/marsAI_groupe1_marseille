@@ -1,4 +1,4 @@
-const { User } = require('../models');
+﻿const { User } = require('../models');
 const emailService = require('../services/emailService');
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
@@ -6,6 +6,21 @@ const { sendErrorResponse } = require('../utils/errorHandler');
 const { validateUploadedFilesBySignature, cleanupUploadedFiles } = require('../services/fileValidationService');
 
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+
+const resolveAccountStatus = (user) => {
+    if (user.account_status === 'active' || user.account_status === 'pending') {
+        return user.account_status;
+    }
+    return user.password_hash ? 'active' : 'pending';
+};
+
+const toSafeUser = (user) => {
+    const plain = user.toJSON ? user.toJSON() : { ...user };
+    plain.account_status = resolveAccountStatus(plain);
+    delete plain.password_hash;
+    delete plain.invite_token;
+    return plain;
+};
 
 /**
  * TICKET #74 : INVITATION D'UN UTILISATEUR (Jury, Admin, Modérateur)
@@ -134,7 +149,7 @@ exports.resetPassword = async (req, res) => {
 
         // Mettre à jour l'utilisateur : définir le mot de passe et invalider le token
         await User.update(
-            { password_hash, invite_token: null, invite_token_expires_at: null },
+            { password_hash, account_status: 'active', invite_token: null, invite_token_expires_at: null },
             { where: { invite_token: token } }
         );
 
@@ -180,6 +195,7 @@ exports.activateAccount = async (req, res) => {
 
         const password_hash = await bcrypt.hash(new_password, 10);
         user.password_hash = password_hash;
+        user.account_status = 'active';
         user.invite_token = null;
         user.invite_token_expires_at = null;
         
@@ -218,10 +234,10 @@ exports.activateAccount = async (req, res) => {
 exports.getAllUsers = async (req, res) => {
     try {
         const users = await User.findAll({
-            // On exclut les données sensibles par sécurité
-            attributes: { exclude: ['password_hash', 'invite_token'] }
+            // invite_token ne doit jamais être exposé
+            attributes: { exclude: ['invite_token'] }
         });
-        res.json(users);
+        res.json(users.map(toSafeUser));
     } catch (error) {
         return sendErrorResponse(res, 500, error, 'Erreur lors de la récupération des utilisateurs.');
     }
@@ -234,13 +250,13 @@ exports.getUserById = async (req, res) => {
     try {
         const userId = req.params.id;
         const user = await User.findByPk(userId, {
-            attributes: { exclude: ['password_hash', 'invite_token'] }
+            attributes: { exclude: ['invite_token'] }
         });
         
         if (!user) {
             return res.status(404).json({ error: 'Utilisateur non trouvé' });
         }
-        res.json(user);
+        res.json(toSafeUser(user));
     } catch (error) {
         return sendErrorResponse(res, 500, error, 'Erreur lors de la récupération de l\'utilisateur.');
     }
@@ -258,9 +274,28 @@ exports.updateUser = async (req, res) => {
         if (!user) {
             return res.status(404).json({ error: 'Utilisateur non trouvé' });
         }
+
+        // Validation forte de l'avatar uploadé (signature binaire).
+        if (req.file) {
+            const filesByField = { avatar: [req.file] };
+            const signatureValidation = await validateUploadedFilesBySignature(filesByField);
+
+            if (!signatureValidation.ok) {
+                await cleanupUploadedFiles(filesByField);
+                return res.status(400).json({
+                    message: 'Fichier avatar invalide.',
+                    error: signatureValidation.message,
+                    errors: [{
+                        field: signatureValidation.field || 'avatar',
+                        message: signatureValidation.message
+                    }]
+                });
+            }
+        }
+
         // Mise à jour des champs si ils sont fournis
-        if(!full_name && !role && !email) {
-            return res.status(400).json({ error: 'Au moins un champ (full_name, role, email) doit être fourni pour la mise à jour.' });
+        if (!full_name && !role && !email && !req.file) {
+            return res.status(400).json({ error: 'Au moins un champ (full_name, role, email, avatar) doit être fourni pour la mise à jour.' });
         }
         if (full_name) user.full_name = full_name;
         if (role) {
@@ -271,14 +306,26 @@ exports.updateUser = async (req, res) => {
             user.role = role;
         }
         if (email) user.email = email;
+
+        if (req.file?.location) {
+            user.avatar_url = req.file.location;
+        }
+
+        user.account_status = resolveAccountStatus(user);
+
         await user.save();
         res.json({ message: 'Utilisateur mis à jour avec succès', user: {
             id: user.id,
             email: user.email,
             full_name: user.full_name,
-            role: user.role
+            role: user.role,
+            avatar_url: user.avatar_url,
+            account_status: user.account_status
         } });
     } catch (error) {
+        if (req.file) {
+            await cleanupUploadedFiles({ avatar: [req.file] });
+        }
         return sendErrorResponse(res, 500, error, 'Erreur lors de la mise à jour de l\'utilisateur.');
     }
 };

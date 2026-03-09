@@ -18,6 +18,11 @@ const User = sequelize.define('User', {
     type: DataTypes.ENUM('admin', 'jury', 'moderator'), 
     defaultValue: 'jury' 
   },
+  account_status: {
+    type: DataTypes.ENUM('pending', 'active'),
+    allowNull: false,
+    defaultValue: 'pending'
+  },
   invite_token: { type: DataTypes.STRING },
   invite_token_expires_at: { type: DataTypes.DATE },
   google_id: { type: DataTypes.STRING }

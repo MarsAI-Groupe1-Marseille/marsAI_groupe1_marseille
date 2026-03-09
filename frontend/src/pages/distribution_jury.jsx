@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Users, ThumbsUp, MessageCircle, ThumbsDown, TrendingUp, BarChart3 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext.jsx';
 import axios from 'axios';
 import {
   BarChart,
@@ -21,11 +22,7 @@ import JuryTab from '../components/admin/JuryTab';
 
 export default function AdminDashboard() {
   const { t } = useLanguage();
-  const [adminUser, setAdminUser] = useState({
-    full_name: "Admin Test",
-    email: "email@exemple.com",
-    job_title: "Directeur"
-  });
+  const { user: adminUser } = useAuth();
   const [juryStats, setJuryStats] = useState({
     jury_count: 0,
     films_liked: 0,
@@ -36,41 +33,10 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const verifyAdmin = async () => {
-      try {
-        const userStr = localStorage.getItem('user');
-        
-        console.log('User:', userStr);
-        
-        // Si pas de user, on considère qu'il y a un user test/hardcodé
-        if (!userStr) {
-          console.log('ℹ️ Pas de user, utilisation des données par défaut');
-          setLoading(false);
-          return;
-        }
-
-        const user = JSON.parse(userStr);
-        console.log('User parsed:', user);
-        
-        // Vérifier que c'est un admin
-        if (user.role !== 'admin') {
-          console.log('❌ Pas un admin, redirection vers home. Role:', user.role);
-          setLoading(false);
-          // window.location.href = '/';
-          return;
-        }
-
-        console.log('✅ Admin vérifié:', user.full_name);
-        setAdminUser(user);
-        setLoading(false);
-      } catch (error) {
-        console.error('Erreur vérification admin:', error);
-        setLoading(false);
-        // window.location.href = '/login';
-      }
-    };
-
-    verifyAdmin();
+    // adminUser vient maintenant directement du contexte AuthContext
+    if (adminUser) {
+      setLoading(false);
+    }
     
     // Récupérer les stats du jury
     const fetchJuryStats = async () => {
@@ -119,15 +85,23 @@ export default function AdminDashboard() {
               <div className="flex flex-col items-center text-center">
                 {/* Avatar */}
                 <div className="w-20 h-20 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center border-2 border-violet-400 shadow-lg mb-4">
-                  <span className="text-white font-bold text-2xl">
-                    {adminUser?.full_name
-                      ? adminUser.full_name
-                          .split(' ')
-                          .map(n => n[0])
-                          .join('')
-                          .toUpperCase()
-                      : 'A'}
-                  </span>
+                  {adminUser?.avatar_url ? (
+                    <img
+                      src={adminUser.avatar_url}
+                      alt={adminUser?.full_name || 'Admin'}
+                      className="w-full h-full object-cover rounded-full"
+                    />
+                  ) : (
+                    <span className="text-white font-bold text-2xl">
+                      {adminUser?.full_name
+                        ? adminUser.full_name
+                            .split(' ')
+                            .map(n => n[0])
+                            .join('')
+                            .toUpperCase()
+                        : 'A'}
+                    </span>
+                  )}
                 </div>
                 
                 {/* Name and Email */}
