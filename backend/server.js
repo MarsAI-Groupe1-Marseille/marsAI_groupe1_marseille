@@ -26,6 +26,7 @@ const userRoutes = require('./routes/userRoutes');
 const submissionRoutes = require('./routes/submissionRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const juryRoutes = require('./routes/juryRoutes');
+const awardRoutes = require('./routes/awardRoutes');
 
 
 
@@ -82,6 +83,9 @@ app.use('/api/users', authenticatedLimiter, userRoutes);
 app.use('/api/submissions', authenticatedLimiter, submissionRoutes); 
 app.use('/api/admin', authenticatedLimiter, adminRoutes); // Routes admin (validation des films, modération, etc.)
 app.use('/api/jury', authenticatedLimiter, juryRoutes); 
+
+// Route publique pour le palmarès
+app.use('/api/awards', awardRoutes);
 
 // ...
 

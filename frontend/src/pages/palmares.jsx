@@ -1,53 +1,50 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { Trophy, Award, Star, Sparkles, Film } from 'lucide-react';
+import axios from '../config/axiosConfig';
 
 export default function Palmares() {
   const { t } = useLanguage();
   const [winners, setWinners] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
-  // Données mockées pour le frontend (sera remplacé par l'API)
+  const getPosterUrl = (posterUrl) => {
+    if (!posterUrl) return null;
+
+    // URL absolue (ex: S3) : on la retourne telle quelle
+    if (/^https?:\/\//i.test(posterUrl)) {
+      return posterUrl;
+    }
+
+    // URL locale (ex: /uploads/...) : on préfixe avec VITE_API_URL
+    const normalizedPath = posterUrl.startsWith('/') ? posterUrl : `/${posterUrl}`;
+    return `${apiBaseUrl}${normalizedPath}`;
+  };
+
+  // Récupérer les films lauréats depuis l'API
   useEffect(() => {
-    // Simuler le chargement des données
-    setTimeout(() => {
-      setWinners([
-        {
-          id: 1,
-          award_name: 'Grand Prix du Festival',
-          award_type: 'grand_prix',
-          film: {
-            title: 'SYNTHETICA : L\'AUBE',
-            director: 'Julien Dupond',
-            poster_url: '/film_poster_1.jpg',
-            duration: 87
-          }
-        },
-        {
-          id: 2,
-          award_name: 'Prix du Jury',
-          award_type: 'jury',
-          film: {
-            title: 'NOVA DIMENSION',
-            director: 'Sophie Martin',
-            poster_url: '/film_poster_2.jpg',
-            duration: 95
-          }
-        },
-        {
-          id: 3,
-          award_name: 'Prix du Public',
-          award_type: 'public',
-          film: {
-            title: 'L\'OMBRE DU FUTUR',
-            director: 'Marc Leblanc',
-            poster_url: '/film_poster_3.jpg',
-            duration: 102
-          }
+    const fetchAwards = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await axios.get('/awards');
+        
+        if (response.data.success) {
+          setWinners(response.data.awards);
+        } else {
+          setError('Erreur lors du chargement des lauréats');
         }
-      ]);
-      setLoading(false);
-    }, 500);
+      } catch (err) {
+        console.error('Erreur lors de la récupération des lauréats:', err);
+        setError('Impossible de charger les lauréats pour le moment');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAwards();
   }, []);
 
   // Configuration des couleurs par type de prix
@@ -97,6 +94,18 @@ export default function Palmares() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-950 flex items-center justify-center px-4">
+        <div className="text-center max-w-md">
+          <Trophy size={48} className="text-red-400 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-white mb-2">Erreur</h2>
+          <p className="text-neutral-400">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-950 py-16 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
@@ -129,6 +138,7 @@ export default function Palmares() {
             {winners.map((winner) => {
               const style = awardStyles[winner.award_type] || awardStyles.special;
               const AwardIcon = style.icon;
+              const posterSrc = getPosterUrl(winner.film.poster_url);
 
               return (
                 <div
@@ -137,9 +147,9 @@ export default function Palmares() {
                 >
                   {/* Film Poster */}
                   <div className="relative h-96 overflow-hidden bg-neutral-900">
-                    {winner.film.poster_url ? (
+                    {posterSrc ? (
                       <img
-                        src={winner.film.poster_url}
+                        src={posterSrc}
                         alt={winner.film.title}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                         onError={(e) => {
@@ -150,7 +160,7 @@ export default function Palmares() {
                     ) : null}
                     <div
                       className="absolute inset-0 bg-gradient-to-br from-neutral-800 to-neutral-900 flex items-center justify-center"
-                      style={{ display: winner.film.poster_url ? 'none' : 'flex' }}
+                      style={{ display: posterSrc ? 'none' : 'flex' }}
                     >
                       <Film size={64} className="text-neutral-700" />
                     </div>
@@ -159,9 +169,9 @@ export default function Palmares() {
                     <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/50 to-transparent opacity-80"></div>
                     
                     {/* Award Badge */}
-                    <div className={`absolute top-4 right-4 ${style.iconBg} backdrop-blur-sm px-4 py-2 rounded-full border ${style.border} flex items-center gap-2`}>
-                      <AwardIcon size={20} className={style.iconColor} />
-                      <span className={`text-sm font-bold ${style.textColor}`}>
+                    <div className={`absolute top-4 right-4 ${style.iconBg} backdrop-blur-md px-4 py-2 rounded-full border ${style.border} ring-1 ring-white/20 flex items-center gap-2 shadow-[0_10px_20px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.18)]`}>
+                      <AwardIcon size={20} className={`${style.iconColor} drop-shadow-[0_2px_4px_rgba(0,0,0,0.45)]`} />
+                      <span className={`text-sm font-extrabold tracking-wide ${style.textColor} drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]`}>
                         {winner.award_name}
                       </span>
                     </div>

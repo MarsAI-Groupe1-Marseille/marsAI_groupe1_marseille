@@ -15,6 +15,7 @@ import {
 } from "lucide-react"; //
 import { useTheme } from "../providers/ThemeProvider.jsx"; //
 import { useLanguage } from "../context/LanguageContext.jsx"; //
+import axios from "../config/axiosConfig";
 
 // ---------------------------------------------------------- //
 // Flags SVG (pro) //
@@ -58,18 +59,51 @@ const Header = () => { //
 
   const [isScrolled, setIsScrolled] = useState(false); //
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); //
+  const [showPalmaresLink, setShowPalmaresLink] = useState(false);
 
   const location = useLocation(); //
 
   const navLinks = useMemo( //
-    () => [
-      { label: t('home'), to: "/" },
-      { label: t('gallery'), to: "/galerie" },      
-      { label: "JURY", to: "/jury" },
-      { label: t('palmares'), to: "/palmares" },
-    ],
-    [lang, t]
+    () => {
+      const links = [
+        { label: t('home'), to: "/" },
+        { label: t('gallery'), to: "/galerie" },
+        { label: "JURY", to: "/jury" },
+      ];
+
+      if (showPalmaresLink) {
+        links.push({ label: t('palmares'), to: "/palmares" });
+      }
+
+      return links;
+    },
+    [lang, t, showPalmaresLink]
   ); //
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchAwardsCount = async () => {
+      try {
+        const response = await axios.get('/awards', { skipErrorHandling: true });
+        const awards = Array.isArray(response?.data?.awards) ? response.data.awards : [];
+
+        if (isMounted) {
+          setShowPalmaresLink(awards.length >= 3);
+        }
+      } catch (error) {
+        if (isMounted) {
+          setShowPalmaresLink(false);
+        }
+      }
+    };
+
+    fetchAwardsCount();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => { //
     const onScroll = () => setIsScrolled(window.scrollY > 8); //
