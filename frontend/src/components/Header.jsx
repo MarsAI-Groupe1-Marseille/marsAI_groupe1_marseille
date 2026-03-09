@@ -66,7 +66,7 @@ const Header = () => { //
       { label: t('home'), to: "/" },
       { label: t('gallery'), to: "/galerie" },      
       { label: "JURY", to: "/jury" },
-      { label: t('sponsors'), to: "/sponsors" },
+      { label: t('palmares'), to: "/palmares" },
     ],
     [lang, t]
   ); //
