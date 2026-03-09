@@ -208,7 +208,7 @@ export default function FilmDetail() {
     <div className="film-detail-container">
       <main className="film-detail-main">
         {/* Bouton retour simple en haut */}
-        <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '20px 16px 0 16px' }}>
+        {/* <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '20px 16px 0 16px' }}>
           <button
             onClick={() => navigate('/galerie')}
             className="back-button"
@@ -216,7 +216,7 @@ export default function FilmDetail() {
           >
             <ChevronLeft className="w-5 h-5" /> {t('film_detail_back')}
           </button>
-        </div>
+        </div> */}
         
         <div className={`film-detail-grid ${relatedFilms.length === 0 ? 'no-sidebar' : ''}`}>
           {/* ========== COLONNE PRINCIPALE ========== */}
@@ -281,14 +281,14 @@ export default function FilmDetail() {
                   </p>
                   <p className="quick-info-value">{film.ai_classification}</p>
                 </div>
-                <div className="quick-info-item">
+                {/* <div className="quick-info-item">
                   <p className="quick-info-label">
                     <BarChart3 className="w-4 h-4" /> {t('film_detail_status')}
                   </p>
                   <p className="quick-info-value" style={{ color: film.approval_status === 'approved' ? '#4ade80' : film.approval_status === 'rejected' ? '#f87171' : '#fbbf24' }}>
                     {formatApprovalStatus(film.approval_status)}
                   </p>
-                </div>
+                </div> */}
               </div>
             </div>
 
