@@ -1,10 +1,145 @@
 import React, { useState,useEffect } from "react";
-import { Users, Eye, Pencil, Trash2, UserPlus } from "lucide-react";
+import { Users, Eye, Pencil, Trash2, UserPlus, X } from "lucide-react";
 import axios from '../config/axiosConfig';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 
 // Dashboard User Component - Force recompile
+
+// Fonction utilitaire pour obtenir l'avatar avec initiales
+function getInitials(fullName) {
+    if (!fullName) return 'U';
+    return fullName
+        .split(' ')
+        .map(name => name[0])
+        .join('')
+        .toUpperCase();
+}
+
+// Fonction utilitaire pour déterminer la couleur de l'avatar en fonction du role
+function getAvatarColor(role) {
+    const colors = {
+        admin: "from-red-500 to-red-700",
+        jury: "from-blue-500 to-blue-700",
+        moderator: "from-purple-500 to-purple-700",
+    };
+    return colors[role] || "from-violet-500 to-violet-700";
+}
+
+// Modal de détails utilisateur
+function UserDetailModal({ user, onClose, t }) {
+    if (!user) return null;
+
+    const getRoleBg = (role) => {
+        const styles = {
+            admin: "bg-red-500/20 text-red-400 border border-red-500/30",
+            jury: "bg-blue-500/20 text-blue-400 border border-blue-500/30",
+            moderator: "bg-purple-600/40 text-purple-200 border border-purple-400",
+        };
+        return styles[role] || "bg-gray-500/20 text-gray-400 border border-gray-500/30";
+    };
+
+    const getRoleLabel = (role) => {
+        const labels = {
+            admin: t('dashboard_user_admin') || "Admin",
+            jury: t('dashboard_user_jury') || "Jury",
+            moderator: t('dashboard_user_moderator') || "Modérateur",
+        };
+        return labels[role] || role;
+    };
+
+    return (
+        <div
+            className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-black/95 backdrop-blur-xl"
+            onMouseDown={(e) => e.target === e.currentTarget && onClose()}
+        >
+            <div className="relative w-full max-w-3xl bg-neutral-900 border border-violet-500/20 rounded-3xl overflow-hidden shadow-2xl h-auto sm:h-[70vh] md:h-[75vh]">
+                
+                {/* Bouton fermer */}
+                <button
+                    onClick={onClose}
+                    className="absolute top-4 right-4 z-50 p-3 bg-neutral-800 hover:bg-red-600 text-white rounded-full transition-all border border-neutral-700"
+                    aria-label="Fermer"
+                >
+                    <X size={20} />
+                </button>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 h-full">
+                    
+                    {/* Panel Avatar */}
+                    <div className="relative group h-48 sm:h-60 md:h-full overflow-hidden bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 flex items-center justify-center">
+                        {user.avatar_url ? (
+                            <img
+                                src={user.avatar_url}
+                                className="w-full h-full object-cover transition-all duration-500"
+                                alt={user.full_name}
+                            />
+                        ) : (
+                            <div className={`w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 rounded-full bg-gradient-to-br ${getAvatarColor(user.role)} flex items-center justify-center border-4 border-violet-500/30 shadow-xl`}>
+                                <span className="text-white font-bold text-4xl sm:text-5xl md:text-6xl">
+                                    {getInitials(user.full_name)}
+                                </span>
+                            </div>
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-neutral-900 via-transparent to-transparent md:bg-gradient-to-r md:from-transparent md:via-neutral-900/40 md:to-neutral-900 pointer-events-none" />
+                    </div>
+
+                    {/* Panel Info */}
+                    <div className="p-6 sm:p-8 md:p-8 flex flex-col justify-between overflow-auto">
+                        <div className="flex flex-col space-y-4">
+                            {/* Date d'inscription */}
+                            <div className="space-y-1">
+                                <p className="text-xs text-neutral-500">
+                                    {t('dashboard_user_registered_date') || 'Inscrit le '} {new Date(user.created_at).toLocaleDateString()}
+                                </p>
+                            </div>
+
+                            {/* Nom de l'utilisateur */}
+                            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white leading-tight">
+                                {user.full_name}
+                            </h2>
+
+                            {/* Rôle */}
+                            <div className="flex items-center gap-3">
+                                <span className={`text-xs px-4 py-2 rounded-full font-semibold ${getRoleBg(user.role)}`}>
+                                    {getRoleLabel(user.role)}
+                                </span>
+                            </div>
+
+                            {/* Email */}
+                            <div className="pt-2">
+                                <p className="text-xs text-neutral-500 mb-1">{t('dashboard_user_email') || 'Email'}</p>
+                                <p className="text-sm text-neutral-300 break-all">{user.email}</p>
+                            </div>
+
+                            {/* Details supplémentaires */}
+                            <div className="pt-4 grid grid-cols-2 gap-4">
+                                <div className="p-3 rounded-lg bg-neutral-800/50 border border-neutral-700">
+                                    <p className="text-xs text-neutral-500 mb-1">{t('dashboard_user_status') || 'Statut'}</p>
+                                    <p className="text-sm font-semibold text-violet-400">
+                                        {user.password_hash ? 'Actif' : 'En attente'}
+                                    </p>
+                                </div>
+                                <div className="p-3 rounded-lg bg-neutral-800/50 border border-neutral-700">
+                                    <p className="text-xs text-neutral-500 mb-1">{t('dashboard_user_role') || 'Rôle'}</p>
+                                    <p className="text-sm font-semibold text-violet-400 capitalize">{user.role}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Bouton fermer */}
+                        <button
+                            onClick={onClose}
+                            className="mt-6 w-full py-3 px-4 rounded-lg bg-gradient-to-r from-violet-600 to-violet-800 hover:from-violet-500 hover:to-violet-700 text-white font-semibold transition"
+                        >
+                            {t('dashboard_user_close_modal') || 'Fermer'}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
 
 
 function BadgeAttribution({ role, t }) {
@@ -79,7 +214,7 @@ function FormEdition({ user, editingData, setEditingData, onSave, onCancel, isLo
 }
 
 
-function UserRow({ user, isEditing, toggleEdit, editingData, setEditingData, onSaveUser, onDeleteUser, isLoading, t, currentUserRole }) {
+function UserRow({ user, isEditing, toggleEdit, editingData, setEditingData, onSaveUser, onDeleteUser, onViewUser, isLoading, t, currentUserRole }) {
     const isModerator = currentUserRole === "moderator";
     
     return (
@@ -95,7 +230,9 @@ function UserRow({ user, isEditing, toggleEdit, editingData, setEditingData, onS
                 </div>
 
                 <div className="flex flex-wrap gap-2 justify-start sm:justify-end col-span-2">
-                    <button className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 transition text-sm">
+                    <button 
+                        onClick={() => onViewUser(user.id)}
+                        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-800 hover:bg-blue-600 transition text-sm">
                         <Eye size={16} />
                         {t('dashboard_user_see')}
                     </button>
@@ -157,6 +294,8 @@ export default function DashboardUser() {
     const [showAddForm, setShowAddForm] = useState(false);
     const [newUser, setNewUser] = useState({ fullName: "", email: "", role: "jury" });
     const [notice, setNotice] = useState(null);
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [loadingDetails, setLoadingDetails] = useState(false);
 
     const showNotice = (type, message) => {
         setNotice({ type, message });
@@ -165,6 +304,23 @@ export default function DashboardUser() {
 
     const toggleEdit = (id) => {
         setEditingUserId(prev => (prev === id ? null : id));
+    };
+
+    const handleViewUser = async (userId) => {
+        setLoadingDetails(true);
+        try {
+            const response = await axios.get(`/users/${userId}`);
+            setSelectedUser(response.data);
+        } catch (error) {
+            console.error("Erreur lors de la récupération des détails de l'utilisateur :", error);
+            showNotice('error', t('dashboard_user_error_loading'));
+        } finally {
+            setLoadingDetails(false);
+        }
+    };
+
+    const closeModal = () => {
+        setSelectedUser(null);
     };
 
     const handleUpdateUser = async (userId) => {
@@ -370,6 +526,7 @@ export default function DashboardUser() {
                         setEditingData={setEditingData}
                         onSaveUser={handleUpdateUser}
                         onDeleteUser={handleDeleteUser}
+                        onViewUser={handleViewUser}
                         isLoading={isLoading}
                         t={t}
                         currentUserRole={currentUser?.role}
@@ -379,6 +536,9 @@ export default function DashboardUser() {
 
                 </div>
             </main>
+
+            {/* Modal de détails utilisateur */}
+            {selectedUser && <UserDetailModal user={selectedUser} onClose={closeModal} t={t} />}
         </div>
     );
 }
