@@ -164,43 +164,134 @@ function BadgeAttribution({ role, t }) {
 }
 
 function FormEdition({ user, editingData, setEditingData, onSave, onCancel, isLoading, t }) {
+    const [avatarFile, setAvatarFile] = React.useState(null);
+    const [avatarPreview, setAvatarPreview] = React.useState(user?.avatar_url || null);
+    const fileInputRef = React.useRef(null);
+
+    const handleAvatarChange = (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            // Valider le type de fichier
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+            if (!allowedTypes.includes(file.type)) {
+                alert('Format image invalide. JPG, PNG, WEBP acceptés.');
+                return;
+            }
+
+            // Valider la taille (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Fichier trop volumineux. Max 5MB.');
+                return;
+            }
+
+            setAvatarFile(file);
+            
+            // Créer un aperçu
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setAvatarPreview(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleAvatarClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFormSubmit = (e) => {
+        e.preventDefault();
+        // Passer le fichier avatar au parent via une fonction callback
+        onSave(avatarFile);
+    };
     
     return (
-        <form onSubmit={onSave} className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-            <div className="flex flex-col w-full">
-                <label className="text-sm text-neutral-400 mb-1">{t('dashboard_user_fullname')}</label>
-                <input
-                    value={editingData?.full_name || ''}
-                    onChange={(e) => setEditingData({ ...editingData, full_name: e.target.value })}
-                    className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-violet-500"
-                    placeholder={t('dashboard_user_fullname')}
-                />
+        <form onSubmit={handleFormSubmit} className="flex flex-col w-full">
+            {/* Section Avatar - Centré en haut */}
+            <div className="flex justify-center mb-6">
+                <div className="relative group">
+                    <button
+                        type="button"
+                        onClick={handleAvatarClick}
+                        className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-violet-500/30 hover:border-violet-500/80 transition cursor-pointer hover:shadow-lg hover:shadow-violet-500/30"
+                    >
+                        {avatarPreview ? (
+                            <img
+                                src={avatarPreview}
+                                alt="Avatar"
+                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                            />
+                        ) : (
+                            <div className={`w-full h-full bg-gradient-to-br ${getAvatarColor(editingData?.role || user?.role)} flex items-center justify-center`}>
+                                <span className="text-white font-bold text-4xl">
+                                    {getInitials(editingData?.full_name || user?.full_name)}
+                                </span>
+                            </div>
+                        )}
+                        
+                        {/* Overlay au hover */}
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                            <span className="text-white text-xs font-semibold text-center px-2">{t('dashboard_user_change_avatar') || 'Changer'}</span>
+                        </div>
+                    </button>
+
+                    {/* Input file caché */}
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        onChange={handleAvatarChange}
+                        className="hidden"
+                        name="avatar"
+                    />
+
+                    {/* Badge si fichier sélectionné */}
+                    {avatarFile && (
+                        <div className="absolute -bottom-2 -right-2 bg-emerald-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-xs font-bold">
+                            ✓
+                        </div>
+                    )}
+                </div>
             </div>
 
-            <div className="flex flex-col">
-                <label className="text-sm text-neutral-400 mb-1">{t('dashboard_user_email')}</label>
-                <input
-                    value={editingData?.email || ''}
-                    onChange={(e) => setEditingData({ ...editingData, email: e.target.value })}
-                    className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-violet-500"
-                    placeholder={t('dashboard_user_email')}
-                />
+            {/* Inputs utilisateur */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+                <div className="flex flex-col w-full">
+                    <label className="text-sm text-neutral-400 mb-1">{t('dashboard_user_fullname')}</label>
+                    <input
+                        value={editingData?.full_name || ''}
+                        onChange={(e) => setEditingData({ ...editingData, full_name: e.target.value })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                        placeholder={t('dashboard_user_fullname')}
+                    />
+                </div>
+
+                <div className="flex flex-col">
+                    <label className="text-sm text-neutral-400 mb-1">{t('dashboard_user_email')}</label>
+                    <input
+                        value={editingData?.email || ''}
+                        onChange={(e) => setEditingData({ ...editingData, email: e.target.value })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                        placeholder={t('dashboard_user_email')}
+                    />
+                </div>
+
+                <div className="flex flex-col">
+                    <label className="text-sm text-neutral-400 mb-1">{t('dashboard_user_role')}</label>
+                    <select
+                        value={editingData?.role || ''}
+                        onChange={(e) => setEditingData({ ...editingData, role: e.target.value })}
+                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                    >
+                        <option value="admin">{t('dashboard_user_admin')}</option>
+                        <option value="jury">{t('dashboard_user_jury')}</option>
+                        <option value="moderator">{t('dashboard_user_moderator')}</option>
+                    </select>
+                </div>
             </div>
 
-            <div className="flex flex-col">
-                <label className="text-sm text-neutral-400 mb-1">{t('dashboard_user_role')}</label>
-                <select
-                    value={editingData?.role || ''}
-                    onChange={(e) => setEditingData({ ...editingData, role: e.target.value })}
-                    className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-violet-500"
-                >
-                    <option value="admin">{t('dashboard_user_admin')}</option>
-                    <option value="jury">{t('dashboard_user_jury')}</option>
-                    <option value="moderator">{t('dashboard_user_moderator')}</option>
-                </select>
-            </div>
-
-            <div className="md:col-span-2 flex flex-wrap justify-end gap-3 mt-4">
+            {/* Boutons action */}
+            <div className="md:col-span-2 flex flex-wrap justify-end gap-3 mt-6">
                 <button type="button" onClick={onCancel} className="w-full md:w-auto px-4 py-2 rounded-lg bg-neutral-700 hover:bg-neutral-600 transition" disabled={isLoading}>
                     {t('dashboard_user_cancel')}
                 </button>
@@ -266,19 +357,17 @@ function UserRow({ user, isEditing, toggleEdit, editingData, setEditingData, onS
                 </div>
             </div>
 
-            {isEditing && (
                 <div className="bg-neutral-950 p-6 border-b border-neutral-800">
                     <FormEdition 
                         user={user} 
                         editingData={editingData}
                         setEditingData={setEditingData}
-                        onSave={() => onSaveUser(user.id)}
+                        onSave={(avatarFile) => onSaveUser(user.id, avatarFile)}
                         onCancel={() => toggleEdit(user.id)}
                         isLoading={isLoading}
                         t={t}
                     />
                 </div>
-            )}
         </>
     );
 }
@@ -323,20 +412,42 @@ export default function DashboardUser() {
         setSelectedUser(null);
     };
 
-    const handleUpdateUser = async (userId) => {
+    const handleUpdateUser = async (userId, avatarFile) => {
         if (!editingData || editingData.id !== userId) return;
 
         setIsLoading(true);
         try {
-            const response = await axios.put(`/users/${userId}`, {
-                full_name: editingData.full_name,
-                email: editingData.email,
-                role: editingData.role
-            });
+            let response;
+
+            // Si un fichier avatar est sélectionné, envoyer en FormData
+            if (avatarFile) {
+                const formData = new FormData();
+                formData.append('full_name', editingData.full_name);
+                formData.append('email', editingData.email);
+                formData.append('role', editingData.role);
+                formData.append('avatar', avatarFile);
+
+                response = await axios.put(`/users/${userId}`, formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    }
+                });
+            } else {
+                // Sinon, envoyer en JSON classique
+                response = await axios.put(`/users/${userId}`, {
+                    full_name: editingData.full_name,
+                    email: editingData.email,
+                    role: editingData.role
+                });
+            }
 
             // Mettre à jour la liste localement
             setUsersList(usersList.map(user => 
-                user.id === userId ? { ...user, ...editingData } : user
+                user.id === userId ? { 
+                    ...user, 
+                    ...editingData,
+                    avatar_url: response.data?.user?.avatar_url || user.avatar_url
+                } : user
             ));
 
             console.log("Utilisateur mis à jour avec succès :", response.data);
