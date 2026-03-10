@@ -1,49 +1,19 @@
 const express = require('express');
 const router = express.Router();
 const submissionController = require('../controllers/submissionController');
-const upload = require('../middlewares/uploadMiddleware'); // Import du middleware multer
+const { createValidatedFieldsUploadHandler } = require('../middlewares/validatedUploadMiddleware');
 const { validateRequest } = require('../middlewares/validationMiddleware');
 const { csrfProtection } = require('../middlewares/csrfMiddleware');
 const { submissionValidators } = require('../validators/submissionValidators');
 const { uploadLimiter } = require('../middlewares/securityMiddleware');
-const { cleanupUploadedFiles } = require('../services/fileValidationService');
 
-const uploadSubmissionFields = upload.fields([
+// Upload multi-fichiers avec verification extension + signature avant envoi S3.
+const handleSubmissionUpload = createValidatedFieldsUploadHandler([
     { name: 'video_file', maxCount: 1 },
     { name: 'poster_file', maxCount: 1 },
     { name: 'subtitle_file', maxCount: 1 },
     { name: 'gallery_files', maxCount: 10 }
 ]);
-
-const handleSubmissionUpload = (req, res, next) => {
-    uploadSubmissionFields(req, res, async (err) => {
-        if (!err) return next();
-
-        // Nettoie les objets deja envoyes sur S3 en cas d'erreur Multer.
-        if (req.files) {
-            await cleanupUploadedFiles(req.files);
-        }
-
-        if (err.code === 'LIMIT_FILE_SIZE') {
-            return res.status(400).json({
-                message: 'Le fichier depasse la taille maximale autorisee (500MB).',
-                errors: [{ field: err.field || 'file', message: 'Fichier trop volumineux (max 500MB).' }]
-            });
-        }
-
-        if (err.code === 'LIMIT_UNEXPECTED_FILE') {
-            return res.status(400).json({
-                message: 'Un fichier non attendu a ete envoye.',
-                errors: [{ field: err.field || 'file', message: 'Champ de fichier non autorise.' }]
-            });
-        }
-
-        return res.status(400).json({
-            message: err.message || 'Erreur de validation fichier.',
-            errors: [{ field: err.field || 'file', message: err.message || 'Fichier invalide.' }]
-        });
-    });
-};
 
 // Route pour créer une nouvelle soumission avec upload de fichiers
 

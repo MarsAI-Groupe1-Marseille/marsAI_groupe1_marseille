@@ -1,6 +1,6 @@
 const { Submission, Director, Collaborator } = require('../models');
 const { uploadVideoToYoutube,uploadSubtitlesToYoutube } = require('../services/youtubeService');
-const { validateUploadedFilesBySignature, cleanupUploadedFiles } = require('../services/fileValidationService');
+const { cleanupUploadedFiles } = require('../services/fileValidationService');
 const emailService = require('../services/emailService');
 const { Op } = require('sequelize'); 
 const fs = require('fs');
@@ -42,20 +42,6 @@ exports.createSubmission = async (req, res) => {
     const galleryFiles = req.files.gallery_files || [];
 
     try {
-        // Validation forte du contenu reel (signature binaire) des fichiers deja uploades sur S3.
-        const signatureValidation = await validateUploadedFilesBySignature(req.files);
-        if (!signatureValidation.ok) {
-            await cleanupUploadedFiles(req.files);
-            return res.status(400).json({
-                message: 'Fichier invalide.',
-                error: signatureValidation.message,
-                errors: [{
-                    field: signatureValidation.field || 'file',
-                    message: signatureValidation.message
-                }]
-            });
-        }
-
         // --- ÉTAPE 1 : GESTION DU RÉALISATEUR ---
         let director = await Director.findOne({ where: { email: req.body.director_email } });
 
@@ -84,7 +70,28 @@ exports.createSubmission = async (req, res) => {
             });
         }
 
-        // --- ÉTAPE 2 : YOUTUBE (Stream depuis S3) ---
+        // --- ÉTAPE 1.5 : VÉRIFICATION DOUBLON FILM (même titre + même réalisateur) ---
+        const existingSubmission = await Submission.findOne({
+            where: {
+                director_id: director.id,
+                title_original: req.body.title_original
+            }
+        });
+
+        if (existingSubmission) {
+            // Les fichiers ont été uploadés en S3 mais pas utilisés, on les nettoie
+            await cleanupUploadedFiles(req.files);
+            return res.status(400).json({
+                message: "Soumission deja existante pour ce realisateur avec ce titre.",
+                error: `Vous avez deja soumis un film intitule "${req.body.title_original}". Veuillez modifier le titre ou contacter les organisateurs pour mettre a jour.`,
+                errors: [{
+                    field: 'title_original',
+                    message: `Film "${req.body.title_original}" deja soumis par ce realisateur.`
+                }]
+            });
+        }
+
+        // --- ÉTAPE 3 : YOUTUBE (Stream depuis S3) ---
         let youtubeId;
         if (MODE_TEST_YOUTUBE) {
             youtubeId = "FAKE_ID_" + Date.now(); 
@@ -111,11 +118,11 @@ exports.createSubmission = async (req, res) => {
 }
         }
 
-        // --- ÉTAPE 3 : PRÉPARATION GALERIE ---
+        // --- ÉTAPE 4 : PRÉPARATION GALERIE ---
         // On récupère les URLs Scaleway directes
         const galleryUrls = galleryFiles.map(file => file.location);
 
-        // --- ÉTAPE 4 : CRÉATION DU FILM (Submission) ---
+        // --- ÉTAPE 5 : CRÉATION DU FILM (Submission) ---
         const newSubmission = await Submission.create({
             director_id: director.id,
             title_original: req.body.title_original,
@@ -142,7 +149,7 @@ exports.createSubmission = async (req, res) => {
             approval_status: 'submitted'
         });
 
-        // --- ÉTAPE 5 : COLLABORATEURS (Inchangé, ton code était déjà bon) ---
+        // --- ÉTAPE 6 : COLLABORATEURS (Inchangé, ton code était déjà bon) ---
         if (req.body.collaborators_json) {
             try {
                 const collaboratorsData = JSON.parse(req.body.collaborators_json);
@@ -158,7 +165,7 @@ exports.createSubmission = async (req, res) => {
             }
         }
 
-        // --- ÉTAPE 6 : ENVOI EMAIL DE CONFIRMATION ---
+        // --- ÉTAPE 7 : ENVOI EMAIL DE CONFIRMATION ---
         try {
             await emailService.sendSubmissionConfirmation(
                 { email: director.email },

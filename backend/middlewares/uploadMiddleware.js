@@ -1,6 +1,7 @@
-const { S3Client } = require('@aws-sdk/client-s3');
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 const multer = require('multer');
-const multerS3 = require('multer-s3');
+const fs = require('fs');
+const os = require('os');
 const path = require('path');
 
 
@@ -16,28 +17,76 @@ const s3 = new S3Client({
     }
 });
 
-// 2. CONFIGURATION DU STOCKAGE S3
-const storage = multerS3({
-    s3: s3,
-    bucket: process.env.SCALEWAY_BUCKET_NAME,
-    acl: 'public-read', // Permet de lire les images via URL sans signature (OK pour posters/galerie)
-    contentType: multerS3.AUTO_CONTENT_TYPE, // Détecte automatiquement le type MIME (image/jpeg, etc.)
-    key: (req, file, cb) => {
-        // Organisation par dossier dans le bucket
-        let folder = process.env.SCALEWAY_FOLDER || 'uploads';
-        
-        if (file.fieldname === 'video_file') folder += '/videos';
-        else if (file.fieldname === 'poster_file') folder += '/posters';
-        else if (file.fieldname === 'gallery_files') folder += '/gallery';
-        else if (file.fieldname === 'subtitle_file') folder += '/subtitles';
-        else if (file.fieldname === 'avatar') folder += '/avatars';
+// Les fichiers arrivent d'abord en local pour permettre la validation de signature avant S3.
+const TEMP_UPLOAD_DIR = process.env.TEMP_UPLOAD_DIR || path.join(os.tmpdir(), 'marsai-uploads');
 
-        // Nettoyage du nom de fichier
-        const name = file.originalname.split(' ').join('_').replace(/\.[^/.]+$/, "");
-        const extension = path.extname(file.originalname);
-        const fileName = `${folder}/${name}_${Date.now()}${extension}`;
-        
-        cb(null, fileName);
+if (!fs.existsSync(TEMP_UPLOAD_DIR)) {
+    fs.mkdirSync(TEMP_UPLOAD_DIR, { recursive: true });
+}
+
+const sanitizeBaseName = (filename = '') => filename
+    .split(' ')
+    .join('_')
+    .replace(/\.[^/.]+$/, '')
+    .replace(/[^a-zA-Z0-9_-]/g, '');
+
+const getFolderForField = (fieldName) => {
+    let folder = process.env.SCALEWAY_FOLDER || 'uploads';
+
+    if (fieldName === 'video_file') folder += '/videos';
+    else if (fieldName === 'poster_file') folder += '/posters';
+    else if (fieldName === 'gallery_files') folder += '/gallery';
+    else if (fieldName === 'subtitle_file') folder += '/subtitles';
+    else if (fieldName === 'avatar') folder += '/avatars';
+
+    return folder;
+};
+
+const buildS3Key = (fieldName, originalname) => {
+    const folder = getFolderForField(fieldName);
+    const extension = path.extname(originalname || '').toLowerCase();
+    const safeName = sanitizeBaseName(originalname) || 'file';
+    return `${folder}/${safeName}_${Date.now()}${extension}`;
+};
+
+const getContentTypeFromName = (filename = '') => {
+    const extension = getFileTypeFromName(filename);
+    const types = {
+        jpg: 'image/jpeg',
+        jpeg: 'image/jpeg',
+        png: 'image/png',
+        webp: 'image/webp',
+        mp4: 'video/mp4',
+        mov: 'video/quicktime',
+        avi: 'video/x-msvideo',
+        mkv: 'video/x-matroska',
+        srt: 'application/x-subrip',
+        vtt: 'text/vtt',
+        txt: 'text/plain'
+    };
+    return types[extension] || 'application/octet-stream';
+};
+
+const buildPublicFileUrl = (key) => {
+    const explicitBase = process.env.SCALEWAY_PUBLIC_BASE_URL;
+    if (explicitBase) {
+        return `${explicitBase.replace(/\/$/, '')}/${encodeURI(key).replace(/%2F/g, '/')}`;
+    }
+
+    // Fallback compatible Scaleway/endpoint custom si aucune base publique n'est definie.
+    const endpoint = (process.env.SCALEWAY_ENDPOINT || '').replace(/\/$/, '');
+    const bucket = process.env.SCALEWAY_BUCKET_NAME;
+    return `${endpoint}/${bucket}/${encodeURI(key).replace(/%2F/g, '/')}`;
+};
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, TEMP_UPLOAD_DIR);
+    },
+    filename: (req, file, cb) => {
+        const extension = path.extname(file.originalname || '').toLowerCase();
+        const safeName = sanitizeBaseName(file.originalname) || 'file';
+        cb(null, `${safeName}_${Date.now()}${extension}`);
     }
 });
 
@@ -110,4 +159,25 @@ const upload = multer({
     }
 });
 
+const uploadSingleFileToS3 = async (file, fieldName = file.fieldname) => {
+    const key = buildS3Key(fieldName, file.originalname);
+    const bodyStream = fs.createReadStream(file.path);
+
+    await s3.send(new PutObjectCommand({
+        Bucket: process.env.SCALEWAY_BUCKET_NAME,
+        Key: key,
+        Body: bodyStream,
+        ACL: 'public-read',
+        ContentType: getContentTypeFromName(file.originalname)
+    }));
+
+    return {
+        ...file,
+        key,
+        bucket: process.env.SCALEWAY_BUCKET_NAME,
+        location: buildPublicFileUrl(key)
+    };
+};
+
 module.exports = upload;
+module.exports.uploadSingleFileToS3 = uploadSingleFileToS3;

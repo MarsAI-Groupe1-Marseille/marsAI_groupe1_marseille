@@ -1,4 +1,5 @@
 const { S3Client, GetObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
+const fs = require('fs/promises');
 const path = require('path');
 const logger = require('../config/logger');
 
@@ -32,6 +33,18 @@ const getHeadBufferFromS3 = async (key, maxBytes = 8192) => {
     }
 
     return readStreamToBuffer(response.Body);
+};
+
+// Lecture partielle locale: suffit pour les magic bytes sans charger tout le fichier en memoire.
+const getHeadBufferFromLocalFile = async (filePath, maxBytes = 8192) => {
+    const handle = await fs.open(filePath, 'r');
+    try {
+        const buffer = Buffer.alloc(maxBytes);
+        const { bytesRead } = await handle.read(buffer, 0, maxBytes, 0);
+        return buffer.subarray(0, bytesRead);
+    } finally {
+        await handle.close();
+    }
 };
 
 const getExtension = (filename = '') => {
@@ -182,6 +195,48 @@ const validateUploadedFilesBySignature = async (filesByField = {}) => {
     return { ok: true };
 };
 
+// Variante pre-upload S3: meme logique de signature, mais sur fichiers temporaires locaux.
+const validateUploadedLocalFilesBySignature = async (filesByField = {}) => {
+    const allFiles = flattenRequestFiles(filesByField);
+
+    for (const { fieldName, file } of allFiles) {
+        const config = FIELD_CONFIG[fieldName];
+        if (!config) {
+            return { ok: false, message: `Champ fichier non autorise: ${fieldName}` };
+        }
+
+        const extension = getExtension(file.originalname);
+        if (!config.allowed.has(extension)) {
+            return {
+                ok: false,
+                field: fieldName,
+                message: `Extension invalide pour ${fieldName}: .${extension || 'inconnue'}`
+            };
+        }
+
+        if (!file.path) {
+            return {
+                ok: false,
+                field: fieldName,
+                message: `Fichier temporaire introuvable pour ${file.originalname}.`
+            };
+        }
+
+        const headBuffer = await getHeadBufferFromLocalFile(file.path);
+        const signatureIsValid = validateSignatureByExtension(extension, headBuffer);
+
+        if (!signatureIsValid) {
+            return {
+                ok: false,
+                field: fieldName,
+                message: `Le contenu du fichier ne correspond pas a son type declare (${file.originalname}).`
+            };
+        }
+    }
+
+    return { ok: true };
+};
+
 const cleanupUploadedFiles = async (filesByField = {}) => {
     const allFiles = flattenRequestFiles(filesByField);
 
@@ -201,5 +256,6 @@ const cleanupUploadedFiles = async (filesByField = {}) => {
 
 module.exports = {
     validateUploadedFilesBySignature,
+    validateUploadedLocalFilesBySignature,
     cleanupUploadedFiles
 };
