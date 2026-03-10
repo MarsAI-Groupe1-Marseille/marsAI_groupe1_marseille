@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const { User } = require('../models');
+const logger = require('../config/logger');
 
 const createDefaultAdmin = async () => {
   try {
@@ -8,7 +9,7 @@ const createDefaultAdmin = async () => {
     const adminPassword = process.env.ADMIN_DEFAULT_PASSWORD;
 
     if (!adminPassword) {
-      console.warn('ADMIN_DEFAULT_PASSWORD non défini dans .env - création admin désactivée');
+      logger.warn('ADMIN_DEFAULT_PASSWORD non defini dans .env - creation admin desactivee');
       return;
     }
 
@@ -16,7 +17,7 @@ const createDefaultAdmin = async () => {
     const existingAdmin = await User.findOne({ where: { email: adminEmail } });
 
     if (!existingAdmin) {
-      console.log('Aucun administrateur trouvé. Création en cours...');
+      logger.info('Aucun administrateur trouve. Creation en cours...');
 
       // 2. On Hache le mot de passe (10 est le "salt rounds", la complexité)
       const hashedPassword = await bcrypt.hash(adminPassword, 10);
@@ -30,15 +31,13 @@ const createDefaultAdmin = async () => {
         // invite_token, avatar_url, google_id restent null pour l'instant
       });
 
-      console.log('Admin créé avec succès !');
-      console.log(`Email: ${adminEmail}`);
-      console.log('Mot de passe: [PROTÉGÉ - voir .env]');
+      logger.info('Admin cree avec succes', { email: adminEmail });
     } else {
-      console.log('L\'administrateur existe déjà. Pas besoin de le recréer.');
+      logger.info('L\'administrateur existe deja. Pas besoin de le recreer.');
     }
 
   } catch (error) {
-    console.error('Erreur lors de la création de l\'admin :', error);
+    logger.error('Erreur lors de la creation de l\'admin', { error: error.message, stack: error.stack });
   }
 };
 

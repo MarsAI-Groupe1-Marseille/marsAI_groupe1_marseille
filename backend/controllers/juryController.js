@@ -1,6 +1,7 @@
 const { JuryEvaluation, JuryList, Submission, JuryMember, JuryListSubmission, User, sequelize } = require('../models');
 const { Op, QueryTypes } = require('sequelize');
 const { sendErrorResponse } = require('../utils/errorHandler');
+const logger = require('../config/logger');
 
 exports.getAllJury = async (req, res) => {
     try {
@@ -14,7 +15,7 @@ exports.getAllJury = async (req, res) => {
 
         res.status(200).json({ success: true, juryMembers });
     } catch (error) {
-        console.error('Erreur récupération jurys:', error);
+        logger.error('Erreur recuperation jurys', { error: error.message, stack: error.stack });
         return sendErrorResponse(res, 500, error, 'Erreur lors de la récupération des jurys.');
     }
 };
@@ -107,7 +108,7 @@ exports.getAllJuryWithStats = async (req, res) => {
 
         res.status(200).json({ success: true, juryMembers: juryMembersWithStats, globalStats });
     } catch (error) {
-        console.error('Erreur récupération jurys avec stats:', error);
+        logger.error('Erreur recuperation jurys avec stats', { error: error.message, stack: error.stack });
         return sendErrorResponse(res, 500, error, 'Erreur lors de la récupération des jurys avec statistiques.');
     }
 };
@@ -232,7 +233,7 @@ exports.getMyPlaylists = async (req, res) => {
 
         res.status(200).json({ success: true, playlists: myPlaylists });
     } catch (error) {
-        console.error('Erreur récupération playlists:', error);
+        logger.error('Erreur recuperation playlists jury', { userId: req.user?.id, error: error.message, stack: error.stack });
         return sendErrorResponse(res, 500, error, 'Erreur lors de la récupération des playlists du jury.');
     }
 };

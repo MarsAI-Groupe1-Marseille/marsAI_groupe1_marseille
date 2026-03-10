@@ -13,7 +13,14 @@ const validateCommaSeparatedList = (value, fieldName) => {
     }
 
     // Découper par virgule
-    const items = value.split(',').map(item => item.trim());
+    const normalizedValue = value.trim();
+
+    // Si l'utilisateur saisit plusieurs mots sans virgule, on force le format liste.
+    if (!normalizedValue.includes(',') && /\s+/.test(normalizedValue)) {
+        throw new Error(`${fieldName}: utilisez des virgules pour séparer les éléments (ex: "A, B, C")`);
+    }
+
+    const items = normalizedValue.split(',').map(item => item.trim());
 
     // Vérifier qu'aucun élément n'est vide
     if (items.some(item => item === '')) {
@@ -109,25 +116,25 @@ const submissionValidators = [
     body('title_original')
         .trim()
         .notEmpty().withMessage('Titre original requis')
-        .isLength({ min: 3, max: 200 }).withMessage('Titre : 3-200 caractères')
-        .escape(),
+        .isLength({ min: 3, max: 200 }).withMessage('Titre : 3-200 caractères'),
+
     body('title_english')
         .trim()
         .notEmpty().withMessage('Titre anglais requis')
-        .isLength({ min: 3, max: 200 }).withMessage('Titre : 3-200 caractères')
-        .escape(),
+        .isLength({ min: 3, max: 200 }).withMessage('Titre : 3-200 caractères'),
+
 
     // Synopsis
     body('synopsis_original')
         .trim()
         .notEmpty().withMessage('Synopsis original requis')
-        .isLength({ min: 2, max: 2000 }).withMessage('Synopsis : 2-2000 caractères')
-        .escape(),
+        .isLength({ min: 2, max: 2000 }).withMessage('Synopsis : 2-2000 caractères'),
+
     body('synopsis_english')
         .trim()
         .notEmpty().withMessage('Synopsis anglais requis')
-        .isLength({ min: 2, max: 2000 }).withMessage('Synopsis : 2-2000 caractères')
-        .escape(),
+        .isLength({ min: 2, max: 2000 }).withMessage('Synopsis : 2-2000 caractères'),
+
 
     // Durée
     body('duration_seconds')
@@ -138,16 +145,16 @@ const submissionValidators = [
     body('language_main')
         .notEmpty().withMessage('Langue requise')
         .trim()
-        .isLength({ min: 2, max: 50 }).withMessage('Langue : 2-50 caractères')
-        .escape(),
+        .isLength({ min: 2, max: 50 }).withMessage('Langue : 2-50 caractères'),
+
 
     // Tags/Thèmes - VALIDÉ PAR VIRGULES
     body('theme_tags')
         .optional()
         .trim()
         .isLength({ max: 500 }).withMessage('Tags : max 500 caractères')
-        .custom((value) => validateCommaSeparatedList(value, 'Themes/Tags'))
-        .escape(),
+        .custom((value) => validateCommaSeparatedList(value, 'Themes/Tags')),
+
 
     // IA
     body('ai_classification')
@@ -159,16 +166,16 @@ const submissionValidators = [
         .optional()
         .trim()
         .isLength({ max: 1000 }).withMessage('Outils IA : max 1000 caractères')
-        .custom((value) => validateCommaSeparatedList(value, 'Outils IA'))
-        .escape(),
+        .custom((value) => validateCommaSeparatedList(value, 'Outils IA')),
+
     
     // AI METHODOLOGY - PEUT ÊTRE DU TEXTE LIBRE MAIS VALIDÉ
     body('ai_methodology')
         .optional()
         .trim()
         .if(value => value && value.length > 0)
-        .isLength({ min: 5, max: 2000 }).withMessage('Méthodologie : 5-2000 caractères')
-        .escape(),
+        .isLength({ min: 5, max: 2000 }).withMessage('Méthodologie : 5-2000 caractères'),
+
 
     // DIRECTOR
     body('director_civility')
@@ -176,13 +183,13 @@ const submissionValidators = [
     body('director_firstname')
         .trim()
         .notEmpty().withMessage('Prénom réalisateur requis')
-        .isLength({ min: 2, max: 100 }).withMessage('Prénom : 2-100 caractères')
-        .escape(),
+        .isLength({ min: 2, max: 100 }).withMessage('Prénom : 2-100 caractères'),
+
     body('director_lastname')
         .trim()
         .notEmpty().withMessage('Nom réalisateur requis')
-        .isLength({ min: 2, max: 100 }).withMessage('Nom : 2-100 caractères')
-        .escape(),
+        .isLength({ min: 2, max: 100 }).withMessage('Nom : 2-100 caractères'),
+
     body('director_birth_date')
         .notEmpty().withMessage('Date de naissance requise')
         .isISO8601().withMessage('Date invalide')
@@ -214,8 +221,8 @@ const submissionValidators = [
     body('director_address')
         .optional()
         .trim()
-        .isLength({ max: 200 }).withMessage('Max 200 caractères')
-        .escape(),
+        .isLength({ max: 200 }).withMessage('Max 200 caractères'),
+
     body('director_zip_code')
         .optional()
         .trim()
@@ -223,22 +230,22 @@ const submissionValidators = [
     body('director_city')
         .optional()
         .trim()
-        .isLength({ max: 100 }).withMessage('Max 100 caractères')
-        .escape(),
+        .isLength({ max: 100 }).withMessage('Max 100 caractères'),
+
     body('director_country')
         .notEmpty().withMessage('Pays requis')
-        .isLength({ min: 2, max: 100 }).withMessage('Pays invalide')
-        .escape(),
+        .isLength({ min: 2, max: 100 }).withMessage('Pays invalide'),
+
     body('director_job_title')
         .trim()
         .notEmpty().withMessage('Métier requis')
-        .isLength({ min: 2, max: 100 }).withMessage('Métier : 2-100 caractères')
-        .escape(),
+        .isLength({ min: 2, max: 100 }).withMessage('Métier : 2-100 caractères'),
+
     body('director_marketing_source')
         .optional()
         .trim()
-        .isLength({ max: 200 }).withMessage('Max 200 caractères')
-        .escape(),
+        .isLength({ max: 200 }).withMessage('Max 200 caractères'),
+
 
     // JSON STRUCTURE
     body('collaborators_json')
