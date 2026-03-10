@@ -81,6 +81,11 @@ const buildPublicFileUrl = (key) => {
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
+        // Le dossier temp peut etre supprime entre deux requetes (nettoyage OS).
+        // On le recree au moment de l'ecriture pour eviter les erreurs ENOENT.
+        if (!fs.existsSync(TEMP_UPLOAD_DIR)) {
+            fs.mkdirSync(TEMP_UPLOAD_DIR, { recursive: true });
+        }
         cb(null, TEMP_UPLOAD_DIR);
     },
     filename: (req, file, cb) => {
