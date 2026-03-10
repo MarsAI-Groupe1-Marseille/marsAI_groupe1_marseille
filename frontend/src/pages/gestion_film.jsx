@@ -270,13 +270,7 @@ function RejectFilmModal({ filmId, isOpen, onClose, onConfirm, t }) {
         </div>
 
         {/* Body */}
-        <div className="p-6 space-y-4">
-          <div className="bg-orange-900/20 border border-orange-800 rounded-lg p-4">
-            <p className="text-orange-200 text-sm">
-              ⚠️ Le rejet n'est pas définitif. Les réalisateurs pourront revoir leur soumission.
-            </p>
-          </div>
-
+        <div className="p-6 space-y-4">   
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Issue Type */}
             <div>
