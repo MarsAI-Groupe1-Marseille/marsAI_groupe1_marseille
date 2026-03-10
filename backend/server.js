@@ -6,6 +6,7 @@ const passport = require('passport');
 const path = require('path');
 require('dotenv').config();
 require('./config/passport');
+const logger = require('./config/logger');
 
 const createDefaultAdmin = require('./utils/createAdmin');
 
@@ -15,6 +16,8 @@ const sequelize = require('./config/db');
 // Import des middlewares de sécurité
 const { helmetConfig, generalLimiter, authenticatedLimiter } = require('./middlewares/securityMiddleware');
 const { sessionMiddleware, csrfProtection } = require('./middlewares/csrfMiddleware');
+const requestContext = require('./middlewares/requestContext');
+const httpLogger = require('./middlewares/httpLogger');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -35,6 +38,8 @@ const awardRoutes = require('./routes/awardRoutes');
 // ==========================================
 // MIDDLEWARES
 // ==========================================
+app.use(requestContext);
+
 const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
 const allowedOrigins = (process.env.CORS_ORIGINS || frontendUrl)
     .split(',')
@@ -64,6 +69,7 @@ app.use(cookieParser()); // Pour parser les cookies
 app.use(sessionMiddleware);  // Session pour CSRF
 app.use(csrfProtection); // Protection CSRF
 app.use(passport.initialize());
+app.use(httpLogger);
 
 
 // ==========================================
@@ -104,7 +110,12 @@ app.use('/uploads', (req, res, next) => {
 // ==========================================
 app.use((err, req, res, next) => {
     if (err.code === 'EBADCSRFTOKEN') {
-        console.warn('Token CSRF invalide détecté');
+        logger.warn('Token CSRF invalide detecte', {
+            requestId: req.requestId,
+            path: req.originalUrl,
+            method: req.method,
+            ip: req.ip
+        });
         return res.status(403).json({ 
             error: 'Session invalide ou expirée. Veuillez rafraîchir la page.',
             code: 'CSRF_INVALID'
@@ -124,12 +135,12 @@ const syncOptions = process.env.NODE_ENV === 'production'
     : { alter: true };
 
 sequelize.sync(syncOptions).then(async () => {
-    console.log(`Base de données synchronisée (${process.env.NODE_ENV || 'development'} mode).`);
+    logger.info(`Base de donnees synchronisee (${process.env.NODE_ENV || 'development'} mode).`);
     //APPEL DE La FONCTION POUR CREER UN ADMIN
   await createDefaultAdmin();
     app.listen(port, () => {
-        console.log(`Serveur démarré sur : http://localhost:${port}`);
+        logger.info(`Serveur demarre sur : http://localhost:${port}`);
     });
 }).catch(err => {
-    console.error("Erreur de synchronisation Sequelize :", err);
+    logger.error('Erreur de synchronisation Sequelize', { error: err.message, stack: err.stack });
 });

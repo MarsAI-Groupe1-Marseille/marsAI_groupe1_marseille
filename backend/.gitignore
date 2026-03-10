@@ -7,3 +7,7 @@ uploads/*
 
 # 2. Sauf le fichier .gitkeep (pour garder le dossier vide sur Git)
 !uploads/.gitkeep
+
+# --- LOGS RUNTIME ---
+logs/*
+!logs/.gitkeep

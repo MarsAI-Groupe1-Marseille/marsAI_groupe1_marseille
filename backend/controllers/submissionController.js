@@ -6,6 +6,7 @@ const { Op } = require('sequelize');
 const fs = require('fs');
 const crypto = require('crypto'); // C'est natif dans Node.js
 const { sendErrorResponse } = require('../utils/errorHandler');
+const logger = require('../config/logger');
 
 // Fonction pour normaliser gallery_urls en array JSON
 const normalizeGalleryUrls = (submission) => {
@@ -14,7 +15,7 @@ const normalizeGalleryUrls = (submission) => {
       try {
         submission.gallery_urls = JSON.parse(submission.gallery_urls);
       } catch (e) {
-        console.warn('Erreur lors du parsing de gallery_urls:', e);
+                logger.warn('Erreur lors du parsing de gallery_urls', { error: e.message });
         submission.gallery_urls = [];
       }
     }
@@ -27,7 +28,7 @@ const normalizeGalleryUrls = (submission) => {
 exports.createSubmission = async (req, res) => {
     const MODE_TEST_YOUTUBE = false; 
 
-    console.log("Réception d'une nouvelle soumission (Version Scaleway S3)...");
+    logger.info('Reception d\'une nouvelle soumission', { requestId: req.requestId });
 
     // 1. VÉRIFICATION DES FICHIERS (Multer-S3 les a déjà envoyés sur S3 à ce stade)
     if (!req.files || !req.files.video_file || !req.files.poster_file) {
@@ -88,7 +89,7 @@ exports.createSubmission = async (req, res) => {
         if (MODE_TEST_YOUTUBE) {
             youtubeId = "FAKE_ID_" + Date.now(); 
         } else {
-            console.log("Upload YouTube en cours via Stream S3...");
+            logger.info('Upload YouTube en cours via stream S3', { videoKey: videoFile.key });
             // On passe la KEY du fichier S3 (ex: videos/123.mp4) au lieu du path local
             youtubeId = await uploadVideoToYoutube(
                 videoFile.key, 
@@ -104,7 +105,7 @@ exports.createSubmission = async (req, res) => {
                     try {
                         await uploadSubtitlesToYoutube(youtubeId, subtitleFile.key, req.body.language_main || 'fr');
                     } catch (err) {
-                        console.error("Échec envoi sous-titres:", err);
+                        logger.error('Echec envoi sous-titres', { youtubeId, subtitleKey: subtitleFile.key, error: err.message });
                     }
                 }, 5000); // 5 secondes de délai par sécurité
 }
@@ -153,7 +154,7 @@ exports.createSubmission = async (req, res) => {
                     await Collaborator.bulkCreate(collaboratorsWithId);
                 }
             } catch (error) {
-                console.error("Erreur Collaborators :", error.message);
+                logger.warn('Erreur collaborators - soumission continue', { submissionId: newSubmission.id, error: error.message });
             }
         }
 
@@ -164,7 +165,11 @@ exports.createSubmission = async (req, res) => {
                 req.body.title_original
             );
         } catch (emailError) {
-            console.error("Erreur envoi email confirmation:", emailError);
+            logger.warn('Erreur envoi email confirmation - soumission continue', {
+                submissionId: newSubmission.id,
+                email: director.email,
+                error: emailError.message
+            });
             // On ne bloque pas la soumission si l'email échoue
         }
 
@@ -175,7 +180,7 @@ exports.createSubmission = async (req, res) => {
         });
 
     } catch (error) {
-        console.error("Erreur Soumission :", error);
+        logger.error('Erreur soumission', { error: error.message, stack: error.stack });
         await cleanupUploadedFiles(req.files);
         // Note : Pas besoin de fs.unlinkSync ici, car les fichiers sont sur S3.
         // On pourrait ajouter une fonction de nettoyage S3 en cas d'erreur si besoin.
@@ -251,7 +256,7 @@ exports.getAllSubmissions = async (req, res) => {
         });
 
     } catch (error) {
-        console.error("Erreur récupération galerie :", error);
+        logger.error('Erreur recuperation galerie', { error: error.message, stack: error.stack });
         res.status(500).json({ message: "Impossible de récupérer les films." });
     }
 };
@@ -291,7 +296,7 @@ exports.getSubmissionById = async (req, res) => {
 
         res.status(200).json(submission);
     } catch (error) {
-        console.error(`Erreur récupération film ${id} :`, error);
+        logger.error('Erreur recuperation film', { submissionId: id, error: error.message, stack: error.stack });
         res.status(500).json({ message: "Erreur serveur lors de la récupération du détail." });
     }
 };
@@ -322,7 +327,7 @@ exports.getAllGenres = async (req, res) => {
 
         res.status(200).json({ genres });
     } catch (error) {
-        console.error('Erreur récupération genres :', error);
+        logger.error('Erreur recuperation genres', { error: error.message, stack: error.stack });
         res.status(500).json({ message: "Erreur serveur lors de la récupération des genres." });
     }
 };
@@ -391,7 +396,7 @@ exports.getSimilarSubmissions = async (req, res) => {
 
         res.status(200).json({ similar: similarFilms });
     } catch (error) {
-        console.error(`Erreur récupération films similaires pour ${id}:`, error);
+        logger.error('Erreur recuperation films similaires', { submissionId: id, error: error.message, stack: error.stack });
         res.status(500).json({ message: "Erreur serveur lors de la récupération des films similaires." });
     }
 };

@@ -5,6 +5,7 @@
 // -----------------------------------------------------------------------------
 
 const transporter = require('../config/mail');
+const logger = require('../config/logger');
 
 const emailService = {
 
@@ -28,9 +29,9 @@ const emailService = {
                     </div>
                 `
             });
-            console.log(`Mail bienvenue envoyé à : ${user.email}`);
+            logger.info('Mail bienvenue envoye', { email: user.email });
         } catch (error) {
-            console.error(" Erreur mail bienvenue :", error);
+            logger.error('Erreur mail bienvenue', { email: user.email, error: error.message, stack: error.stack });
         }
     },
 
@@ -53,9 +54,9 @@ const emailService = {
                     </div>
                 `
             });
-            console.log(`Mail dépôt envoyé à : ${user.email}`);
+            logger.info('Mail depot envoye', { email: user.email, filmTitle });
         } catch (error) {
-            console.error("Erreur mail dépôt :", error);
+            logger.error('Erreur mail depot', { email: user.email, filmTitle, error: error.message, stack: error.stack });
         }
     },
 
@@ -83,9 +84,9 @@ const emailService = {
                     </div>
                 `
             });
-            console.log(`Mail invitation jury envoyé à : ${email}`);
+            logger.info('Mail invitation jury envoye', { email });
         } catch (error) {
-            console.error(" Erreur mail jury :", error);
+            logger.error('Erreur mail jury', { email, error: error.message, stack: error.stack });
         }
     },
 
@@ -158,9 +159,9 @@ const emailService = {
                     </div>
                 `
             });
-            console.log(`Mail invitation ${role} envoyé à : ${email}`);
+            logger.info('Mail invitation utilisateur envoye', { email, role });
         } catch (error) {
-            console.error(`Erreur mail invitation ${role} :`, error);
+            logger.error('Erreur mail invitation utilisateur', { email, role, error: error.message, stack: error.stack });
             throw error;
         }
     },
@@ -187,9 +188,9 @@ const emailService = {
                     </div>
                 `
             });
-            console.log(`Mail approbation envoyé à : ${user.email}`);
+            logger.info('Mail approbation envoye', { email: user.email, filmTitle });
         } catch (error) {
-            console.error("Erreur mail approbation :", error);
+            logger.error('Erreur mail approbation', { email: user.email, filmTitle, error: error.message, stack: error.stack });
         }
     },
 
@@ -215,9 +216,9 @@ const emailService = {
                     </div>
                 `
             });
-            console.log(`Mail refus envoyé à : ${user.email}`);
+            logger.info('Mail refus envoye', { email: user.email, filmTitle });
         } catch (error) {
-            console.error("Erreur mail refus :", error);
+            logger.error('Erreur mail refus', { email: user.email, filmTitle, error: error.message, stack: error.stack });
         }
     },
 
@@ -264,9 +265,9 @@ const emailService = {
                     </div>
                 `
             });
-            console.log(`Mail réinitialisation mot de passe envoyé à : ${email}`);
+            logger.info('Mail reinitialisation mot de passe envoye', { email });
         } catch (error) {
-            console.error("Erreur mail réinitialisation mot de passe :", error);
+            logger.error('Erreur mail reinitialisation mot de passe', { email, error: error.message, stack: error.stack });
             throw error;
         }
     }

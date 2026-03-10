@@ -6,6 +6,7 @@ const { validateRequest } = require('../middlewares/validationMiddleware');
 const { csrfProtection } = require('../middlewares/csrfMiddleware');
 const { submissionValidators } = require('../validators/submissionValidators');
 const { uploadLimiter } = require('../middlewares/securityMiddleware');
+const { cleanupUploadedFiles } = require('../services/fileValidationService');
 
 const uploadSubmissionFields = upload.fields([
     { name: 'video_file', maxCount: 1 },
@@ -15,8 +16,13 @@ const uploadSubmissionFields = upload.fields([
 ]);
 
 const handleSubmissionUpload = (req, res, next) => {
-    uploadSubmissionFields(req, res, (err) => {
+    uploadSubmissionFields(req, res, async (err) => {
         if (!err) return next();
+
+        // Nettoie les objets deja envoyes sur S3 en cas d'erreur Multer.
+        if (req.files) {
+            await cleanupUploadedFiles(req.files);
+        }
 
         if (err.code === 'LIMIT_FILE_SIZE') {
             return res.status(400).json({
@@ -43,8 +49,8 @@ const handleSubmissionUpload = (req, res, next) => {
 
 router.post('/', 
     uploadLimiter,              // Limiter les uploads: 10/h par IP
+    csrfProtection,             // Rejeter les requetes non legitimes avant tout upload
     handleSubmissionUpload,
-    csrfProtection,
     submissionValidators,
     validateRequest,
     submissionController.createSubmission

@@ -1,5 +1,6 @@
 const { S3Client, GetObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
 const path = require('path');
+const logger = require('../config/logger');
 
 const s3Client = new S3Client({
     endpoint: process.env.SCALEWAY_ENDPOINT,
@@ -193,7 +194,7 @@ const cleanupUploadedFiles = async (filesByField = {}) => {
                 Key: file.key
             }));
         } catch (error) {
-            console.error('Echec suppression S3:', file.key, error.message);
+            logger.error('Echec suppression S3', { s3Key: file.key, error: error.message });
         }
     }));
 };

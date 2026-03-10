@@ -1,6 +1,7 @@
 const { google } = require('googleapis');
 const { S3Client, GetObjectCommand } = require('@aws-sdk/client-s3');
 require('dotenv').config();
+const logger = require('../config/logger');
 
 // 1. CONFIGURATION SCALEWAY S3
 const s3Client = new S3Client({
@@ -36,7 +37,7 @@ exports.uploadVideoToYoutube = async (s3Key, title, description) => {
             auth: oauth2Client
         });
 
-        console.log(`Initialisation du stream depuis Scaleway : ${s3Key}`);
+        logger.info('Initialisation du stream depuis Scaleway', { s3Key });
 
         // A. RÉCUPÉRER LE FLUX DEPUIS SCALEWAY
         const getObjectParams = {
@@ -49,7 +50,7 @@ exports.uploadVideoToYoutube = async (s3Key, title, description) => {
         // Body est un ReadableStream venant de Scaleway S3
         if (!Body) throw new Error("Impossible de récupérer le flux depuis S3");
 
-        console.log(`Upload en cours vers YouTube : ${title}...`);
+        logger.info('Upload en cours vers YouTube', { title, s3Key });
 
         // B. ENVOI DU FLUX À YOUTUBE
         const response = await youtube.videos.insert({
@@ -71,15 +72,20 @@ exports.uploadVideoToYoutube = async (s3Key, title, description) => {
             // Configuration pour gérer les gros fichiers
             onUploadProgress: (evt) => {
                 const progress = (evt.bytesRead / 1024 / 1024).toFixed(2);
-                console.log(`${progress} MB uploadés...`);
+                logger.debug('Progression upload YouTube', { progressMb: Number(progress), title });
             }
         });
 
-        console.log("Upload YouTube terminé ! ID:", response.data.id);
+        logger.info('Upload YouTube termine', { youtubeId: response.data.id, title });
         return response.data.id;
 
     } catch (error) {
-        console.error("Erreur Upload YouTube via S3 Stream:", error.message);
+        logger.error('Erreur upload YouTube via S3 stream', {
+            s3Key,
+            title,
+            error: error.message,
+            stack: error.stack
+        });
         throw error;
     }
 };
@@ -102,7 +108,7 @@ exports.uploadSubtitlesToYoutube = async (youtubeId, s3Key, language = 'fr') => 
         // YouTube est très strict : 'fr', 'en', 'es', etc.
         const isoLanguage = language.toLowerCase().substring(0, 2); 
 
-        console.log(`Envoi des sous-titres (${isoLanguage}) pour la vidéo : ${youtubeId}`);
+        logger.info('Envoi des sous-titres YouTube', { youtubeId, language: isoLanguage, s3Key });
 
         await youtube.captions.insert({
             part: 'snippet',
@@ -120,9 +126,12 @@ exports.uploadSubtitlesToYoutube = async (youtubeId, s3Key, language = 'fr') => 
             }
         });
 
-        console.log("Sous-titres ajoutés avec succès sur YouTube !");
+        logger.info('Sous-titres ajoutes avec succes sur YouTube', { youtubeId, language: isoLanguage });
     } catch (error) {
-        console.error("Erreur lors de l'ajout des sous-titres :", 
-            error.response?.data?.error || error.message);
+        logger.error('Erreur lors de l\'ajout des sous-titres YouTube', {
+            youtubeId,
+            s3Key,
+            error: error.response?.data?.error || error.message
+        });
     }
 };

@@ -6,6 +6,7 @@ const emailService = require('../services/emailService');
 // 3. On importe le helper pour uploader les images base64 vers S3
 const { processConfigImages, normalizeConfigImageUrls } = require('../utils/uploadHelper');
 const { sendErrorResponse } = require('../utils/errorHandler');
+const logger = require('../config/logger');
 
 // Fonction pour récupérer les statistiques du dashboard
 exports.getDashboardStats = async (req, res) => {
@@ -29,7 +30,7 @@ exports.getDashboardStats = async (req, res) => {
             pending: pendingCount
         });
     } catch (error) {
-        console.error("Erreur lors de la récupération des statistiques :", error);
+        logger.error('Erreur lors de la recuperation des statistiques', { error: error.message, stack: error.stack });
         return sendErrorResponse(res, 500, error, 'Erreur lors de la récupération des statistiques.');
     }
 };
@@ -97,7 +98,7 @@ exports.getCategoriesDistribution = async (req, res) => {
 
         res.status(200).json({ categories });
     } catch (error) {
-        console.error("Erreur lors de la récupération des catégories :", error);
+        logger.error('Erreur lors de la recuperation des categories', { error: error.message, stack: error.stack });
         return sendErrorResponse(res, 500, error, 'Erreur lors de la récupération des catégories.');
     }
 };
@@ -147,7 +148,7 @@ exports.getSubmissionsChartData = async (req, res) => {
         
         res.status(200).json({ chartData: weeksData });
     } catch (error) {
-        console.error("Erreur lors de la récupération des données du graphique :", error);
+        logger.error('Erreur lors de la recuperation des donnees du graphique', { error: error.message, stack: error.stack });
         return sendErrorResponse(res, 500, error, 'Erreur lors de la récupération des données du graphique.');
     }
 };
@@ -232,7 +233,12 @@ exports.moderateSubmission = async (req, res) => {
 
     } catch (error) {
         await transaction.rollback();
-        console.error("Erreur Modération :", error);
+        logger.error('Erreur moderation', {
+            submissionId: req.params.submissionId,
+            adminId: req.user?.id,
+            error: error.message,
+            stack: error.stack
+        });
         return sendErrorResponse(res, 500, error, 'Erreur lors de la modération.');
     }
 };
@@ -259,7 +265,7 @@ exports.createJuryList = async (req, res) => {
             juryList
         });
     } catch (error) {
-        console.error("Erreur lors de la création de la liste de jury :", error);
+        logger.error('Erreur lors de la creation de la liste de jury', { error: error.message, stack: error.stack });
         return sendErrorResponse(res, 500, error, 'Erreur lors de la création de la liste de jury.');
     }
 };
@@ -302,7 +308,7 @@ exports.getJuryListsWithAssignments = async (req, res) => {
 
         res.status(200).json({ playlists: payload });
     } catch (error) {
-        console.error("Erreur lors de la récupération des playlists :", error);
+        logger.error('Erreur lors de la recuperation des playlists', { error: error.message, stack: error.stack });
         return sendErrorResponse(res, 500, error, 'Erreur lors de la récupération des playlists.');
     }
 };
@@ -331,7 +337,12 @@ exports.addMovieToPlayList = async (req, res) =>{
             
         
     } catch (error) {
-         console.error("Erreur lors lors de l'assignation ddu film a la playlist :", error);
+        logger.error('Erreur lors de l\'assignation du film a la playlist', {
+            juryListId: req.body.jury_list_id,
+            submissionId: req.body.submission_id,
+            error: error.message,
+            stack: error.stack
+        });
         return sendErrorResponse(res, 500, error, "Erreur lors de l'assignation du film à la playlist.");
         
     }
@@ -367,7 +378,12 @@ exports.assignedJuryToPlaylist = async (req, res) =>{
         
     }
     catch(error){
-        console.error('Erreur lors de l\'assignation du jury à la playlist :', error);
+        logger.error('Erreur lors de l\'assignation du jury a la playlist', {
+            juryListId: req.body.jury_list_id,
+            userId: req.body.user_id,
+            error: error.message,
+            stack: error.stack
+        });
         return sendErrorResponse(res, 500, error, "Erreur lors de l'assignation du jury à la playlist.");
     }
 };
@@ -391,7 +407,7 @@ exports.removeMovieFromPlaylist = async (req, res) => {
 
         res.status(200).json({ message: "Film retiré de la playlist." });
     } catch (error) {
-        console.error("Erreur lors du retrait du film :", error);
+        logger.error('Erreur lors du retrait du film', { error: error.message, stack: error.stack });
         return sendErrorResponse(res, 500, error, 'Erreur lors du retrait du film de la playlist.');
     }
 };
@@ -415,7 +431,7 @@ exports.removeJuryFromPlaylist = async (req, res) => {
 
         res.status(200).json({ message: "Jury retiré de la playlist." });
     } catch (error) {
-        console.error("Erreur lors du retrait du jury :", error);
+        logger.error('Erreur lors du retrait du jury', { error: error.message, stack: error.stack });
         return sendErrorResponse(res, 500, error, 'Erreur lors du retrait du jury de la playlist.');
     }
 };
@@ -446,7 +462,7 @@ exports.deleteJuryList = async (req, res) => {
         return res.status(200).json({ message: "Playlist supprimée." });
     } catch (error) {
         await transaction.rollback();
-        console.error("Erreur lors de la suppression de la playlist :", error);
+        logger.error('Erreur lors de la suppression de la playlist', { id: req.params.id, error: error.message, stack: error.stack });
         return sendErrorResponse(res, 500, error, 'Erreur lors de la suppression de la playlist.');
     }
 };
@@ -471,7 +487,7 @@ exports.deleteManyJuryLists = async (req, res) => {
         return res.status(200).json({ message: "Playlists supprimées.", deletedCount });
     } catch (error) {
         await transaction.rollback();
-        console.error("Erreur lors de la suppression des playlists :", error);
+        logger.error('Erreur lors de la suppression des playlists', { ids: req.body.ids, error: error.message, stack: error.stack });
         return sendErrorResponse(res, 500, error, 'Erreur lors de la suppression des playlists.');
     }
 };
@@ -511,7 +527,7 @@ exports.getHomeConfig = async (req, res) => {
             });
         }
     } catch (error) {
-        console.error("Erreur lors de la récupération de la config home:", error);
+        logger.error('Erreur lors de la recuperation de la config home', { error: error.message, stack: error.stack });
         return sendErrorResponse(res, 500, error, 'Erreur lors de la récupération de la configuration.');
     }
 };
@@ -527,12 +543,12 @@ exports.updateHomeConfig = async (req, res) => {
             });
         }
 
-        console.log('🔄 Traitement de la config home...');
+        logger.info('Traitement de la configuration home en cours');
 
         // 1. Traiter les images base64 et les uploader vers S3
         const processedConfig = normalizeConfigImageUrls(await processConfigImages(config));
 
-        console.log('Images traitées et uploadées sur S3');
+        logger.info('Images de configuration traitees et uploadees sur S3');
 
         // 2. Chercher si une config existe déjà
         let siteConfig = await SiteConfig.findOne({ 
@@ -543,14 +559,14 @@ exports.updateHomeConfig = async (req, res) => {
             // Mise à jour
             siteConfig.config_data = processedConfig;
             await siteConfig.save();
-            console.log('Configuration mise à jour en BDD');
+            logger.info('Configuration home mise a jour en BDD');
         } else {
             // Création
             siteConfig = await SiteConfig.create({
                 config_key: 'home_page',
                 config_data: processedConfig
             });
-            console.log('Configuration créée en BDD');
+            logger.info('Configuration home creee en BDD');
         }
 
         res.status(200).json({ 
@@ -560,7 +576,7 @@ exports.updateHomeConfig = async (req, res) => {
         });
 
     } catch (error) {
-        console.error("Erreur lors de la sauvegarde de la config home:", error);
+        logger.error('Erreur lors de la sauvegarde de la config home', { error: error.message, stack: error.stack });
         return sendErrorResponse(res, 500, error, 'Erreur lors de la sauvegarde de la configuration.');
     }
 };
