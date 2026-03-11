@@ -46,12 +46,12 @@ const getHeadBufferFromLocalFile = async (filePath, maxBytes = 8192) => {
         await handle.close();
     }
 };
-
+// Extraire l'extension d'un nom de fichier (sans le point, en minuscules)
 const getExtension = (filename = '') => {
     const extension = path.extname(filename).toLowerCase();
     return extension.startsWith('.') ? extension.slice(1) : extension;
 };
-
+// Validation des signatures de fichiers pour les types autorisés (jpg, png, webp, mp4, mov, avi, mkv, srt, vtt, txt)
 const isJpeg = (buffer) => buffer.length >= 3
     && buffer[0] === 0xff
     && buffer[1] === 0xd8
@@ -80,7 +80,7 @@ const isMkv = (buffer) => buffer.length >= 4
     && buffer[1] === 0x45
     && buffer[2] === 0xdf
     && buffer[3] === 0xa3;
-
+// Pour MP4/MOV, on lit la box 'ftyp' pour différencier les deux formats (mp4 a souvent des brands comme 'isom', mov a souvent 'qt  ')
 const readFtypBrand = (buffer) => {
     if (buffer.length < 12) return null;
     const box = buffer.subarray(4, 8).toString('ascii');
@@ -161,7 +161,7 @@ const FIELD_CONFIG = {
 
 const flattenRequestFiles = (filesByField = {}) => Object.entries(filesByField)
     .flatMap(([fieldName, files]) => (files || []).map((file) => ({ fieldName, file })));
-
+// Valider les fichiers uploadés en vérifiant leur signature (magic bytes) pour éviter les fichiers malveillants déguisés. On peut faire ça après l'upload sur S3 (en lisant les premiers bytes depuis S3) ou avant l'upload (en lisant les fichiers temporaires locaux), selon ce qui est plus pratique dans le flow de ton application.
 const validateUploadedFilesBySignature = async (filesByField = {}) => {
     const allFiles = flattenRequestFiles(filesByField);
 
@@ -236,7 +236,7 @@ const validateUploadedLocalFilesBySignature = async (filesByField = {}) => {
 
     return { ok: true };
 };
-
+// Supprimer les fichiers uploadés sur S3 (en cas d'erreur de validation ou autre) pour éviter d'avoir des fichiers orphelins qui prennent de la place inutilement.
 const cleanupUploadedFiles = async (filesByField = {}) => {
     const allFiles = flattenRequestFiles(filesByField);
 

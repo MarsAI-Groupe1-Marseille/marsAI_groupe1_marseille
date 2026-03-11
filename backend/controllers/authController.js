@@ -5,6 +5,7 @@ const { sendErrorResponse } = require('../utils/errorHandler');
 
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
+// Gérer la connexion d'un utilisateur (email + password)
 exports.login = async (req, res) => {
     try{
         const{ email, password } = req.body;
@@ -50,7 +51,7 @@ exports.login = async (req, res) => {
     }
 };
 
-
+// Gérer le callback de Google OAuth (après que l'utilisateur se soit connecté avec Google)
 exports.googleCallback = async (req, res) => {
     try {
         if (!req.user) {
@@ -82,6 +83,8 @@ exports.googleCallback = async (req, res) => {
         res.redirect(`${FRONTEND_URL}/login?error=server_error`);
     }
 };
+
+// Récupérer les informations de l'utilisateur connecté (via le token JWT)
 exports.getMe = async (req, res) => {
     // req.user a été rempli par ton authMiddleware
     // On renvoie juste les informations de l'utilisateur au Front-end
@@ -95,6 +98,7 @@ exports.getMe = async (req, res) => {
     });
 };
 
+// Gérer la déconnexion d'un utilisateur (en supprimant le cookie JWT)
 exports.logout = async (req, res) => {
     try {
         // Effacer le cookie JWT

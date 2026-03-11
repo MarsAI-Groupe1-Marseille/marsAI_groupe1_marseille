@@ -3,6 +3,8 @@ const { Op, QueryTypes } = require('sequelize');
 const { sendErrorResponse } = require('../utils/errorHandler');
 const logger = require('../config/logger');
 
+
+// Récupérer tous les jurys avec leurs statistiques de votes et le nombre de films assignés
 exports.getAllJury = async (req, res) => {
     try {
         const juryMembers = await User.findAll({
@@ -20,6 +22,7 @@ exports.getAllJury = async (req, res) => {
     }
 };
 
+// Récupérer tous les jurys avec leurs statistiques de votes, le nombre de films assignés et les stats globales
 exports.getAllJuryWithStats = async (req, res) => {
     try {
         const [juryMembers, assignedCounts, evaluationStats, approvedFilmsCount] = await Promise.all([
@@ -113,6 +116,7 @@ exports.getAllJuryWithStats = async (req, res) => {
     }
 };
 
+// Soumettre ou mettre à jour un vote pour une soumission donnée par le jury connecté (Upsert)
 exports.submitVote = async (req, res) => {
     try {
         const { submissionId, vote_status, comment } = req.body;
@@ -140,6 +144,7 @@ exports.submitVote = async (req, res) => {
     }
 };
 
+// Récupérer les votes du jury connecté pour les films qu'il a évalués, avec pagination
 exports.getJuryVotes = async (req, res) => {
     try {
         const userId = req.user.id;
@@ -153,6 +158,7 @@ exports.getJuryVotes = async (req, res) => {
     }
 };
 
+// Récupérer les playlists du jury connecté avec les films associés et leurs évaluations (si existantes)
 exports.getMyPlaylists = async (req, res) => {
     try {
         const userId = req.user.id;
