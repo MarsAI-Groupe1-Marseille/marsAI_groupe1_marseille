@@ -2,7 +2,7 @@ const { sequelize, JuryEvaluation, Submission, User } = require('../models');
 const { QueryTypes } = require('sequelize');
 const { sendErrorResponse } = require('../utils/errorHandler');
 const logger = require('../config/logger');
-
+// Helper pour parser les entiers positifs avec une valeur de fallback
 const parsePositiveInt = (value, fallback) => {
     const parsed = Number.parseInt(value, 10);
     if (Number.isNaN(parsed) || parsed <= 0) {
@@ -10,7 +10,7 @@ const parsePositiveInt = (value, fallback) => {
     }
     return parsed;
 };
-
+// Helper pour résoudre le filtre de vote en fonction de la query string
 const resolveVoteFilter = (raw) => {
     const normalized = (raw || 'liked_or_discuss').toLowerCase();
     if (normalized === 'liked') return ['LIKE'];
@@ -19,7 +19,7 @@ const resolveVoteFilter = (raw) => {
     if (normalized === 'all') return null;
     return ['LIKE', 'DISCUSS'];
 };
-
+// Récupérer les candidats finalistes avec pagination, filtrage par vote et sélection
 exports.getFinalistCandidates = async (req, res) => {
     try {
         const page = parsePositiveInt(req.query.page, 1);
@@ -48,7 +48,7 @@ exports.getFinalistCandidates = async (req, res) => {
         }
 
         const whereSql = whereClauses.length ? `WHERE ${whereClauses.join(' AND ')}` : '';
-
+        // Si un filtre de vote est appliqué, on utilise HAVING pour filtrer les soumissions qui ont au moins un vote correspondant
         const havingSql = voteFilter
             ? `HAVING SUM(CASE WHEN je.vote_status IN (${voteFilter.map((v, i) => `:vote${i}`).join(', ')}) THEN 1 ELSE 0 END) > 0`
             : 'HAVING COUNT(je.id) > 0';
@@ -58,7 +58,7 @@ exports.getFinalistCandidates = async (req, res) => {
                 replacements[`vote${index}`] = status;
             });
         }
-
+        // Requête SQL pour récupérer les soumissions avec les stats de votes et les infos du réalisateur, en appliquant les filtres et la pagination
         const dataQuery = `
             SELECT
                 s.id,
@@ -96,7 +96,7 @@ exports.getFinalistCandidates = async (req, res) => {
             ORDER BY total_votes DESC, s.created_at DESC
             LIMIT :limit OFFSET :offset
         `;
-
+        // Requête SQL pour compter le nombre total de soumissions correspondant aux filtres (sans pagination)
         const countQuery = `
             SELECT COUNT(*) AS total
             FROM (
@@ -108,7 +108,7 @@ exports.getFinalistCandidates = async (req, res) => {
                 ${havingSql}
             ) AS filtered
         `;
-
+    // Exécuter les deux requêtes en parallèle pour optimiser les performances
         const [rows, countRows] = await Promise.all([
             sequelize.query(dataQuery, { replacements, type: QueryTypes.SELECT }),
             sequelize.query(countQuery, { replacements, type: QueryTypes.SELECT })
@@ -129,7 +129,7 @@ exports.getFinalistCandidates = async (req, res) => {
                 order: [['created_at', 'DESC']]
             })
             : [];
-
+        // Organiser les évaluations par submission_id pour les associer facilement aux soumissions dans la réponse
         const evaluationsBySubmission = evaluations.reduce((acc, evaluation) => {
             const submissionId = evaluation.submission_id;
             if (!acc[submissionId]) {
@@ -150,7 +150,7 @@ exports.getFinalistCandidates = async (req, res) => {
             });
             return acc;
         }, {});
-
+        // Assembler la réponse finale en combinant les données des soumissions et leurs évaluations associées
         const data = rows.map((row) => ({
             id: row.id,
             title_original: row.title_original,
@@ -192,7 +192,7 @@ exports.getFinalistCandidates = async (req, res) => {
         return sendErrorResponse(res, 500, error, 'Erreur lors de la récupération des candidats finalistes.');
     }
 };
-
+// Mettre à jour la sélection d'un finaliste (is_selected et award_winner)
 exports.updateFinalistSelection = async (req, res) => {
     try {
         const { submissionId } = req.params;

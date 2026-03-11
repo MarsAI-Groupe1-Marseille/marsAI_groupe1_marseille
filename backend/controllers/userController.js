@@ -8,6 +8,7 @@ const logger = require('../config/logger');
 
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
+// Résoudre le statut du compte en fonction de la présence du mot de passe et du statut actuel
 const resolveAccountStatus = (user) => {
     if (user.account_status === 'active' || user.account_status === 'pending') {
         return user.account_status;
@@ -15,6 +16,7 @@ const resolveAccountStatus = (user) => {
     return user.password_hash ? 'active' : 'pending';
 };
 
+// Transformer un utilisateur en une version sécurisée pour l'API (sans champs sensibles)
 const toSafeUser = (user) => {
     const plain = user.toJSON ? user.toJSON() : { ...user };
     plain.account_status = resolveAccountStatus(plain);
