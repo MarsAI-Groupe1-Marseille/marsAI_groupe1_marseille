@@ -2,7 +2,7 @@ const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const jwt = require('jsonwebtoken');
 
-const BACKEND_URL = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 3000}`;
+const BACKEND_URL = process.env.BACKEND_URL || `https://localhost:${process.env.PORT || 3000}`;
 
 const getTokenFromCookieHeader = (cookieHeader = '') => {
     const tokenPair = cookieHeader

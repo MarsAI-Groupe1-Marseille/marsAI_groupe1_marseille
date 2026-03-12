@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const { sendErrorResponse } = require('../utils/errorHandler');
 
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://localhost:5173';
 
 // Gérer la connexion d'un utilisateur (email + password)
 exports.login = async (req, res) => {

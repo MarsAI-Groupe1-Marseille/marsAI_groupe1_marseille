@@ -8,7 +8,7 @@ const { csrfProtection } = require('../middlewares/csrfMiddleware');
 const { validateRequest } = require('../middlewares/validationMiddleware');
 const { loginValidators } = require('../validators/authValidators');
 
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://localhost:5173';
 
 router.post('/login', 
     strictLoginLimiter,     // Limiter par IP (5 erreurs/15min)

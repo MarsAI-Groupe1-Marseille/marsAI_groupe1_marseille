@@ -6,7 +6,7 @@ const { sendErrorResponse } = require('../utils/errorHandler');
 const { cleanupUploadedFiles } = require('../services/fileValidationService');
 const logger = require('../config/logger');
 
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://localhost:5173';
 
 // Résoudre le statut du compte en fonction de la présence du mot de passe et du statut actuel
 const resolveAccountStatus = (user) => {
