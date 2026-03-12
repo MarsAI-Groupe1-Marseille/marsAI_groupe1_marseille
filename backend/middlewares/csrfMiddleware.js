@@ -2,6 +2,7 @@ const csrf = require('express-csurf');
 const session = require('express-session');
 const SequelizeStore = require('connect-session-sequelize')(session.Store);
 const { sequelize } = require('../models');
+const logger = require('../config/logger');
 
 // ===== DÉTECTION ENVIRONNEMENT =====
 const isProduction = process.env.NODE_ENV === 'production';
@@ -12,7 +13,7 @@ if (isProduction && !process.env.SESSION_SECRET) {
 }
 
 if (!process.env.SESSION_SECRET && !isProduction) {
-    console.warn('SESSION_SECRET non défini - utilisation d\'un secret par défaut (DEV UNIQUEMENT)');
+    logger.warn('SESSION_SECRET non defini - utilisation d\'un secret par defaut (DEV UNIQUEMENT)');
 }
 
 // ===== SESSION STORE : Sequelize en PROD, Mémoire en DEV =====
@@ -50,7 +51,7 @@ const csrfProtection = csrf({
     cookie: false  // Utilise la session, pas les cookies
 });
 
-console.log(`CSRF configuré - Mode: ${isProduction ? 'PRODUCTION (MySQL)' : 'DEV (Mémoire)'}`);
+logger.info(`CSRF configure - Mode: ${isProduction ? 'PRODUCTION (MySQL)' : 'DEV (Memoire)'}`);
 
 module.exports = {
     sessionMiddleware,

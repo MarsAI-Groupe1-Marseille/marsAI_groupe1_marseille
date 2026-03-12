@@ -1,6 +1,7 @@
 const { Submission, Director } = require('../models');
 const { Op } = require('sequelize');
 const { sendErrorResponse } = require('../utils/errorHandler');
+const logger = require('../config/logger');
 
 /**
  * Mapper le nom du prix vers un type pour le frontend
@@ -79,7 +80,7 @@ exports.getAwards = async (req, res) => {
       awards: formattedAwards
     });
   } catch (error) {
-    console.error('Error fetching awards:', error);
+    logger.error('Erreur recuperation awards', { error: error.message, stack: error.stack });
     return sendErrorResponse(res, 500, error, 'Erreur lors de la récupération des lauréats');
   }
 };

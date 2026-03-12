@@ -1,5 +1,6 @@
 // utils/errorHandler.js
 // Helper pour gérer les erreurs de manière sécurisée
+const logger = require('../config/logger');
 
 const isProduction = process.env.NODE_ENV === 'production';
 
@@ -38,7 +39,10 @@ const formatError = (error, fallbackMessage = 'Une erreur est survenue.') => {
  */
 const sendErrorResponse = (res, statusCode, error, fallbackMessage = 'Une erreur est survenue.') => {
     // Log l'erreur côté serveur (toujours, même en prod)
-    console.error(`[ERROR ${statusCode}]:`, error.message);
+    logger.error(`[ERROR ${statusCode}] ${error.message}`, {
+        statusCode,
+        stack: error.stack
+    });
     
     return res.status(statusCode).json(formatError(error, fallbackMessage));
 };
@@ -51,7 +55,7 @@ const sendErrorResponse = (res, statusCode, error, fallbackMessage = 'Une erreur
  */
 const logSecurityEvent = (type, details) => {
     const timestamp = new Date().toISOString();
-    console.warn(`[SECURITY ${timestamp}] ${type}:`, JSON.stringify(details));
+    logger.warn(`[SECURITY ${timestamp}] ${type}`, { details });
     
     // TODO: En production, envoyer vers un système de monitoring (Sentry, Datadog, etc.)
 };

@@ -1,6 +1,7 @@
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 const crypto = require('crypto');
 require('dotenv').config();
+const logger = require('../config/logger');
 
 // Configuration du client S3 Scaleway
 const s3Client = new S3Client({
@@ -184,7 +185,7 @@ async function uploadBase64ToS3(base64Data, folder = 'config') {
         return publicUrl;
 
     } catch (error) {
-        console.error('Erreur uploadBase64ToS3:', error);
+        logger.error('Erreur uploadBase64ToS3', { error: error.message, stack: error.stack });
         throw new Error(`Échec de l'upload S3: ${error.message}`);
     }
 }
@@ -202,7 +203,7 @@ async function processConfigImages(config) {
     if (processed.categories?.items && Array.isArray(processed.categories.items)) {
         for (let item of processed.categories.items) {
             if (item.image && item.image.startsWith('data:image')) {
-                console.log('Upload image catégorie:', item.title || item.key);
+                logger.info('Upload image categorie', { key: item.title || item.key });
                 item.image = await uploadBase64ToS3(item.image, 'config/categories');
             }
         }
@@ -212,7 +213,7 @@ async function processConfigImages(config) {
     if (processed.awards?.items && Array.isArray(processed.awards.items)) {
         for (let item of processed.awards.items) {
             if (item.image && item.image.startsWith('data:image')) {
-                console.log('Upload image award:', item.label || item.label_en);
+                logger.info('Upload image award', { key: item.label || item.label_en });
                 item.image = await uploadBase64ToS3(item.image, 'config/awards');
             }
         }
@@ -222,7 +223,7 @@ async function processConfigImages(config) {
     if (processed.partners?.items && Array.isArray(processed.partners.items)) {
         for (let item of processed.partners.items) {
             if (item.image && item.image.startsWith('data:image')) {
-                console.log('Upload logo partenaire:', item.name || item.name_en);
+                logger.info('Upload logo partenaire', { key: item.name || item.name_en });
                 item.image = await uploadBase64ToS3(item.image, 'config/partners');
             }
         }

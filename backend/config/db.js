@@ -1,6 +1,7 @@
 // backend/config/db.js
 const { Sequelize } = require('sequelize');
 require('dotenv').config();
+const logger = require('./logger');
 
 // Création de l'instance Sequelize
 // On lui donne le nom de la BDD, l'utilisateur, le mot de passe et les options
@@ -24,10 +25,10 @@ const sequelize = new Sequelize(
 // Test immédiat de la connexion (Optionnel mais recommandé pour le debug)
 sequelize.authenticate()
     .then(() => {
-        console.log('Connexion Sequelize réussie à MySQL !');
+        logger.info('Connexion Sequelize reussie a MySQL');
     })
     .catch(err => {
-        console.error('Impossible de se connecter à la base de données :', err);
+        logger.error('Impossible de se connecter a la base de donnees', { error: err.message, stack: err.stack });
     });
 
 module.exports = sequelize;

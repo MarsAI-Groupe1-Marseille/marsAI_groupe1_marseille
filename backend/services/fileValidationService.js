@@ -1,5 +1,7 @@
 const { S3Client, GetObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
+const fs = require('fs/promises');
 const path = require('path');
+const logger = require('../config/logger');
 
 const s3Client = new S3Client({
     endpoint: process.env.SCALEWAY_ENDPOINT,
@@ -33,11 +35,23 @@ const getHeadBufferFromS3 = async (key, maxBytes = 8192) => {
     return readStreamToBuffer(response.Body);
 };
 
+// Lecture partielle locale: suffit pour les magic bytes sans charger tout le fichier en memoire.
+const getHeadBufferFromLocalFile = async (filePath, maxBytes = 8192) => {
+    const handle = await fs.open(filePath, 'r');
+    try {
+        const buffer = Buffer.alloc(maxBytes);
+        const { bytesRead } = await handle.read(buffer, 0, maxBytes, 0);
+        return buffer.subarray(0, bytesRead);
+    } finally {
+        await handle.close();
+    }
+};
+// Extraire l'extension d'un nom de fichier (sans le point, en minuscules)
 const getExtension = (filename = '') => {
     const extension = path.extname(filename).toLowerCase();
     return extension.startsWith('.') ? extension.slice(1) : extension;
 };
-
+// Validation des signatures de fichiers pour les types autorisés (jpg, png, webp, mp4, mov, avi, mkv, srt, vtt, txt)
 const isJpeg = (buffer) => buffer.length >= 3
     && buffer[0] === 0xff
     && buffer[1] === 0xd8
@@ -66,7 +80,7 @@ const isMkv = (buffer) => buffer.length >= 4
     && buffer[1] === 0x45
     && buffer[2] === 0xdf
     && buffer[3] === 0xa3;
-
+// Pour MP4/MOV, on lit la box 'ftyp' pour différencier les deux formats (mp4 a souvent des brands comme 'isom', mov a souvent 'qt  ')
 const readFtypBrand = (buffer) => {
     if (buffer.length < 12) return null;
     const box = buffer.subarray(4, 8).toString('ascii');
@@ -147,7 +161,7 @@ const FIELD_CONFIG = {
 
 const flattenRequestFiles = (filesByField = {}) => Object.entries(filesByField)
     .flatMap(([fieldName, files]) => (files || []).map((file) => ({ fieldName, file })));
-
+// Valider les fichiers uploadés en vérifiant leur signature (magic bytes) pour éviter les fichiers malveillants déguisés. On peut faire ça après l'upload sur S3 (en lisant les premiers bytes depuis S3) ou avant l'upload (en lisant les fichiers temporaires locaux), selon ce qui est plus pratique dans le flow de ton application.
 const validateUploadedFilesBySignature = async (filesByField = {}) => {
     const allFiles = flattenRequestFiles(filesByField);
 
@@ -181,6 +195,48 @@ const validateUploadedFilesBySignature = async (filesByField = {}) => {
     return { ok: true };
 };
 
+// Variante pre-upload S3: meme logique de signature, mais sur fichiers temporaires locaux.
+const validateUploadedLocalFilesBySignature = async (filesByField = {}) => {
+    const allFiles = flattenRequestFiles(filesByField);
+
+    for (const { fieldName, file } of allFiles) {
+        const config = FIELD_CONFIG[fieldName];
+        if (!config) {
+            return { ok: false, message: `Champ fichier non autorise: ${fieldName}` };
+        }
+
+        const extension = getExtension(file.originalname);
+        if (!config.allowed.has(extension)) {
+            return {
+                ok: false,
+                field: fieldName,
+                message: `Extension invalide pour ${fieldName}: .${extension || 'inconnue'}`
+            };
+        }
+
+        if (!file.path) {
+            return {
+                ok: false,
+                field: fieldName,
+                message: `Fichier temporaire introuvable pour ${file.originalname}.`
+            };
+        }
+
+        const headBuffer = await getHeadBufferFromLocalFile(file.path);
+        const signatureIsValid = validateSignatureByExtension(extension, headBuffer);
+
+        if (!signatureIsValid) {
+            return {
+                ok: false,
+                field: fieldName,
+                message: `Le contenu du fichier ne correspond pas a son type declare (${file.originalname}).`
+            };
+        }
+    }
+
+    return { ok: true };
+};
+// Supprimer les fichiers uploadés sur S3 (en cas d'erreur de validation ou autre) pour éviter d'avoir des fichiers orphelins qui prennent de la place inutilement.
 const cleanupUploadedFiles = async (filesByField = {}) => {
     const allFiles = flattenRequestFiles(filesByField);
 
@@ -193,12 +249,13 @@ const cleanupUploadedFiles = async (filesByField = {}) => {
                 Key: file.key
             }));
         } catch (error) {
-            console.error('Echec suppression S3:', file.key, error.message);
+            logger.error('Echec suppression S3', { s3Key: file.key, error: error.message });
         }
     }));
 };
 
 module.exports = {
     validateUploadedFilesBySignature,
+    validateUploadedLocalFilesBySignature,
     cleanupUploadedFiles
 };

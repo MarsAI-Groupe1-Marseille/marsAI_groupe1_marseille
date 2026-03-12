@@ -3,10 +3,12 @@ const emailService = require('../services/emailService');
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
 const { sendErrorResponse } = require('../utils/errorHandler');
-const { validateUploadedFilesBySignature, cleanupUploadedFiles } = require('../services/fileValidationService');
+const { cleanupUploadedFiles } = require('../services/fileValidationService');
+const logger = require('../config/logger');
 
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
+// Résoudre le statut du compte en fonction de la présence du mot de passe et du statut actuel
 const resolveAccountStatus = (user) => {
     if (user.account_status === 'active' || user.account_status === 'pending') {
         return user.account_status;
@@ -14,6 +16,7 @@ const resolveAccountStatus = (user) => {
     return user.password_hash ? 'active' : 'pending';
 };
 
+// Transformer un utilisateur en une version sécurisée pour l'API (sans champs sensibles)
 const toSafeUser = (user) => {
     const plain = user.toJSON ? user.toJSON() : { ...user };
     plain.account_status = resolveAccountStatus(plain);
@@ -78,7 +81,7 @@ exports.createUser = async (req, res) => {
         }
         
         // Autres erreurs
-        console.error('Erreur création utilisateur:', error);
+        logger.error('Erreur creation utilisateur', { email, role, error: error.message, stack: error.stack });
         res.status(500).json({ error: "Erreur lors de la création de l'utilisateur." });
     }
 };
@@ -119,7 +122,7 @@ exports.forgotPassword = async (req, res) => {
         });
 
     } catch (error) {
-        console.error("Erreur forgotPassword :", error);
+        logger.error('Erreur forgotPassword', { email: req.body?.email, error: error.message, stack: error.stack });
         return sendErrorResponse(res, 500, error, 'Erreur lors de la demande de réinitialisation.');
     }
 };
@@ -170,24 +173,6 @@ exports.activateAccount = async (req, res) => {
         const user = await User.findOne({ where: { invite_token: token } });
         if (!user) {
             return res.status(404).json({ error: "Token invalide ou expiré." });
-        }
-
-        // Validation forte de l'avatar (signature binaire) si un fichier est uploadé.
-        if (req.file) {
-            const filesByField = { avatar: [req.file] };
-            const signatureValidation = await validateUploadedFilesBySignature(filesByField);
-
-            if (!signatureValidation.ok) {
-                await cleanupUploadedFiles(filesByField);
-                return res.status(400).json({
-                    message: 'Fichier avatar invalide.',
-                    error: signatureValidation.message,
-                    errors: [{
-                        field: signatureValidation.field || 'avatar',
-                        message: signatureValidation.message
-                    }]
-                });
-            }
         }
 
         // Avec multer-s3, utiliser req.file.location au lieu de req.file.path
@@ -273,24 +258,6 @@ exports.updateUser = async (req, res) => {
         const user = await User.findByPk(userId);
         if (!user) {
             return res.status(404).json({ error: 'Utilisateur non trouvé' });
-        }
-
-        // Validation forte de l'avatar uploadé (signature binaire).
-        if (req.file) {
-            const filesByField = { avatar: [req.file] };
-            const signatureValidation = await validateUploadedFilesBySignature(filesByField);
-
-            if (!signatureValidation.ok) {
-                await cleanupUploadedFiles(filesByField);
-                return res.status(400).json({
-                    message: 'Fichier avatar invalide.',
-                    error: signatureValidation.message,
-                    errors: [{
-                        field: signatureValidation.field || 'avatar',
-                        message: signatureValidation.message
-                    }]
-                });
-            }
         }
 
         // Mise à jour des champs si ils sont fournis
