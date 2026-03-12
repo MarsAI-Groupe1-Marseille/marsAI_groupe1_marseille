@@ -37,10 +37,11 @@ const sessionConfig = {
     saveUninitialized: false,
     cookie: {
         httpOnly: true,
-        secure: isProduction, // HTTPS uniquement en production
+        // CHANGEMENT ICI : true si on est en prod OU si on est sur ta branche de test HTTPS
+        secure: isProduction || process.env.NODE_ENV === 'development', 
         sameSite: 'strict',
         maxAge: 24 * 60 * 60 * 1000 // 24 heures
-    },
+        },
     ...(isProduction && { store: sessionStore }) // Ajouter store uniquement en prod
 };
 

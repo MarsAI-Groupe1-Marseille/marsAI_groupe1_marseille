@@ -401,7 +401,7 @@ export default function NotationJury() {
     );
   }
 
-  const apiBaseUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
+  const apiBaseUrl = import.meta.env.VITE_API_URL || "https://localhost:3000";
   const resolveAssetUrl = (url) => {
     if (!url) return "";
     return url.startsWith("http") ? url : `${apiBaseUrl}${url}`;

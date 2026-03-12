@@ -29,7 +29,7 @@ exports.login = async (req, res) => {
         // Envoyer le token en HttpOnly Cookie
         res.cookie('token', token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
+            secure: process.env.NODE_ENV === 'production'|| process.env.NODE_ENV === 'development',
             sameSite: 'strict',
             maxAge: 24 * 60 * 60 * 1000 // 24 hours
         });
@@ -66,7 +66,7 @@ exports.googleCallback = async (req, res) => {
 
         res.cookie('token', token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
+            secure: process.env.NODE_ENV === 'production'|| process.env.NODE_ENV === 'development',
             sameSite: 'strict',
             maxAge: 24 * 60 * 60 * 1000 
         });

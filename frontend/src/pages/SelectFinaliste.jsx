@@ -17,7 +17,7 @@ function getImageUrl(posterUrl) {
   }
   
   // Sinon, construire l'URL complète avec la base URL du backend
-  const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  const apiBaseUrl = import.meta.env.VITE_API_URL || 'https://localhost:3000';
   // Retirer le /api si présent
   const baseUrl = apiBaseUrl.replace(/\/api$/, '');
   

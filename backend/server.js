@@ -1,4 +1,9 @@
 // backend/server.js
+const https = require('https');
+const fs = require('fs');
+
+// ... tes autres imports (express, mysql, etc.)
+
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
@@ -23,6 +28,15 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 
+
+// On utilise path.join pour être sûr du chemin vers ton dossier certs
+// On remonte d'un dossier (..) pour sortir de 'backend' et aller dans 'certs'
+const sslOptions = {
+    key: fs.readFileSync(path.join(__dirname, '..', 'certs', 'localhost-key.pem')),
+    cert: fs.readFileSync(path.join(__dirname, '..', 'certs', 'localhost.pem')),
+};
+
+
 // Imports des routes
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
@@ -40,7 +54,7 @@ const awardRoutes = require('./routes/awardRoutes');
 // ==========================================
 app.use(requestContext);
 
-const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+const frontendUrl = process.env.FRONTEND_URL || 'https://localhost:5173';
 const allowedOrigins = (process.env.CORS_ORIGINS || frontendUrl)
     .split(',')
     .map((origin) => origin.trim())
@@ -138,8 +152,8 @@ sequelize.sync(syncOptions).then(async () => {
     logger.info(`Base de donnees synchronisee (${process.env.NODE_ENV || 'development'} mode).`);
     //APPEL DE La FONCTION POUR CREER UN ADMIN
   await createDefaultAdmin();
-    app.listen(port, () => {
-        logger.info(`Serveur demarre sur : http://localhost:${port}`);
+   https.createServer(sslOptions, app).listen(port, () => {
+        logger.info(`🚀 Serveur Mars AI sécurisé sur : https://localhost:${port}`);
     });
 }).catch(err => {
     logger.error('Erreur de synchronisation Sequelize', { error: err.message, stack: err.stack });
