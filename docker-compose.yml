@@ -1,0 +1,55 @@
+services:
+
+  db:
+    image: mysql:8.0
+    container_name: mars-db
+    restart: always
+    # On ajoute cette ligne pour désactiver le mode strict sur les dates
+    command: --sql-mode="NO_ENGINE_SUBSTITUTION"
+    volumes:
+      # Tout fichier .sql ici est exécuté au PREMIER démarrage de la base
+      - ./init:/docker-entrypoint-initdb.d
+    environment:
+    - MYSQL_ALLOW_EMPTY_PASSWORD=yes  # Autorise le mot de passe vide
+    - MYSQL_DATABASE=mars_ai_db       # Crée ta base automatiquement
+    ports:
+      - "3307:3306" # On utilise 3307 pour ne pas entrer en conflit avec ton Wamp (3306)
+
+   # --- AJOUT DE PHPMYADMIN ---
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: mars-phpmyadmin
+    restart: always
+    ports:
+      - "8081:80" # Tu y accèderas via http://localhost:8081
+    environment:
+      - PMA_HOST=db # Il se connecte au container "db"
+      - PMA_ARBITRARY=1 # Permet de se connecter à n'importe quelle base, pas seulement "mars_ai_db"   
+  backend:
+    build: ./backend
+    container_name: mars-backend
+   
+    ports:
+      - "3000:3000"
+    env_file: ./backend/.env
+    restart: on-failure
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASS=           # Vide, comme tu as demandé
+      - DB_NAME=mars_ai_db
+      - PORT=3000      
+      - FRONTEND_URL=http://localhost:5173
+      - NODE_ENV=development
+
+  frontend:
+    build: ./frontend
+    container_name: mars-frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    environment:
+      - VITE_API_URL=http://localhost:3000

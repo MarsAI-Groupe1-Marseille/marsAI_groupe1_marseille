@@ -9,7 +9,7 @@ const sequelize = new Sequelize(
     process.env.DB_USER,
     process.env.DB_PASSWORD,
     {
-        host: process.env.DB_HOST,
+        host: process.env.DB_HOST || 'localhost', // Par défaut localhost 
         dialect: 'mysql', // Très important : on précise qu'on utilise MySQL
         logging: false,   // false = ne pas polluer la console avec toutes les requêtes SQL brutes
         pool: {
