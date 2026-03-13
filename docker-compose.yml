@@ -1,7 +1,7 @@
 services:
 
   db:
-    image: mysql:8.0
+    image: mysql:8.0  
     container_name: mars-db
     restart: always
     # On ajoute cette ligne pour désactiver le mode strict sur les dates
@@ -9,6 +9,8 @@ services:
     volumes:
       # Tout fichier .sql ici est exécuté au PREMIER démarrage de la base
       - ./init:/docker-entrypoint-initdb.d
+     
+      - mars_db_data:/var/lib/mysql  # <-- C'est ça la "carte mémoire"
     environment:
     - MYSQL_ALLOW_EMPTY_PASSWORD=yes  # Autorise le mot de passe vide
     - MYSQL_DATABASE=mars_ai_db       # Crée ta base automatiquement
@@ -24,11 +26,11 @@ services:
       - "8081:80" # Tu y accèderas via http://localhost:8081
     environment:
       - PMA_HOST=db # Il se connecte au container "db"
-      - PMA_ARBITRARY=1 # Permet de se connecter à n'importe quelle base, pas seulement "mars_ai_db"   
+      - PMA_ARBITRARY=1 # Permet de se connecter à n'importe quelle base, pas seulement "mars_ai_db"  
+      
   backend:
     build: ./backend
     container_name: mars-backend
-   
     ports:
       - "3000:3000"
     env_file: ./backend/.env
@@ -43,7 +45,7 @@ services:
       - PORT=3000      
       - FRONTEND_URL=http://localhost:5173
       - NODE_ENV=development
-
+  
   frontend:
     build: ./frontend
     container_name: mars-frontend
@@ -53,3 +55,7 @@ services:
       - backend
     environment:
       - VITE_API_URL=http://localhost:3000
+
+# TRÈS IMPORTANT : Doit être tout en bas, aligné à gauche, HORS de services
+volumes:
+  mars_db_data:
